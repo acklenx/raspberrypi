@@ -18,6 +18,13 @@ people-counters, parking sensors, how-tall-is-it rigs.
 checks the chip's model id, so if you plug in the wrong one the demo
 just reports "no sensor" instead of reading garbage.
 
+
+## Wiring diagram
+
+![distance-vl53l1x wiring](../../docs/wiring/distance-vl53l1x.svg)
+
+Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-distance-vl53l1x). Red = 3V3, dark grey = GND (shared rails), blue = SDA, green = SCL, orange = signal, purple = VBUS 5V. Numbers outside the board are physical header pins.
+
 ## Two versions
 
 | File | What it does |

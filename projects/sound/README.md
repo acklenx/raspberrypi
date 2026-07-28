@@ -21,6 +21,13 @@ the demo samples the pin flat out for 25ms and reports max minus min.
 
 GP27 is ADC1.
 
+
+## Wiring diagram
+
+![sound wiring](../../docs/wiring/sound.svg)
+
+Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-sound). Red = 3V3, dark grey = GND (shared rails), blue = SDA, green = SCL, orange = signal, purple = VBUS 5V. Numbers outside the board are physical header pins.
+
 ## Two versions
 
 | File | What it does |

@@ -73,6 +73,13 @@
             padding: 44px 20px; margin-top: 50px; }
   .closer .big { font-size: 40px; font-weight: bold; margin: 0 0 8px 0; }
   .closer .tag2 { color: #9FC9EA; font-style: italic; font-size: 15px; }
+  figure.wiring { margin: 0 0 8px 0; }
+  figure.wiring h3 { color: var(--navy); font-size: 18px; margin: 24px 0 8px 0; }
+  figure.wiring img { width: 100%; height: auto; display: block; border: 1px solid #E1E8EF;
+        border-radius: 10px; background: #FFF; box-shadow: 0 2px 8px rgba(27,58,92,0.12); }
+  figure.wiring figcaption { color: var(--gray); font-size: 13px; margin-top: 6px; }
+  .overview { font-size: 15.5px; }
+  .overview b { color: var(--navy); }
   footer { text-align: center; color: var(--gray); font-size: 12.5px; padding: 18px 10px 26px 10px; }
 </style>
 </head>
@@ -89,6 +96,19 @@
          &nbsp;·&nbsp; IDE: <a href="https://viper-ide.org">viper-ide.org</a></p>
     </div>
   </header>
+
+  <h2>What this is</h2>
+  <hr class="rule b">
+  <div class="card a2 overview">
+    <p>These are the MicroPython programs and the wiring for the <b>Pico 2 W sensor stations</b>
+       used in the workshop. Every station has the same shape: a <b>Pico 2 W</b>, a small <b>OLED
+       screen</b>, and <b>one sensor</b> (or a servo), wired on a breadboard. Each one runs a
+       program that shows live readings on the screen and, in its web version, serves a
+       <b>live dashboard</b> over its own Wi-Fi network. Learn one station and you know them all.</p>
+    <p>For every sensor below you get three things: the <b>code</b> to install in one click, the
+       exact <b>wiring</b>, and a <b>diagram</b>. Start with the examples, build the stations, then
+       point them at the worm bins.</p>
+  </div>
 
   <h2>Quickstart</h2>
   <hr class="rule b">
@@ -176,7 +196,7 @@
       <p class="files">Upload: <code>main.py</code>, <code>index.html</code>,
          <code>lib/ssd1306.py</code>, <code>lib/vl53l0x.py</code></p>
       <p>Dashboard: big mm readout, moving bar, min/max tracking, <code>/data</code> JSON.</p>
-      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-station/package.json">Install in Viper IDE</a></p>
+      <p class="files"><a href="#wire-distance-station">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-station/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a2">
@@ -192,7 +212,7 @@
          <code>lib/picolab.py</code>, <code>lib/vl53l1x.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Same I2C address as the VL53L0X: only one of the two on the bus at a time.
          Dashboard: mm and meters, 0 to 4 m bar, min/max tracking.</p>
-      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-vl53l1x/package.json">Install in Viper IDE</a></p>
+      <p class="files"><a href="#wire-distance-vl53l1x">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-vl53l1x/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a2">
@@ -206,7 +226,7 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/bme280.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: three big cards, temperature, humidity, pressure.</p>
-      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json">Install in Viper IDE</a></p>
+      <p class="files"><a href="#wire-bme280">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a3">
@@ -220,7 +240,7 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: moisture percent, bar, and the raw value for calibrating.</p>
-      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-moisture/package.json">Install in Viper IDE</a></p>
+      <p class="files"><a href="#wire-soil-moisture">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-moisture/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a4">
@@ -234,7 +254,7 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: one temperature card per probe, hot-plug friendly.</p>
-      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-temperature/package.json">Install in Viper IDE</a></p>
+      <p class="files"><a href="#wire-soil-temperature">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-temperature/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a1">
@@ -249,7 +269,7 @@
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: angle slider and mode buttons, live from any phone on the AP.</p>
       <div class="warn"><b>Power rule:</b> servos drink from VBUS (5V), never from 3V3.
-         Big servos (MG995) want their own supply with grounds joined.  <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json">Install in Viper IDE</a></p>
+         Big servos (MG995) want their own supply with grounds joined.  <p class="files"><a href="#wire-servo">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json">Install in Viper IDE</a></p>
     </div>
     </div>
 
@@ -264,7 +284,7 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: light percent and raw value, bar graph.</p>
-      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-basic/package.json">Install in Viper IDE</a></p>
+      <p class="files"><a href="#wire-light-basic">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-basic/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a3">
@@ -278,7 +298,7 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/bh1750.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: big lux readout with a sunlight-to-darkness scale.</p>
-      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-lux/package.json">Install in Viper IDE</a></p>
+      <p class="files"><a href="#wire-light-lux">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-lux/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a4">
@@ -292,10 +312,64 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: live level bar with peak hold. Try the clap test.</p>
-      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/sound/package.json">Install in Viper IDE</a></p>
+      <p class="files"><a href="#wire-sound">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/sound/package.json">Install in Viper IDE</a></p>
     </div>
 
   </div>
+
+
+  <h2>Wiring diagrams</h2>
+  <hr class="rule o">
+  <p class="lead">One diagram per station. <b>Red</b> is 3V3 power and <b>dark grey</b> is ground
+     (both run on shared rails beside the board), <b>blue</b> is I2C data (SDA), <b>green</b> is
+     I2C clock (SCL), <b>orange</b> is the sensor or servo signal, and <b>purple</b> is the 5V VBUS
+     line used only for servo power. The small number outside each pad is the physical header pin
+     you count to on the board.</p>
+  <figure class="wiring" id="wire-distance-station">
+    <h3>distance-station</h3>
+    <img src="wiring/distance-station.svg" alt="distance-station wiring diagram" loading="lazy">
+    <figcaption>VL53L0X + OLED share the I2C bus (GP0, GP1) and the 3V3 / GND rails.</figcaption>
+  </figure>
+  <figure class="wiring" id="wire-distance-vl53l1x">
+    <h3>distance-vl53l1x</h3>
+    <img src="wiring/distance-vl53l1x.svg" alt="distance-vl53l1x wiring diagram" loading="lazy">
+    <figcaption>Wired identically to the VL53L0X. Same 0x29 address, so only one distance sensor on the bus at a time.</figcaption>
+  </figure>
+  <figure class="wiring" id="wire-bme280">
+    <h3>bme280</h3>
+    <img src="wiring/bme280.svg" alt="bme280 wiring diagram" loading="lazy">
+    <figcaption>Temp / humidity / pressure over I2C, riding the same two wires as the OLED.</figcaption>
+  </figure>
+  <figure class="wiring" id="wire-soil-moisture">
+    <h3>soil-moisture</h3>
+    <img src="wiring/soil-moisture.svg" alt="soil-moisture wiring diagram" loading="lazy">
+    <figcaption>Analog sensor: power from the rails, AOUT to the ADC pin GP26 (pin 31).</figcaption>
+  </figure>
+  <figure class="wiring" id="wire-soil-temperature">
+    <h3>soil-temperature</h3>
+    <img src="wiring/soil-temperature.svg" alt="soil-temperature wiring diagram" loading="lazy">
+    <figcaption>DS18B20 on GP22 (pin 29) with the required 4.7k pullup from data up to 3V3. Many probes share the one data wire.</figcaption>
+  </figure>
+  <figure class="wiring" id="wire-light-basic">
+    <h3>light-basic</h3>
+    <img src="wiring/light-basic.svg" alt="light-basic wiring diagram" loading="lazy">
+    <figcaption>GL5528 photoresistor and a 10k resistor form a divider; the junction reads on GP28 (pin 34).</figcaption>
+  </figure>
+  <figure class="wiring" id="wire-light-lux">
+    <h3>light-lux</h3>
+    <img src="wiring/light-lux.svg" alt="light-lux wiring diagram" loading="lazy">
+    <figcaption>BH1750 lux sensor on the shared I2C bus (address 0x23).</figcaption>
+  </figure>
+  <figure class="wiring" id="wire-sound">
+    <h3>sound</h3>
+    <img src="wiring/sound.svg" alt="sound wiring diagram" loading="lazy">
+    <figcaption>MAX9814 microphone amp: analog output to GP27 (pin 32).</figcaption>
+  </figure>
+  <figure class="wiring" id="wire-servo">
+    <h3>servo</h3>
+    <img src="wiring/servo.svg" alt="servo wiring diagram" loading="lazy">
+    <figcaption>SG90 signal on GP16 (pin 21). Power comes from VBUS 5V (purple), not 3V3. Optional GL5528 enables follow-light mode.</figcaption>
+  </figure>
 
   <h2>Start-here examples</h2>
   <hr class="rule b">

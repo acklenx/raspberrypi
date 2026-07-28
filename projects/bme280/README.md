@@ -15,6 +15,13 @@ sibling; the demo reports humidity as n/a).
 
 I2C address `0x76` or `0x77` (the demo finds either automatically).
 
+
+## Wiring diagram
+
+![bme280 wiring](../../docs/wiring/bme280.svg)
+
+Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-bme280). Red = 3V3, dark grey = GND (shared rails), blue = SDA, green = SCL, orange = signal, purple = VBUS 5V. Numbers outside the board are physical header pins.
+
 ## Two versions
 
 | File | What it does |

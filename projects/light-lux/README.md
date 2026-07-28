@@ -17,6 +17,13 @@ under 1 lux, a classroom is 300 to 500 lux, direct sun is over 30,000.
 
 It shares the I2C bus with the OLED (and any other I2C sensors).
 
+
+## Wiring diagram
+
+![light-lux wiring](../../docs/wiring/light-lux.svg)
+
+Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-light-lux). Red = 3V3, dark grey = GND (shared rails), blue = SDA, green = SCL, orange = signal, purple = VBUS 5V. Numbers outside the board are physical header pins.
+
 ## Two versions
 
 | File | What it does |

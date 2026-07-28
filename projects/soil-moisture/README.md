@@ -16,6 +16,13 @@ electronics at the top are not waterproof.
 | GND | GND (any GND pin, e.g. 38) |
 | AOUT | GP26 (pin 31, ADC0) |
 
+
+## Wiring diagram
+
+![soil-moisture wiring](../../docs/wiring/soil-moisture.svg)
+
+Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-soil-moisture). Red = 3V3, dark grey = GND (shared rails), blue = SDA, green = SCL, orange = signal, purple = VBUS 5V. Numbers outside the board are physical header pins.
+
 ## Two versions
 
 | File | What it does |

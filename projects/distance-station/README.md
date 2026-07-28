@@ -13,6 +13,13 @@ own Wi-Fi network with a live web dashboard.
 
 Both devices share the same two I2C wires. That is the point of I2C.
 
+
+## Wiring diagram
+
+![distance-station wiring](../../docs/wiring/distance-station.svg)
+
+Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-distance-station). Red = 3V3, dark grey = GND (shared rails), blue = SDA, green = SCL, orange = signal, purple = VBUS 5V. Numbers outside the board are physical header pins.
+
 ## Files to put on the board
 
 | File | Purpose |

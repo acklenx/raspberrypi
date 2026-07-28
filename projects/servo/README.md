@@ -24,6 +24,13 @@ own 5V supply with a shared ground.
 | GL5528 photoresistor | one leg to 3V3 (pin 36), other leg to GP28 (pin 34) |
 | 10k resistor | GP28 (pin 34) to GND |
 
+
+## Wiring diagram
+
+![servo wiring](../../docs/wiring/servo.svg)
+
+Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-servo). Red = 3V3, dark grey = GND (shared rails), blue = SDA, green = SCL, orange = signal, purple = VBUS 5V. Numbers outside the board are physical header pins.
+
 ## Two versions
 
 | File | What it does |

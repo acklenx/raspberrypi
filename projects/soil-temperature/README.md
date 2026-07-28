@@ -17,6 +17,13 @@ each with its own factory-burned serial number.
 Without it you get no probes found or garbage CRC errors. One resistor
 serves the whole bus no matter how many probes you add.
 
+
+## Wiring diagram
+
+![soil-temperature wiring](../../docs/wiring/soil-temperature.svg)
+
+Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-soil-temperature). Red = 3V3, dark grey = GND (shared rails), blue = SDA, green = SCL, orange = signal, purple = VBUS 5V. Numbers outside the board are physical header pins.
+
 ## Two versions
 
 | File | What it does |

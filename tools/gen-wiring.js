@@ -1,0 +1,355 @@
+// Generates branded SVG wiring diagrams for every Pico demo, one per
+// project, into docs/wiring/. Pure string SVG, no dependencies.
+//
+//   node tools/gen-wiring.js
+//
+// The Pico 2 W shares the standard 40-pin Pico header. Each diagram
+// shows the board, shared 3V3 / GND power rails, the always-present
+// OLED, and that project's sensor or actuator, wired exactly as the
+// project README. Signal wires each get their own vertical lane so no
+// two wires overlap.
+
+const fs = require("fs");
+const path = require("path");
+
+const OUT = path.join(__dirname, "..", "docs", "wiring");
+fs.mkdirSync(OUT, { recursive: true });
+
+const C = {
+  blue: "#2E7DBC", green: "#7CB342", orange: "#E8762C", yellow: "#C99A1E",
+  navy: "#1B3A5C", ink: "#222A35", light: "#F4F7FA", gray: "#6B7280",
+  board: "#1B5E20", boardEdge: "#0E3D12", pad: "#C9A227", padHole: "#5C4A00",
+  padOff: "#AEB6BF",
+};
+const W = {
+  pwr: "#C62828", gnd: "#37474F", sda: "#2E7DBC", scl: "#7CB342",
+  sig: "#E8762C", vbus: "#8E24AA",
+};
+
+const FUNC = {
+  1: "GP0", 2: "GP1", 3: "GND", 4: "GP2", 5: "GP3", 6: "GP4", 7: "GP5",
+  8: "GND", 9: "GP6", 10: "GP7", 11: "GP8", 12: "GP9", 13: "GND",
+  14: "GP10", 15: "GP11", 16: "GP12", 17: "GP13", 18: "GND", 19: "GP14",
+  20: "GP15", 21: "GP16", 22: "GP17", 23: "GND", 24: "GP18", 25: "GP19",
+  26: "GP20", 27: "GP21", 28: "GND", 29: "GP22", 30: "RUN", 31: "GP26",
+  32: "GP27", 33: "AGND", 34: "GP28", 35: "VREF", 36: "3V3", 37: "3V3EN",
+  38: "GND", 39: "VSYS", 40: "VBUS",
+};
+const ADC = { 31: "ADC0", 32: "ADC1", 34: "ADC2" };
+
+const BX = 118, BY = 104, BW = 152, BH = 476;
+const ROW_Y0 = BY + 34, PITCH = 22;
+const PAD_L = BX + 14, PAD_R = BX + BW - 14;
+const EXIT_L = BX, EXIT_R = BX + BW;
+
+function pin(p) {
+  let row, x;
+  if (p <= 20) { row = p - 1; x = PAD_L; }
+  else { row = 40 - p; x = PAD_R; }
+  return { x, y: ROW_Y0 + row * PITCH, side: p <= 20 ? "L" : "R" };
+}
+
+const RAIL_PWR = 298, RAIL_GND = 330, RAIL_TOP = 120;
+const DEV_X = 452, DEV_W = 150;
+
+// per-diagram wire-lane allocators
+let CH, TOPY, USED, RAIL_MAXY;
+function reset(usedPins) {
+  CH = RAIL_GND + 20;   // first vertical signal lane, right of the rails
+  TOPY = 64;            // first horizontal lane above the board
+  USED = new Set(usedPins);
+  RAIL_MAXY = Math.max(pin(36).y, pin(38).y);
+}
+function nextCH() { const x = CH; CH += 13; return x; }
+function nextTOP() { const y = TOPY; TOPY += 12; return y; }
+
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+function text(x, y, s, o = {}) {
+  const { size = 12, color = C.ink, bold = false, anchor = "start", italic = false } = o;
+  return `<text x="${x}" y="${y}" font-family="Arial, Helvetica, sans-serif" font-size="${size}"`
+    + ` fill="${color}" text-anchor="${anchor}"${bold ? ' font-weight="bold"' : ""}`
+    + `${italic ? ' font-style="italic"' : ""}>${esc(s)}</text>`;
+}
+function wire(pts, color, width = 3.5) {
+  const d = pts.map((p, i) => (i ? "L" : "M") + p[0] + " " + p[1]).join(" ");
+  return `<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}"`
+    + ` stroke-linejoin="round" stroke-linecap="round"/>`;
+}
+function dot(x, y, color) { return `<circle cx="${x}" cy="${y}" r="4.2" fill="${color}"/>`; }
+
+function drawPico() {
+  let s = `<rect x="${BX}" y="${BY}" width="${BW}" height="${BH}" rx="12"`
+    + ` fill="${C.board}" stroke="${C.boardEdge}" stroke-width="2"/>`;
+  s += `<rect x="${BX + BW / 2 - 22}" y="${BY - 13}" width="44" height="17" rx="4"`
+    + ` fill="#9AA5AD" stroke="#6B7680" stroke-width="1.5"/>`;
+  s += text(BX + BW / 2, BY + 20, "Pico 2 W", { size: 11, color: "#C7E0C9", anchor: "middle", bold: true });
+  for (let p = 1; p <= 40; p++) {
+    const { x, y } = pin(p);
+    const used = USED.has(p);
+    s += `<rect x="${x - 7}" y="${y - 7}" width="14" height="14" rx="3"`
+      + ` fill="${used ? C.pad : C.padOff}" stroke="${C.boardEdge}" stroke-width="1"/>`;
+    s += `<circle cx="${x}" cy="${y}" r="3" fill="${used ? C.padHole : "#7E8791"}"/>`;
+    const inX = p <= 20 ? x + 13 : x - 13;
+    const anchor = p <= 20 ? "start" : "end";
+    s += text(inX, y + 4, FUNC[p], { size: 10.5, color: "#EAF4EB", bold: used, anchor });
+    if (ADC[p]) {
+      const ax = p <= 20 ? inX + 34 : inX - 34;
+      s += text(ax, y + 4, ADC[p], { size: 8, color: "#A6C4A8", anchor });
+    }
+    const numX = p <= 20 ? x - 12 : x + 12;
+    s += text(numX, y + 3.5, p, { size: 9, color: used ? C.ink : C.gray, anchor: p <= 20 ? "end" : "start", bold: used });
+  }
+  return s;
+}
+
+function drawRails() {
+  const bot = RAIL_MAXY + 16;
+  let s = wire([[RAIL_PWR, RAIL_TOP], [RAIL_PWR, bot]], W.pwr, 5);
+  s += wire([[RAIL_GND, RAIL_TOP], [RAIL_GND, bot]], W.gnd, 5);
+  s += text(RAIL_PWR, RAIL_TOP - 8, "3V3", { size: 11, color: W.pwr, anchor: "middle", bold: true });
+  s += text(RAIL_GND, RAIL_TOP - 8, "GND", { size: 11, color: W.gnd, anchor: "middle", bold: true });
+  const p36 = pin(36), p38 = pin(38);
+  s += wire([[EXIT_R, p36.y], [RAIL_PWR, p36.y]], W.pwr) + dot(EXIT_R, p36.y, W.pwr);
+  s += wire([[EXIT_R, p38.y], [RAIL_GND, p38.y]], W.gnd) + dot(EXIT_R, p38.y, W.gnd);
+  return s;
+}
+
+// rail tap: horizontal from a rail to a device pin
+function tap(railX, dp, color) {
+  if (dp.y > RAIL_MAXY) RAIL_MAXY = dp.y;
+  return wire([[railX, dp.y], [dp.x, dp.y]], color) + dot(dp.x, dp.y, color);
+}
+// signal wire from a Pico pin to one device pin, on its own lane
+function sig(pinNum, dp, color) {
+  const pp = pin(pinNum), cx = nextCH();
+  let pts, start;
+  if (pp.side === "L") {
+    const ty = nextTOP(), lx = EXIT_L - (10 + (TOPY - 70));
+    pts = [[EXIT_L, pp.y], [lx, pp.y], [lx, ty], [cx, ty], [cx, dp.y], [dp.x, dp.y]];
+    start = [EXIT_L, pp.y];
+  } else {
+    pts = [[EXIT_R, pp.y], [cx, pp.y], [cx, dp.y], [dp.x, dp.y]];
+    start = [EXIT_R, pp.y];
+  }
+  return wire(pts, color) + dot(start[0], start[1], color) + dot(dp.x, dp.y, color);
+}
+// shared I2C bus: one Pico pin feeding several device pins from one lane
+function bus(pinNum, dps, color) {
+  const pp = pin(pinNum), cx = nextCH(), ty = nextTOP();
+  const lx = EXIT_L - (10 + (TOPY - 70));
+  let s = wire([[EXIT_L, pp.y], [lx, pp.y], [lx, ty], [cx, ty]], color) + dot(EXIT_L, pp.y, color);
+  const maxY = Math.max(...dps.map(d => d.y));
+  s += wire([[cx, ty], [cx, maxY]], color);
+  for (const d of dps) s += wire([[cx, d.y], [d.x, d.y]], color) + dot(d.x, d.y, color);
+  return s;
+}
+
+function deviceBox(x, y, w, h, title, sub, accent, dashed) {
+  let s = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" fill="${dashed ? "#FFFFFF" : C.light}"`
+    + ` stroke="${accent}" stroke-width="2.5"${dashed ? ' stroke-dasharray="6 4"' : ""}/>`;
+  if (!dashed) {
+    s += `<path d="M${x} ${y + 9} q0 -9 9 -9 h${w - 18} q9 0 9 9 v17 h-${w} z" fill="${accent}"/>`;
+    s += text(x + w / 2, y + 18, title, { size: 13, color: "#FFFFFF", anchor: "middle", bold: true });
+  } else {
+    s += text(x + w / 2, y + 17, title, { size: 12, color: C.gray, anchor: "middle", bold: true });
+  }
+  if (sub) s += text(x + w / 2, y + h + 14, sub, { size: 9.5, color: C.gray, anchor: "middle", italic: true });
+  return s;
+}
+function devPin(x, y, name) {
+  return text(x + 8, y + 3.5, name, { size: 9.5, color: C.ink, bold: true });
+}
+
+// The always-present OLED, top-right. Returns its pin coordinates.
+let OLED_PINS;
+function drawOLED() {
+  const x = DEV_X, y = 116, w = DEV_W, h = 96;
+  let s = deviceBox(x, y, w, h, "OLED", "0x3C", C.blue);
+  const p = {
+    VCC: { x, y: y + 40 }, GND: { x, y: y + 56 },
+    SDA: { x, y: y + 72 }, SCL: { x, y: y + 88 },
+  };
+  s += devPin(x, p.VCC.y, "VCC") + devPin(x, p.GND.y, "GND")
+    + devPin(x, p.SDA.y, "SDA") + devPin(x, p.SCL.y, "SCL");
+  OLED_PINS = p;
+  return s;
+}
+
+// ---- diagram assembly ----------------------------------------------
+function diagram(title, sub, usedPins, bodyFn, legend) {
+  reset(usedPins);
+  const body = drawOLED() + bodyFn();   // side effects: RAIL_MAXY, OLED_PINS, lanes
+  let inner = drawPico() + drawRails() + body;
+  let head = text(40, 36, title, { size: 22, color: C.navy, bold: true })
+    + text(40, 55, sub, { size: 12.5, color: C.gray });
+  const lx = 648, ly = 128;
+  let leg = `<rect x="${lx - 14}" y="${ly - 24}" width="378" height="${30 + legend.length * 23}" rx="9"`
+    + ` fill="#FFFFFF" stroke="#E1E8EF" stroke-width="1.5"/>`;
+  leg += text(lx, ly - 6, "Connections", { size: 13, color: C.navy, bold: true });
+  legend.forEach((r, i) => {
+    const yy = ly + 18 + i * 23;
+    leg += `<line x1="${lx}" y1="${yy - 4}" x2="${lx + 26}" y2="${yy - 4}" stroke="${r.color}" stroke-width="4" stroke-linecap="round"/>`;
+    leg += text(lx + 34, yy, r.text, { size: 11.5, color: C.ink });
+  });
+  let foot = text(40, 676, "Maker Lab Kids  ·  Pico 2 W  ·  numbers outside the board are physical header pins", { size: 10.5, color: C.gray })
+    + text(1000, 676, "MakerLabKids.com", { size: 10.5, color: C.blue, anchor: "end", bold: true });
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 700" font-family="Arial, Helvetica, sans-serif">`
+    + `<rect width="1040" height="700" fill="#FFFFFF"/>` + head + inner + leg + foot + `</svg>`;
+}
+
+// I2C body: OLED + sensor share SDA/SCL and the rails
+function bodyI2C(title, addr, accent) {
+  const x = DEV_X, y = 258, w = DEV_W, h = 96;
+  let s = deviceBox(x, y, w, h, title, addr, accent);
+  const p = {
+    VCC: { x, y: y + 40 }, GND: { x, y: y + 56 },
+    SDA: { x, y: y + 72 }, SCL: { x, y: y + 88 },
+  };
+  s += devPin(x, p.VCC.y, "VCC") + devPin(x, p.GND.y, "GND")
+    + devPin(x, p.SDA.y, "SDA") + devPin(x, p.SCL.y, "SCL");
+  s += tap(RAIL_PWR, OLED_PINS.VCC, W.pwr) + tap(RAIL_GND, OLED_PINS.GND, W.gnd);
+  s += tap(RAIL_PWR, p.VCC, W.pwr) + tap(RAIL_GND, p.GND, W.gnd);
+  s += bus(1, [OLED_PINS.SDA, p.SDA], W.sda);
+  s += bus(2, [OLED_PINS.SCL, p.SCL], W.scl);
+  return s;
+}
+// OLED-only I2C plumbing (for analog projects)
+function oledI2C() {
+  let s = tap(RAIL_PWR, OLED_PINS.VCC, W.pwr) + tap(RAIL_GND, OLED_PINS.GND, W.gnd);
+  s += bus(1, [OLED_PINS.SDA], W.sda) + bus(2, [OLED_PINS.SCL], W.scl);
+  return s;
+}
+
+const projects = {};
+const i2cLegend = (pwrName) => [
+  { color: W.pwr, text: `3V3 (pin 36) -> red rail -> each ${pwrName}` },
+  { color: W.gnd, text: "GND (pin 38) -> black rail -> each GND" },
+  { color: W.sda, text: "SDA: GP0 (pin 1) -> OLED + sensor" },
+  { color: W.scl, text: "SCL: GP1 (pin 2) -> OLED + sensor" },
+];
+
+projects["distance-station"] = () => diagram(
+  "distance-station wiring", "VL53L0X laser distance + OLED on the shared I2C bus",
+  [1, 2, 36, 38], () => bodyI2C("VL53L0X", "0x29", C.orange), i2cLegend("VIN"));
+
+projects["distance-vl53l1x"] = () => diagram(
+  "distance-vl53l1x wiring", "VL53L1X long-range distance + OLED on the shared I2C bus",
+  [1, 2, 36, 38], () => bodyI2C("VL53L1X", "0x29", C.orange), i2cLegend("VIN"));
+
+projects["bme280"] = () => diagram(
+  "bme280 wiring", "BME280 temp / humidity / pressure + OLED on the shared I2C bus",
+  [1, 2, 36, 38], () => bodyI2C("BME280", "0x76 / 0x77", C.green), i2cLegend("VCC"));
+
+projects["light-lux"] = () => diagram(
+  "light-lux wiring", "BH1750 lux sensor + OLED on the shared I2C bus",
+  [1, 2, 36, 38], () => bodyI2C("BH1750", "0x23", C.yellow), i2cLegend("VCC"));
+
+function analog(title, sub, adcPin, accent, outName) {
+  const x = DEV_X, y = 262, w = DEV_W, h = 92;
+  let s = deviceBox(x, y, w, h, title, sub, accent);
+  const p = { VCC: { x, y: y + 42 }, GND: { x, y: y + 60 }, OUT: { x, y: y + 78 } };
+  s += devPin(x, p.VCC.y, "VCC") + devPin(x, p.GND.y, "GND") + devPin(x, p.OUT.y, outName);
+  s += oledI2C();
+  s += tap(RAIL_PWR, p.VCC, W.pwr) + tap(RAIL_GND, p.GND, W.gnd);
+  s += sig(adcPin, p.OUT, W.sig);
+  return s;
+}
+projects["soil-moisture"] = () => diagram(
+  "soil-moisture wiring", "Capacitive soil sensor (analog) + OLED",
+  [1, 2, 31, 36, 38], () => analog("Soil moisture", "capacitive v1.2", 31, C.orange, "AOUT"),
+  [
+    { color: W.sig, text: "AOUT -> GP26 (pin 31, ADC0)" },
+    { color: W.pwr, text: "3V3 (pin 36) -> VCC (OLED + sensor)" },
+    { color: W.gnd, text: "GND (pin 38) -> GND (OLED + sensor)" },
+    { color: W.sda, text: "OLED SDA/SCL on GP0 / GP1 (pins 1, 2)" },
+  ]);
+projects["sound"] = () => diagram(
+  "sound wiring", "MAX9814 microphone amp (analog) + OLED",
+  [1, 2, 32, 36, 38], () => analog("MAX9814", "GAIN floating = 60dB", 32, C.blue, "OUT"),
+  [
+    { color: W.sig, text: "OUT -> GP27 (pin 32, ADC1)" },
+    { color: W.pwr, text: "3V3 (pin 36) -> VDD (OLED + sensor)" },
+    { color: W.gnd, text: "GND (pin 38) -> GND (OLED + sensor)" },
+    { color: W.sda, text: "OLED SDA/SCL on GP0 / GP1 (pins 1, 2)" },
+  ]);
+
+projects["light-basic"] = () => diagram(
+  "light-basic wiring", "GL5528 photoresistor voltage divider + OLED",
+  [1, 2, 34, 36, 38], () => {
+    const x = DEV_X, y = 258, w = DEV_W, h = 104;
+    let s = deviceBox(x, y, w, h, "GL5528 + 10k", "voltage divider", C.yellow);
+    const p = { TOP: { x, y: y + 42 }, MID: { x, y: y + 64 }, BOT: { x, y: y + 86 } };
+    s += devPin(x, p.TOP.y, "LDR->3V3") + devPin(x, p.MID.y, "junction") + devPin(x, p.BOT.y, "10k->GND");
+    s += oledI2C();
+    s += tap(RAIL_PWR, p.TOP, W.pwr);
+    s += sig(34, p.MID, W.sig);
+    s += tap(RAIL_GND, p.BOT, W.gnd);
+    return s;
+  },
+  [
+    { color: W.sig, text: "divider junction -> GP28 (pin 34, ADC2)" },
+    { color: W.pwr, text: "3V3 (pin 36) -> top of the LDR" },
+    { color: W.gnd, text: "GND (pin 38) -> bottom of the 10k" },
+    { color: W.sda, text: "OLED SDA/SCL on GP0 / GP1 (pins 1, 2)" },
+  ]);
+
+projects["soil-temperature"] = () => diagram(
+  "soil-temperature wiring", "DS18B20 waterproof probe(s) + OLED  ·  needs a 4.7k pullup",
+  [1, 2, 29, 36, 38], () => {
+    const x = DEV_X, y = 262, w = DEV_W, h = 92;
+    let s = deviceBox(x, y, w, h, "DS18B20", "one or many on one wire", C.orange);
+    const p = { VCC: { x, y: y + 42 }, GND: { x, y: y + 60 }, DATA: { x, y: y + 78 } };
+    s += devPin(x, p.VCC.y, "red 3V3") + devPin(x, p.GND.y, "black GND") + devPin(x, p.DATA.y, "yellow DATA");
+    s += oledI2C();
+    s += tap(RAIL_PWR, p.VCC, W.pwr) + tap(RAIL_GND, p.GND, W.gnd);
+    s += sig(29, p.DATA, W.sig);
+    // 4.7k pullup from the DATA lane up to the 3V3 rail
+    const ry = y + 78, rx = RAIL_PWR + 40;
+    s += `<rect x="${rx}" y="${ry - 24}" width="13" height="30" rx="2" fill="#FFF" stroke="${C.ink}" stroke-width="1.3"/>`;
+    s += text(rx + 6, ry - 28, "4.7k", { size: 9, color: C.ink, anchor: "middle", bold: true });
+    s += wire([[RAIL_PWR, ry - 16], [rx + 6, ry - 16], [rx + 6, ry - 24]], W.pwr, 2.5);
+    s += wire([[rx + 6, ry + 6], [rx + 6, ry], [DEV_X - 8, ry]], W.sig, 2.5);
+    return s;
+  },
+  [
+    { color: W.sig, text: "yellow DATA -> GP22 (pin 29)" },
+    { color: W.pwr, text: "red -> 3V3 (pin 36);  4.7k: DATA -> 3V3" },
+    { color: W.gnd, text: "black -> GND (pin 38)" },
+    { color: W.sda, text: "OLED SDA/SCL on GP0 / GP1 (pins 1, 2)" },
+  ]);
+
+projects["servo"] = () => diagram(
+  "servo wiring", "SG90 servo (web-driven) + OLED  ·  optional GL5528 for follow-light",
+  [1, 2, 21, 34, 36, 38, 40], () => {
+    const x = DEV_X, y = 244, w = DEV_W, h = 92;
+    let s = deviceBox(x, y, w, h, "SG90 servo", "power from VBUS 5V", C.green);
+    const p = { SIG: { x, y: y + 42 }, PWR: { x, y: y + 60 }, GND: { x, y: y + 78 } };
+    s += devPin(x, p.SIG.y, "orange SIG") + devPin(x, p.PWR.y, "red +5V") + devPin(x, p.GND.y, "brown GND");
+    s += oledI2C();
+    s += sig(21, p.SIG, W.sig);
+    s += sig(40, p.PWR, W.vbus);   // VBUS, deliberately NOT the 3V3 rail
+    s += tap(RAIL_GND, p.GND, W.gnd);
+    // optional LDR (dashed) below
+    const ly = 378, lh = 96;
+    let d = deviceBox(x, ly, w, lh, "GL5528 (optional)", "follow-light mode", C.gray, true);
+    const q = { TOP: { x, y: ly + 44 }, MID: { x, y: ly + 66 }, BOT: { x, y: ly + 86 } };
+    d += devPin(x, q.TOP.y, "LDR->3V3") + devPin(x, q.MID.y, "junction") + devPin(x, q.BOT.y, "10k->GND");
+    d += tap(RAIL_PWR, q.TOP, W.pwr);
+    d += sig(34, q.MID, W.sig);
+    d += tap(RAIL_GND, q.BOT, W.gnd);
+    return s + d;
+  },
+  [
+    { color: W.sig, text: "orange SIG -> GP16 (pin 21, PWM)" },
+    { color: W.vbus, text: "red +5V -> VBUS (pin 40)   NOT 3V3!" },
+    { color: W.gnd, text: "brown GND -> GND (pin 38)" },
+    { color: W.sig, text: "optional LDR junction -> GP28 (pin 34)" },
+  ]);
+
+const names = Object.keys(projects);
+for (const name of names) {
+  const svg = projects[name]();
+  fs.writeFileSync(path.join(OUT, name + ".svg"), svg);
+  console.log("wrote docs/wiring/" + name + ".svg (" + svg.length + " bytes)");
+}
+console.log("done:", names.length, "diagrams");
