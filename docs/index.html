@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pico 2 W Lab Guide · Maker Lab Kids</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --blue: #2E7DBC; --green: #7CB342; --orange: #E8762C; --yellow: #E8B62C;
+    --navy: #1B3A5C; --ink: #222A35; --light: #F4F7FA; --gray: #6B7280;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink);
+         background: #FFFFFF; margin: 0; line-height: 1.5; }
+  .topbar { height: 8px; background: var(--green); }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+  header { padding: 34px 0 10px 0; display: flex; align-items: center;
+           gap: 24px; flex-wrap: wrap; }
+  header img { width: 300px; max-width: 90%; height: auto; }
+  header .headtext h1 { color: var(--navy); font-size: 34px; margin: 0 0 6px 0; }
+  header .headtext p { margin: 0; color: var(--gray); font-size: 16px; }
+  header .headtext a { color: var(--blue); font-weight: bold; text-decoration: none; }
+  header .headtext a:hover { text-decoration: underline; }
+  h2 { color: var(--navy); font-size: 26px; margin: 40px 0 6px 0; }
+  .rule { height: 4px; width: 100%; border: 0; margin: 0 0 18px 0; }
+  .rule.b { background: var(--blue); } .rule.g { background: var(--green); }
+  .rule.o { background: var(--orange); } .rule.y { background: var(--yellow); }
+  .lead { color: var(--gray); margin: 0 0 16px 0; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+           gap: 16px; }
+  .cards.wide { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  .card { background: var(--light); border-radius: 10px; padding: 16px 18px 16px 24px;
+          position: relative; box-shadow: 0 2px 8px rgba(27,58,92,0.18); }
+  .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+                  width: 6px; border-radius: 10px 0 0 10px; background: var(--blue); }
+  .card.a1::before { background: var(--blue); }
+  .card.a2::before { background: var(--green); }
+  .card.a3::before { background: var(--orange); }
+  .card.a4::before { background: var(--yellow); }
+  .card h3 { margin: 0 0 8px 0; color: var(--navy); font-size: 18px; }
+  .card p { margin: 0 0 8px 0; font-size: 14.5px; }
+  .card p:last-child { margin-bottom: 0; }
+  .tag { display: inline-block; background: var(--navy); color: #FFF; border-radius: 20px;
+         padding: 2px 10px; font-size: 11.5px; font-weight: bold; letter-spacing: 0.5px;
+         margin: 0 6px 8px 0; }
+  .tag.web { background: var(--blue); } .tag.bench { background: var(--green); }
+
+  ol.steps { margin: 0; padding-left: 22px; }
+  ol.steps li { margin-bottom: 10px; }
+  code, .files code { background: #E5EBF1; border-radius: 4px; padding: 1px 6px;
+         font-family: Consolas, Menlo, monospace; font-size: 13px; color: var(--navy); }
+  a { color: var(--blue); }
+
+  table { border-collapse: collapse; width: 100%; background: var(--light);
+          border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(27,58,92,0.18);
+          font-size: 14.5px; }
+  th { background: var(--navy); color: #FFF; text-align: left; padding: 10px 12px; }
+  td { padding: 9px 12px; border-top: 1px solid #E1E8EF; vertical-align: top; }
+  tr td:first-child { font-weight: bold; color: var(--navy); white-space: nowrap; }
+  .tablewrap { overflow-x: auto; }
+
+  .mini { width: 100%; font-size: 13px; box-shadow: none; background: #FFFFFF;
+          border: 1px solid #E1E8EF; border-radius: 6px; margin: 6px 0 8px 0; }
+  .mini th { background: #DCE6EF; color: var(--navy); padding: 5px 8px; font-size: 12px; }
+  .mini td { padding: 4px 8px; }
+  .files { font-size: 13px; color: var(--gray); }
+
+  .warn { background: #FDF3E7; border: 1px solid var(--orange); border-radius: 8px;
+          padding: 8px 12px; font-size: 13.5px; margin-top: 8px; }
+
+  .closer { background: var(--navy); color: #FFF; text-align: center;
+            padding: 44px 20px; margin-top: 50px; }
+  .closer .big { font-size: 40px; font-weight: bold; margin: 0 0 8px 0; }
+  .closer .tag2 { color: #9FC9EA; font-style: italic; font-size: 15px; }
+  footer { text-align: center; color: var(--gray); font-size: 12.5px; padding: 18px 10px 26px 10px; }
+</style>
+</head>
+<body>
+<div class="topbar"></div>
+<div class="wrap">
+
+  <header>
+    <img src="logo.png" alt="Maker Lab Kids">
+    <div class="headtext">
+      <h1>Pico 2 W Lab Guide</h1>
+      <p>MicroPython samples and sensor demos for Maker Lab Kids workshops at WHS.</p>
+      <p>Code: <a href="https://github.com/acklenx/raspberrypi">github.com/acklenx/raspberrypi</a>
+         &nbsp;·&nbsp; IDE: <a href="https://viper-ide.org">viper-ide.org</a></p>
+    </div>
+  </header>
+
+  <h2>Quickstart</h2>
+  <hr class="rule b">
+  <div class="card a1">
+    <ol class="steps">
+      <li><b>Flash MicroPython (one time per board).</b> Hold the BOOTSEL button while
+        plugging the Pico into USB. It shows up as a flash drive. Drag on the Pico 2 W
+        firmware (<code>.uf2</code>) from
+        <a href="https://micropython.org/download/RPI_PICO2_W/">micropython.org/download/RPI_PICO2_W</a>.
+        The drive disappears and the board reboots into MicroPython.</li>
+      <li><b>Open <a href="https://viper-ide.org">viper-ide.org</a></b> in Chrome or Edge.</li>
+      <li><b>Connect:</b> click the connect button (top right), pick USB, choose the Pico.</li>
+      <li><b>Upload files</b> with the file panel, run them from the terminal panel.</li>
+      <li>A file saved as <code>main.py</code> runs automatically every time the board powers up.
+        That is how a finished project ships.</li>
+    </ol>
+  </div>
+
+  <h2>Every demo is fault tolerant</h2>
+  <hr class="rule g">
+  <p class="lead">All the sensor demos follow the same house rules, so a missing part never sinks a lesson.</p>
+  <div class="cards">
+    <div class="card a1">
+      <h3>Display optional</h3>
+      <p>Demos assume the OLED is there, but run fine without it, and pick it up
+         within about 3 seconds when it gets plugged in.</p>
+    </div>
+    <div class="card a2">
+      <h3>Sensors hot-plug</h3>
+      <p>Start with no sensor, plug it in whenever: readings appear within about
+         2 seconds. No restart, no reset button.</p>
+    </div>
+    <div class="card a3">
+      <h3>Terminal logging</h3>
+      <p>A startup banner and the first readings print immediately, then a slow
+         heartbeat line every 5 seconds keeps the terminal readable.</p>
+    </div>
+    <div class="card a4">
+      <h3>Built-in web dashboard</h3>
+      <p>Web versions open a Wi-Fi network named <b>PicoLab-N</b> (N is remembered
+         per board). Dashboard at <code>http://192.168.4.1</code>, raw JSON at <code>/data</code>.</p>
+    </div>
+  </div>
+
+  <h2>The standard pin map</h2>
+  <hr class="rule o">
+  <p class="lead">Every demo and every diagram uses this wiring. Learn it once, use it all year.</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>Connection</th><th>Pico pin</th><th>Notes</th></tr>
+    <tr><td>I2C bus (shared)</td><td>SDA = GP0, SCL = GP1</td>
+        <td>One bus, many devices: OLED <code>0x3C</code>, BME280 <code>0x76/0x77</code>,
+            BH1750 <code>0x23</code>, ADS1115 <code>0x48</code></td></tr>
+    <tr><td>DS18B20 (soil temp)</td><td>GP22</td><td>One-wire data, needs a 4.7k pullup to 3V3</td></tr>
+    <tr><td>Soil moisture</td><td>GP26 (ADC0)</td><td>Capacitive sensor v1.2, analog out</td></tr>
+    <tr><td>MAX9814 sound</td><td>GP27 (ADC1)</td><td>Mic amp output, analog</td></tr>
+    <tr><td>GL5528 light</td><td>GP28 (ADC2)</td><td>Photoresistor divider with a 10k resistor</td></tr>
+    <tr><td>Servo signal</td><td>GP16</td><td>SG90 signal wire (orange)</td></tr>
+    <tr><td>Servo power</td><td>VBUS (5V)</td><td>Power servos from VBUS, never from 3V3</td></tr>
+  </table>
+  </div>
+
+  <h2>Sensor and actuator projects</h2>
+  <hr class="rule y">
+  <p class="lead">Each project comes in two flavors: <span class="tag bench">bench.py</span>
+     OLED + terminal only, no radio, and <span class="tag web">main.py + index.html</span>
+     the same demo plus the PicoLab-N access point and live dashboard.
+     Grab the project files plus the listed <code>lib/</code> files.</p>
+
+  <div class="cards wide">
+
+    <div class="card a1">
+      <h3>distance-station</h3>
+      <p>The original class build: VL53L0X laser time-of-flight sensor reads distance,
+         calibrated raw-to-mm mapping, OLED readout, live web dashboard with min/max.</p>
+      <table class="mini">
+        <tr><th>Part</th><th>Wiring</th></tr>
+        <tr><td>VL53L0X <code>0x29</code></td><td>3V3, GND, SDA GP0, SCL GP1</td></tr>
+        <tr><td>OLED <code>0x3C</code></td><td>same I2C bus</td></tr>
+      </table>
+      <p class="files">Upload: <code>main.py</code>, <code>index.html</code>,
+         <code>lib/ssd1306.py</code>, <code>lib/vl53l0x.py</code></p>
+      <p>Dashboard: big mm readout, moving bar, min/max tracking, <code>/data</code> JSON.</p>
+    </div>
+
+    <div class="card a2">
+      <h3>bme280</h3>
+      <p>Air temperature, relative humidity, and barometric pressure in one I2C part.
+         Also accepts a BMP280 (reports humidity as n/a).</p>
+      <table class="mini">
+        <tr><th>Part</th><th>Wiring</th></tr>
+        <tr><td>BME280 <code>0x76/0x77</code></td><td>3V3, GND, SDA GP0, SCL GP1</td></tr>
+      </table>
+      <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
+         <code>lib/picolab.py</code>, <code>lib/bme280.py</code>, <code>lib/ssd1306.py</code></p>
+      <p>Dashboard: three big cards, temperature, humidity, pressure.</p>
+    </div>
+
+    <div class="card a3">
+      <h3>soil-moisture</h3>
+      <p>Capacitive soil moisture sensor v1.2. Reads raw analog, converts to a percent
+         with DRY and WET constants you can calibrate in two minutes (dry in air, dip in water).</p>
+      <table class="mini">
+        <tr><th>Part</th><th>Wiring</th></tr>
+        <tr><td>Soil sensor</td><td>3V3, GND, AOUT to GP26 (ADC0)</td></tr>
+      </table>
+      <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
+         <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
+      <p>Dashboard: moisture percent, bar, and the raw value for calibrating.</p>
+    </div>
+
+    <div class="card a4">
+      <h3>soil-temperature</h3>
+      <p>DS18B20 waterproof probes, the in-ground thermometer. Several probes can share
+         one wire, and the demo reports each probe it finds.</p>
+      <table class="mini">
+        <tr><th>Part</th><th>Wiring</th></tr>
+        <tr><td>DS18B20</td><td>3V3, GND, data to GP22 + 4.7k pullup to 3V3</td></tr>
+      </table>
+      <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
+         <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
+      <p>Dashboard: one temperature card per probe, hot-plug friendly.</p>
+    </div>
+
+    <div class="card a1">
+      <h3>servo</h3>
+      <p>Finally, something MOVES. SG90 micro servo with a web slider, a sweep mode,
+         and a follow-light mode that aims the servo based on the light sensor.</p>
+      <table class="mini">
+        <tr><th>Part</th><th>Wiring</th></tr>
+        <tr><td>SG90 servo</td><td>signal (orange) GP16, power (red) VBUS 5V, GND (brown)</td></tr>
+      </table>
+      <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
+         <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
+      <p>Dashboard: angle slider and mode buttons, live from any phone on the AP.</p>
+      <div class="warn"><b>Power rule:</b> servos drink from VBUS (5V), never from 3V3.
+         Big servos (MG995) want their own supply with grounds joined.</div>
+    </div>
+
+    <div class="card a2">
+      <h3>light-basic</h3>
+      <p>GL5528 photoresistor, the classic beginner light sensor, wired as a voltage
+         divider. Cheap, cheerful, and surprisingly useful for worm-box lids.</p>
+      <table class="mini">
+        <tr><th>Part</th><th>Wiring</th></tr>
+        <tr><td>GL5528 + 10k</td><td>divider on GP28 (ADC2): LDR to 3V3, 10k to GND</td></tr>
+      </table>
+      <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
+         <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
+      <p>Dashboard: light percent and raw value, bar graph.</p>
+    </div>
+
+    <div class="card a3">
+      <h3>light-lux</h3>
+      <p>BH1750 digital lux meter, the higher-quality light option: real lux numbers
+         you can compare between rooms, boxes, and days.</p>
+      <table class="mini">
+        <tr><th>Part</th><th>Wiring</th></tr>
+        <tr><td>BH1750 <code>0x23</code></td><td>3V3, GND, SDA GP0, SCL GP1</td></tr>
+      </table>
+      <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
+         <code>lib/picolab.py</code>, <code>lib/bh1750.py</code>, <code>lib/ssd1306.py</code></p>
+      <p>Dashboard: big lux readout with a sunlight-to-darkness scale.</p>
+    </div>
+
+    <div class="card a4">
+      <h3>sound</h3>
+      <p>MAX9814 microphone amplifier with auto gain. A live level meter: clap, talk,
+         or play music and watch the level jump.</p>
+      <table class="mini">
+        <tr><th>Part</th><th>Wiring</th></tr>
+        <tr><td>MAX9814</td><td>VDD 3V3, GND, OUT to GP27 (ADC1)</td></tr>
+      </table>
+      <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
+         <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
+      <p>Dashboard: live level bar with peak hold. Try the clap test.</p>
+    </div>
+
+  </div>
+
+  <h2>Start-here examples</h2>
+  <hr class="rule b">
+  <div class="cards">
+    <div class="card a1">
+      <h3>01-hello-world</h3>
+      <p>Your first program: print to the terminal, change it, run it again.</p>
+    </div>
+    <div class="card a2">
+      <h3>02-repl</h3>
+      <p>Talk to the board live at the <code>&gt;&gt;&gt;</code> prompt, blink the LED by hand,
+         and learn <code>i2c.scan()</code>, the one-line wiring detective.</p>
+    </div>
+    <div class="card a3">
+      <h3>03-blink</h3>
+      <p>The hello world of hardware: blink the onboard LED, then an external one.</p>
+    </div>
+    <div class="card a4">
+      <h3>04-webserver</h3>
+      <p>The Pico becomes a Wi-Fi hotspot serving a webpage with a visit counter
+         and its own chip temperature. No extra hardware.</p>
+    </div>
+  </div>
+
+  <h2>Field guide: when it will not work</h2>
+  <hr class="rule g">
+  <div class="card a3">
+    <p><b>Sensor not showing up?</b> In the REPL run
+       <code>machine.I2C(0, sda=machine.Pin(0), scl=machine.Pin(1)).scan()</code>.
+       An empty list means wiring, not code. OLED answers as 60 (0x3C), BME280 as 118 (0x76).</p>
+    <p><b>Power rules:</b> red to 3V3, black to GND, always. Servos are the exception:
+       red to VBUS (5V).</p>
+    <p><b>Board not connecting to the IDE?</b> Make sure the USB cable is a data cable,
+       not a charge-only cable. They look identical. It matters.</p>
+    <p><b>Wi-Fi confusion:</b> every board runs its own PicoLab-N network. Check the OLED
+       (or the terminal banner) for which N you are, and join that one.</p>
+  </div>
+
+</div>
+
+<div class="closer">
+  <div class="big">Learn. Make. Share.</div>
+  <div class="tag2">Cultivating curiosity, critical thinking, and creative confidence.</div>
+</div>
+<footer>© 2026 Maker Lab Kids LLC · MakerLabKids.com</footer>
+</body>
+</html>

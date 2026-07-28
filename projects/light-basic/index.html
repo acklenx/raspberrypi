@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PicoLab Light (LDR)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, Segoe UI, sans-serif; text-align: center;
+         background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+  .card { background: #1e293b; padding: 20px; border-radius: 16px; max-width: 340px;
+          margin: 16px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  h3 { margin: 0; color: #94a3b8; font-weight: 600; letter-spacing: 1px; }
+  .val { font-size: 52px; font-weight: 800; margin: 6px 0 0 0; color: #facc15; }
+  .unit { font-size: 20px; color: #94a3b8; font-weight: 600; }
+  .bar-bg { background: #334155; height: 18px; border-radius: 9px; overflow: hidden; margin-top: 18px; }
+  .bar-fill { background: #facc15; height: 100%; width: 0%; transition: width 0.3s; }
+  #hint { margin-top: 12px; font-size: 15px; color: #94a3b8; }
+  #raw { margin-top: 8px; font-size: 13px; color: #64748b; }
+  #status { margin-top: 4px; font-size: 13px; color: #64748b; }
+  #status.err { color: #f87171; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h3>LIGHT LEVEL</h3>
+    <div class="val"><span id="pct">--</span> <span class="unit">%</span></div>
+    <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+    <div id="hint">&nbsp;</div>
+    <div id="raw">raw: --</div>
+  </div>
+  <div id="status">connecting...</div>
+<script>
+var misses = 0;
+function setStatus(text, bad) {
+  var s = document.getElementById('status');
+  s.textContent = text;
+  s.className = bad ? 'err' : '';
+}
+function hintFor(pct) {
+  if (pct < 15) return 'dark';
+  if (pct <= 60) return 'indoor light';
+  return 'bright';
+}
+function tick() {
+  fetch('/data', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      misses = 0;
+      if (j.ok) {
+        document.getElementById('pct').textContent = j.light_pct;
+        document.getElementById('bar').style.width = Math.min(100, j.light_pct) + '%';
+        document.getElementById('hint').textContent = hintFor(j.light_pct);
+        document.getElementById('raw').textContent = 'raw: ' + j.raw;
+        setStatus('live on ' + j.ssid, false);
+      } else {
+        document.getElementById('pct').textContent = '--';
+        document.getElementById('bar').style.width = '0%';
+        document.getElementById('hint').innerHTML = '&nbsp;';
+        document.getElementById('raw').textContent = 'raw: --';
+        setStatus('sensor unplugged... waiting (hot-plug ready)', true);
+      }
+    })
+    .catch(function () {
+      misses++;
+      if (misses > 3) setStatus('lost connection... retrying', true);
+    });
+}
+setInterval(tick, 500);
+tick();
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PicoLab Soil Temperature</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, Segoe UI, sans-serif; text-align: center;
+         background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+  .card { background: #1e293b; padding: 20px; border-radius: 16px; max-width: 340px;
+          margin: 16px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  h3 { margin: 0; color: #94a3b8; font-weight: 600; letter-spacing: 1px; }
+  .val { font-size: 60px; font-weight: 800; margin: 6px 0 0 0; color: #fb923c; }
+  .unit { font-size: 22px; color: #94a3b8; font-weight: 600; }
+  #probes { margin-top: 14px; font-size: 18px; color: #f8fafc; }
+  #probes div { padding: 3px 0; }
+  #probes span { color: #94a3b8; }
+  .count { margin-top: 10px; font-size: 13px; color: #64748b; }
+  #status { margin-top: 4px; font-size: 13px; color: #64748b; }
+  #status.err { color: #f87171; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h3>SOIL TEMPERATURE</h3>
+    <div class="val"><span id="temp">--</span> <span class="unit">&deg;C</span></div>
+    <div id="probes"></div>
+    <div class="count">probes on the wire: <span id="count">--</span></div>
+  </div>
+  <div id="status">connecting...</div>
+<script>
+var misses = 0;
+function setStatus(text, bad) {
+  var s = document.getElementById('status');
+  s.textContent = text;
+  s.className = bad ? 'err' : '';
+}
+function tick() {
+  fetch('/data', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      misses = 0;
+      if (j.ok && j.count > 0) {
+        document.getElementById('temp').textContent = j.temp_c;
+        document.getElementById('count').textContent = j.count;
+        var html = '';
+        for (var i = 0; i < j.temps_c.length; i++) {
+          html += '<div><span>probe ' + (i + 1) + ':</span> ' + j.temps_c[i] + ' &deg;C</div>';
+        }
+        document.getElementById('probes').innerHTML = html;
+        setStatus('live on ' + j.ssid, false);
+      } else {
+        document.getElementById('temp').textContent = '--';
+        document.getElementById('count').textContent = '--';
+        document.getElementById('probes').innerHTML = '';
+        setStatus('sensor unplugged... waiting (hot-plug ready)', true);
+      }
+    })
+    .catch(function () {
+      misses++;
+      if (misses > 3) setStatus('lost connection... retrying', true);
+    });
+}
+setInterval(tick, 500);
+tick();
+</script>
+</body>
+</html>

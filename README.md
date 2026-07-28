@@ -29,19 +29,41 @@ board powers up. That is how a finished project "ships."
 | `examples/02-repl` | Talk to the board live at the `>>>` prompt, scan I2C |
 | `examples/03-blink` | Control real hardware: the onboard LED |
 | `examples/04-webserver` | The Pico becomes a Wi-Fi hotspot serving its own website |
-| `lib/` | Drivers: `ssd1306.py` (OLED) and `vl53l0x.py` (laser distance sensor) |
-| `projects/distance-station` | The full class build: distance sensor + OLED + live web dashboard |
+| `lib/` | Shared code: drivers plus `picolab.py`, the fault-tolerance framework all sensor demos use |
+| `projects/` | One demo per sensor, plus the servo. See the table below |
+| `docs/` | The branded lab guide (GitHub Pages site) |
 
 Work top to bottom. Each example is one idea bigger than the last, and the
-project at the end uses all of them at once.
+projects use all of them at once.
+
+## Sensor demo projects
+
+Every project (except the original `distance-station`) comes in two
+versions: `bench.py` (OLED + terminal, no Wi-Fi) and `main.py` +
+`index.html` (adds the PicoLab-N access point with a live dashboard at
+http://192.168.4.1 and JSON at `/data`). All of them are fault tolerant:
+they run with the sensor missing, the display missing, or both, and pick
+parts up the moment they are plugged in, no restart needed.
+
+| Project | Sensor / actuator | Signal |
+| ------- | ----------------- | ------ |
+| `projects/distance-station` | VL53L0X laser distance (the original demo) | I2C `0x29` |
+| `projects/bme280` | BME280 temperature + humidity + pressure | I2C `0x76/0x77` |
+| `projects/soil-moisture` | Capacitive soil moisture v1.2 | GP26 (ADC0) |
+| `projects/soil-temperature` | DS18B20 waterproof probes (many per wire) | GP22 + 4.7k pullup |
+| `projects/servo` | SG90 servo, driven from the web dashboard | GP16 (PWM), VBUS power |
+| `projects/light-basic` | GL5528 photoresistor divider | GP28 (ADC2) |
+| `projects/light-lux` | BH1750 lux sensor | I2C `0x23` |
+| `projects/sound` | MAX9814 mic amp, sound level meter | GP27 (ADC1) |
 
 ## Installing the drivers
 
-Projects that use the OLED or the distance sensor need the files in `lib/`
-copied onto the board. Two ways:
+Projects need some of the files in `lib/` copied onto the board (each
+project's README lists exactly which). Two ways:
 
-- **Viper IDE:** upload `ssd1306.py` and `vl53l0x.py` to the board alongside
-  your `main.py`.
+- **Viper IDE:** upload the needed `lib/` files to the board alongside
+  your `main.py`. All sensor demos need `picolab.py` and `ssd1306.py`,
+  plus the sensor's own driver if it has one.
 - **mip, from the REPL** (needs the Pico joined to a Wi-Fi network that has
   internet; our classroom access points do not, so use the upload method
   in class):

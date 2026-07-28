@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PicoLab Servo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, Segoe UI, sans-serif; text-align: center;
+         background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+  .card { background: #1e293b; padding: 20px; border-radius: 16px; max-width: 340px;
+          margin: 16px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  h3 { margin: 0; color: #94a3b8; font-weight: 600; letter-spacing: 1px; }
+  .val { font-size: 52px; font-weight: 800; margin: 6px 0 0 0; color: #38bdf8; }
+  .unit { font-size: 20px; color: #94a3b8; font-weight: 600; }
+  .gauge { position: relative; width: 220px; height: 110px; margin: 18px auto 8px auto;
+           border-radius: 110px 110px 0 0; background: #334155; overflow: hidden; }
+  .arm { position: absolute; left: 108px; bottom: 0; width: 4px; height: 96px;
+         background: #38bdf8; border-radius: 2px; transform-origin: 50% 100%;
+         transform: rotate(0deg); transition: transform 0.2s linear; }
+  .hub { position: absolute; left: 98px; bottom: -12px; width: 24px; height: 24px;
+         border-radius: 50%; background: #94a3b8; }
+  input[type=range] { width: 90%; margin-top: 14px; }
+  .modes { margin-top: 14px; }
+  button { background: #334155; color: #f8fafc; border: 0; padding: 10px 14px;
+           border-radius: 8px; font-size: 14px; margin: 3px; }
+  button.active { background: #38bdf8; color: #0f172a; font-weight: 700; }
+  #light { font-size: 13px; color: #94a3b8; margin-top: 8px; }
+  #status { margin-top: 4px; font-size: 13px; color: #64748b; }
+  #status.err { color: #f87171; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h3>SERVO ANGLE</h3>
+    <div class="gauge"><div class="arm" id="arm"></div><div class="hub"></div></div>
+    <div class="val"><span id="angle">--</span> <span class="unit">&deg;</span></div>
+    <input type="range" id="slider" min="0" max="180" value="90">
+    <div class="modes">
+      <button id="btn-manual" onclick="setMode('manual')">Manual</button>
+      <button id="btn-sweep" onclick="setMode('sweep')">Sweep</button>
+      <button id="btn-auto" onclick="setMode('auto')">Follow light</button>
+    </div>
+    <div id="light"></div>
+  </div>
+  <div id="status">connecting...</div>
+<script>
+var misses = 0;
+var sendTimer = null;
+var pendingAngle = null;
+var slider = document.getElementById('slider');
+
+function setStatus(text, bad) {
+  var s = document.getElementById('status');
+  s.textContent = text;
+  s.className = bad ? 'err' : '';
+}
+function sendAngle(a) {
+  pendingAngle = a;
+  if (sendTimer) return;
+  sendTimer = setTimeout(function () {
+    sendTimer = null;
+    var a2 = pendingAngle;
+    pendingAngle = null;
+    fetch('/set?angle=' + a2).catch(function () {});
+  }, 150);
+}
+slider.addEventListener('input', function () { sendAngle(slider.value); });
+
+function setMode(m) {
+  fetch('/set?mode=' + m).catch(function () {});
+}
+function markMode(m) {
+  var names = ['manual', 'sweep', 'auto'];
+  for (var i = 0; i < names.length; i++) {
+    var b = document.getElementById('btn-' + names[i]);
+    b.className = names[i] === m ? 'active' : '';
+  }
+}
+function tick() {
+  fetch('/data', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      misses = 0;
+      document.getElementById('angle').textContent = j.angle;
+      document.getElementById('arm').style.transform =
+          'rotate(' + (j.angle - 90) + 'deg)';
+      markMode(j.mode);
+      if (j.mode === 'manual' && document.activeElement !== slider) {
+        slider.value = j.target;
+      }
+      document.getElementById('light').textContent =
+          j.light_pct === undefined ? '' : 'light: ' + j.light_pct + '%';
+      setStatus('live on ' + j.ssid, false);
+    })
+    .catch(function () {
+      misses++;
+      if (misses > 3) setStatus('lost connection... retrying', true);
+    });
+}
+setInterval(tick, 250);
+tick();
+</script>
+</body>
+</html>

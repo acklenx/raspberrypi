@@ -1,0 +1,297 @@
+# picolab.py - shared plumbing for Maker Lab Kids Pico 2 W demos.
+#
+# Every demo follows the same rules:
+#   * Nothing crashes because a part is missing or flaky.
+#   * The OLED is optional. If it is absent (or dies) the demo keeps going
+#     and quietly retries it every few seconds.
+#   * Sensors are optional AND hot-pluggable: plug one in mid-run and it
+#     starts reporting within a couple of seconds, no restart needed.
+#   * Terminal logging: a startup banner and first readings immediately,
+#     then a slow heartbeat so the terminal stays readable.
+#   * Web demos open an access point named PicoLab-<N> (N is picked once
+#     per board and remembered in node_id.txt), serve index.html at
+#     http://192.168.4.1 and JSON at /data.
+
+import json
+import random
+import socket
+import time
+from machine import I2C, Pin
+
+_i2c = None
+
+
+def i2c():
+  """The shared I2C0 bus: SDA=GP0, SCL=GP1, 400kHz."""
+  global _i2c
+  if _i2c is None:
+    _i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
+  return _i2c
+
+
+def _uptime():
+  return time.ticks_ms() // 1000
+
+
+def log(*args):
+  print("[%4ds]" % _uptime(), *args)
+
+
+def banner(title, lines=()):
+  print("\n" + "=" * 40)
+  print(title)
+  for ln in lines:
+    print("  " + ln)
+  print("=" * 40)
+
+
+class Throttle:
+  """True at most once every interval_ms. First call is True immediately."""
+
+  def __init__(self, interval_ms):
+    self.interval = interval_ms
+    self._next = time.ticks_ms()
+
+  def ready(self):
+    now = time.ticks_ms()
+    if time.ticks_diff(now, self._next) >= 0:
+      self._next = time.ticks_add(now, self.interval)
+      return True
+    return False
+
+
+class Display:
+  """SSD1306 wrapper that never raises. Retries the display every 3 s."""
+
+  def __init__(self, addr=0x3C):
+    self.addr = addr
+    self.oled = None
+    self._retry = Throttle(3000)
+    self._was_ok = False
+
+  def _connect(self):
+    try:
+      import ssd1306
+
+      o = ssd1306.SSD1306_I2C(128, 64, i2c(), addr=self.addr)
+      # Clear display RAM snow and wake charge pump
+      o.poweroff()
+      time.sleep_ms(50)
+      o.poweron()
+      time.sleep_ms(50)
+      o.fill(0)
+      o.show()
+      self.oled = o
+      if not self._was_ok:
+        log("OLED connected.")
+      self._was_ok = True
+    except Exception:
+      self.oled = None
+
+  def show(self, lines, bar=None):
+    """Draw up to 5 text rows plus an optional 0.0-1.0 bar at the bottom."""
+    if not self.oled and self._retry.ready():
+      self._connect()
+    if not self.oled:
+      return
+    try:
+      o = self.oled
+      o.fill(0)
+      for idx, text in enumerate(lines[:5]):
+        o.text(str(text)[:16], 0, idx * 11)
+      if bar is not None:
+        width = int(min(1.0, max(0.0, bar)) * 128)
+        o.rect(0, 58, 128, 6, 1)
+        o.fill_rect(0, 58, width, 6, 1)
+      o.show()
+    except Exception as e:
+      log("OLED lost:", e)
+      self.oled = None
+
+
+class Sensor:
+  """Hot-pluggable sensor wrapper.
+
+  connect() must return a device object (raise if the part is absent).
+  read(dev) must return a dict of values (raise if the part vanished).
+  poll() keeps .data fresh and never raises; .ok says if the part is alive.
+  """
+
+  def __init__(self, name, connect, read, retry_ms=2000):
+    self.name = name
+    self._connect = connect
+    self._read = read
+    self.dev = None
+    self.data = None
+    self._retry = Throttle(retry_ms)
+
+  @property
+  def ok(self):
+    return self.dev is not None
+
+  def poll(self):
+    if self.dev is None:
+      if not self._retry.ready():
+        return self.data
+      try:
+        self.dev = self._connect()
+      except Exception:
+        self.dev = None
+        return self.data
+      try:
+        self.data = self._read(self.dev)
+        log(self.name, "connected. First reading:", self.data)
+      except Exception:
+        self.data = None
+      return self.data
+    try:
+      self.data = self._read(self.dev)
+    except Exception as e:
+      log(self.name, "lost:", e)
+      self.dev = None
+      self.data = None
+    return self.data
+
+
+# ---------------------------------------------------------------------
+# Web app: access point + tiny webserver (the pattern from the ToF
+# distance station: static-ish SSID per board, minimal collisions).
+# ---------------------------------------------------------------------
+NODE_ID_FILE = "node_id.txt"
+BANNED_IDS = set(range(1, 10)).union({67, 158})
+
+HEADER_HTML = b"HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n"
+HEADER_JSON = b"HTTP/1.0 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n"
+
+
+def node_id():
+  try:
+    with open(NODE_ID_FILE, "r") as f:
+      val = int(f.read().strip())
+      if val not in BANNED_IDS:
+        return val
+  except Exception:
+    pass
+  val = random.choice(list(set(range(10, 254)) - BANNED_IDS))
+  try:
+    with open(NODE_ID_FILE, "w") as f:
+      f.write(str(val))
+  except Exception:
+    pass
+  return val
+
+
+def query_int(req, key, default=None):
+  """Pull ?key=123 out of a raw request. Returns default on any trouble."""
+  try:
+    marker = key + "="
+    text = req.decode() if isinstance(req, bytes) else req
+    start = text.index(marker) + len(marker)
+    end = start
+    while end < len(text) and (text[end].isdigit() or text[end] == "-"):
+      end += 1
+    return int(text[start:end])
+  except Exception:
+    return default
+
+
+class WebApp:
+  def __init__(self, import_network=True):
+    import network
+
+    self.ssid = "PicoLab-" + str(node_id())
+
+    self.ap = network.WLAN(network.AP_IF)
+    self.ap.active(True)
+    self.ap.ifconfig(("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.1"))
+    self.ap.config(essid=self.ssid, security=0)
+    while not self.ap.active():
+      time.sleep(0.1)
+
+    self.server = None
+    self._init_server()
+
+  def _init_server(self):
+    addr = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
+    self.server = socket.socket()
+    self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+      self.server.bind(addr)
+    except OSError as e:
+      if e.errno == 98:
+        log("Port 80 busy! Recycling Wi-Fi stack...")
+        self.ap.active(False)
+        time.sleep(0.5)
+        self.ap.active(True)
+        self.ap.ifconfig(("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.1"))
+        self.server.close()
+        self.server = socket.socket()
+        self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server.bind(addr)
+      else:
+        raise
+    self.server.listen(2)
+    self.server.settimeout(0.05)
+
+  def announce(self, title):
+    banner(title, [
+        "SSID:       " + self.ssid,
+        "Dashboard:  http://192.168.4.1",
+    ])
+
+  def poll(self, data_fn, routes=None):
+    """Serve one pending request, if any. Never raises.
+
+    data_fn() -> dict, served as JSON at /data.
+    routes: optional list of (prefix, handler); handler(req) -> dict,
+    also served as JSON. Use for actions like /set?angle=90.
+    """
+    try:
+      cl, _ = self.server.accept()
+    except OSError:
+      return
+    try:
+      cl.settimeout(0.5)
+      req = b""
+      try:
+        req = cl.recv(512)
+      except Exception:
+        pass
+
+      handled = False
+      if routes:
+        for prefix, handler in routes:
+          if prefix.encode() in req:
+            try:
+              payload = json.dumps(handler(req)).encode("utf-8")
+            except Exception as e:
+              payload = json.dumps({"error": str(e)}).encode("utf-8")
+            cl.sendall(HEADER_JSON + payload)
+            handled = True
+            break
+
+      if not handled and b"/data" in req:
+        try:
+          payload = json.dumps(data_fn()).encode("utf-8")
+        except Exception as e:
+          payload = json.dumps({"error": str(e)}).encode("utf-8")
+        cl.sendall(HEADER_JSON + payload)
+        handled = True
+
+      if not handled:
+        cl.sendall(HEADER_HTML)
+        try:
+          with open("index.html", "rb") as f:
+            while True:
+              chunk = f.read(512)
+              if not chunk:
+                break
+              cl.sendall(chunk)
+        except Exception:
+          cl.sendall(b"<h1>404: File Not Found</h1>")
+      cl.close()
+    except Exception:
+      try:
+        cl.close()
+      except Exception:
+        pass

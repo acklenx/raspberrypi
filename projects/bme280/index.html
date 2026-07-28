@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PicoLab BME280</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, Segoe UI, sans-serif; text-align: center;
+         background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+  .card { background: #1e293b; padding: 20px; border-radius: 16px; max-width: 340px;
+          margin: 16px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  h3 { margin: 0; color: #94a3b8; font-weight: 600; letter-spacing: 1px; }
+  .val { font-size: 52px; font-weight: 800; margin: 6px 0 0 0; }
+  .t { color: #fb923c; } .h { color: #38bdf8; } .p { color: #a3e635; }
+  .unit { font-size: 20px; color: #94a3b8; font-weight: 600; }
+  #status { margin-top: 4px; font-size: 13px; color: #64748b; }
+  #status.err { color: #f87171; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h3>TEMPERATURE</h3>
+    <div class="val t"><span id="temp">--</span> <span class="unit">&deg;C</span></div>
+  </div>
+  <div class="card">
+    <h3>HUMIDITY</h3>
+    <div class="val h"><span id="hum">--</span> <span class="unit">%</span></div>
+  </div>
+  <div class="card">
+    <h3>PRESSURE</h3>
+    <div class="val p"><span id="press">--</span> <span class="unit">hPa</span></div>
+  </div>
+  <div id="status">connecting...</div>
+<script>
+var misses = 0;
+function setStatus(text, bad) {
+  var s = document.getElementById('status');
+  s.textContent = text;
+  s.className = bad ? 'err' : '';
+}
+function tick() {
+  fetch('/data', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      misses = 0;
+      if (j.ok) {
+        document.getElementById('temp').textContent = j.temp_c;
+        document.getElementById('hum').textContent = j.hum_pct === null ? 'n/a' : j.hum_pct;
+        document.getElementById('press').textContent = j.press_hpa;
+        setStatus('live on ' + j.ssid, false);
+      } else {
+        document.getElementById('temp').textContent = '--';
+        document.getElementById('hum').textContent = '--';
+        document.getElementById('press').textContent = '--';
+        setStatus('sensor unplugged... waiting (hot-plug ready)', true);
+      }
+    })
+    .catch(function () {
+      misses++;
+      if (misses > 3) setStatus('lost connection... retrying', true);
+    });
+}
+setInterval(tick, 500);
+tick();
+</script>
+</body>
+</html>
