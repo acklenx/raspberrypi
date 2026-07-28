@@ -22,7 +22,7 @@ It shares the I2C bus with the OLED (and any other I2C sensors).
 
 ![light-lux wiring](../../docs/wiring/light-lux.svg)
 
-Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-light-lux). Red = 3V3, dark grey = GND (shared rails), blue = SDA, green = SCL, orange = signal, purple = VBUS 5V. Numbers outside the board are physical header pins.
+Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-light-lux). Red = 3V3, dark grey = GND (shared rails), green = SDA, white = SCL, yellow = signal, orange = VBUS 5V (alternate voltage). Numbers outside the board are physical header pins.
 
 ## Two versions
 

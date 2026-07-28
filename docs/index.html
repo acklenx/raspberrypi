@@ -93,7 +93,7 @@
       <h1>Pico 2 W Lab Guide</h1>
       <p>MicroPython samples and sensor demos for Maker Lab Kids workshops at WHS.</p>
       <p>Code: <a href="https://github.com/acklenx/raspberrypi">github.com/acklenx/raspberrypi</a>
-         &nbsp;·&nbsp; IDE: <a href="https://viper-ide.org">viper-ide.org</a></p>
+         &nbsp;·&nbsp; IDE: <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi">viper-ide.org</a></p>
     </div>
   </header>
 
@@ -321,9 +321,9 @@
   <h2>Wiring diagrams</h2>
   <hr class="rule o">
   <p class="lead">One diagram per station. <b>Red</b> is 3V3 power and <b>dark grey</b> is ground
-     (both run on shared rails beside the board), <b>blue</b> is I2C data (SDA), <b>green</b> is
-     I2C clock (SCL), <b>orange</b> is the sensor or servo signal, and <b>purple</b> is the 5V VBUS
-     line used only for servo power. The small number outside each pad is the physical header pin
+     (both run on shared rails beside the board), <b>green</b> is I2C data (SDA), <b>white</b>
+     (grey-outlined) is I2C clock (SCL), <b>yellow</b> is the sensor or servo signal, and
+     <b>orange</b> marks alternate voltages: the servo&#39;s 5V VBUS feed. The small number outside each pad is the physical header pin
      you count to on the board.</p>
   <figure class="wiring" id="wire-distance-station">
     <h3>distance-station</h3>
@@ -368,7 +368,7 @@
   <figure class="wiring" id="wire-servo">
     <h3>servo</h3>
     <img src="wiring/servo.svg" alt="servo wiring diagram" loading="lazy">
-    <figcaption>SG90 signal on GP16 (pin 21). Power comes from VBUS 5V (purple), not 3V3. Optional GL5528 enables follow-light mode.</figcaption>
+    <figcaption>SG90 signal on GP16 (pin 21). Power comes from VBUS 5V (orange), not 3V3. Optional GL5528 enables follow-light mode.</figcaption>
   </figure>
 
   <h2>Start-here examples</h2>

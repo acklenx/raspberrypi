@@ -21,10 +21,14 @@ const C = {
   board: "#1B5E20", boardEdge: "#0E3D12", pad: "#C9A227", padHole: "#5C4A00",
   padOff: "#AEB6BF",
 };
+// Class wiring convention: red 3V3, black GND, green SDA, WHITE SCL
+// (drawn with a grey casing so it shows on the page), yellow signal
+// (the one "extra" color), orange for alternate voltages (VBUS 5V).
 const W = {
-  pwr: "#C62828", gnd: "#37474F", sda: "#2E7DBC", scl: "#7CB342",
-  sig: "#E8762C", vbus: "#8E24AA",
+  pwr: "#C62828", gnd: "#37474F", sda: "#7CB342", scl: "#FFFFFF",
+  sig: "#E8B62C", vbus: "#E8762C",
 };
+const CASING = "#8B949C";  // outline under white wires
 
 const FUNC = {
   1: "GP0", 2: "GP1", 3: "GND", 4: "GP2", 5: "GP3", 6: "GP4", 7: "GP5",
@@ -70,12 +74,22 @@ function text(x, y, s, o = {}) {
     + ` fill="${color}" text-anchor="${anchor}"${bold ? ' font-weight="bold"' : ""}`
     + `${italic ? ' font-style="italic"' : ""}>${esc(s)}</text>`;
 }
+const CASED = () => [W.scl, W.sig];  // light colors that need an outline on white
 function wire(pts, color, width = 3.5) {
   const d = pts.map((p, i) => (i ? "L" : "M") + p[0] + " " + p[1]).join(" ");
-  return `<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}"`
+  let s = "";
+  if (CASED().includes(color)) {
+    s += `<path d="${d}" fill="none" stroke="${CASING}" stroke-width="${width + 2.6}"`
+      + ` stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  s += `<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}"`
     + ` stroke-linejoin="round" stroke-linecap="round"/>`;
+  return s;
 }
-function dot(x, y, color) { return `<circle cx="${x}" cy="${y}" r="4.2" fill="${color}"/>`; }
+function dot(x, y, color) {
+  const ring = CASED().includes(color) ? ` stroke="${CASING}" stroke-width="1.6"` : "";
+  return `<circle cx="${x}" cy="${y}" r="4.2" fill="${color}"${ring}/>`;
+}
 
 function drawPico() {
   let s = `<rect x="${BX}" y="${BY}" width="${BW}" height="${BH}" rx="12"`
@@ -188,6 +202,9 @@ function diagram(title, sub, usedPins, bodyFn, legend) {
   leg += text(lx, ly - 6, "Connections", { size: 13, color: C.navy, bold: true });
   legend.forEach((r, i) => {
     const yy = ly + 18 + i * 23;
+    if (CASED().includes(r.color)) {
+      leg += `<line x1="${lx}" y1="${yy - 4}" x2="${lx + 26}" y2="${yy - 4}" stroke="${CASING}" stroke-width="6.6" stroke-linecap="round"/>`;
+    }
     leg += `<line x1="${lx}" y1="${yy - 4}" x2="${lx + 26}" y2="${yy - 4}" stroke="${r.color}" stroke-width="4" stroke-linecap="round"/>`;
     leg += text(lx + 34, yy, r.text, { size: 11.5, color: C.ink });
   });
@@ -340,9 +357,9 @@ projects["servo"] = () => diagram(
     return s + d;
   },
   [
-    { color: W.sig, text: "orange SIG -> GP16 (pin 21, PWM)" },
-    { color: W.vbus, text: "red +5V -> VBUS (pin 40)   NOT 3V3!" },
-    { color: W.gnd, text: "brown GND -> GND (pin 38)" },
+    { color: W.sig, text: "SIG (servo orange lead) -> GP16 (pin 21)" },
+    { color: W.vbus, text: "+5V (servo red lead) -> VBUS (pin 40) NOT 3V3!" },
+    { color: W.gnd, text: "GND (servo brown lead) -> GND (pin 38)" },
     { color: W.sig, text: "optional LDR junction -> GP28 (pin 34)" },
   ]);
 

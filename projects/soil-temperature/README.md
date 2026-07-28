@@ -22,7 +22,7 @@ serves the whole bus no matter how many probes you add.
 
 ![soil-temperature wiring](../../docs/wiring/soil-temperature.svg)
 
-Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-soil-temperature). Red = 3V3, dark grey = GND (shared rails), blue = SDA, green = SCL, orange = signal, purple = VBUS 5V. Numbers outside the board are physical header pins.
+Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-soil-temperature). Red = 3V3, dark grey = GND (shared rails), green = SDA, white = SCL, yellow = signal, orange = VBUS 5V (alternate voltage). Numbers outside the board are physical header pins.
 
 ## Two versions
 

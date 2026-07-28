@@ -20,7 +20,7 @@ GP28 is ADC2. The LDR has no polarity; either leg can face 3V3.
 
 ![light-basic wiring](../../docs/wiring/light-basic.svg)
 
-Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-light-basic). Red = 3V3, dark grey = GND (shared rails), blue = SDA, green = SCL, orange = signal, purple = VBUS 5V. Numbers outside the board are physical header pins.
+Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-light-basic). Red = 3V3, dark grey = GND (shared rails), green = SDA, white = SCL, yellow = signal, orange = VBUS 5V (alternate voltage). Numbers outside the board are physical header pins.
 
 ## Two versions
 
