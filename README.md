@@ -48,6 +48,7 @@ parts up the moment they are plugged in, no restart needed.
 | Project | Sensor / actuator | Signal |
 | ------- | ----------------- | ------ |
 | `projects/distance-station` | VL53L0X laser distance (the original demo) | I2C `0x29` |
+| `projects/distance-vl53l1x` | VL53L1X long-range laser distance, up to 4 m | I2C `0x29` (not with a VL53L0X!) |
 | `projects/bme280` | BME280 temperature + humidity + pressure | I2C `0x76/0x77` |
 | `projects/soil-moisture` | Capacitive soil moisture v1.2 | GP26 (ADC0) |
 | `projects/soil-temperature` | DS18B20 waterproof probes (many per wire) | GP22 + 4.7k pullup |
@@ -55,6 +56,24 @@ parts up the moment they are plugged in, no restart needed.
 | `projects/light-basic` | GL5528 photoresistor divider | GP28 (ADC2) |
 | `projects/light-lux` | BH1750 lux sensor | I2C `0x23` |
 | `projects/sound` | MAX9814 mic amp, sound level meter | GP27 (ADC1) |
+
+## One-click installs from Viper IDE
+
+Every project has a `package.json`, so with your Pico connected in Viper
+IDE, one click installs the whole project: `main.py`, `index.html`, and
+`bench.py` onto the board's root, and the needed drivers into `/lib`.
+Link format:
+
+```
+https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/<name>/package.json
+```
+
+For example: [install the BME280 demo](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json)
+or [install the servo demo](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json).
+Install links for every project are on the
+[lab guide](https://acklenx.github.io/raspberrypi/). Installing just the
+drivers (no project files) is the plain repo link:
+`https://viper-ide.org/?install=github:acklenx/raspberrypi`.
 
 ## Installing the drivers
 

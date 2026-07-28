@@ -1,0 +1,31 @@
+{
+  "name": "picolab-bme280",
+  "version": "0.2.0",
+  "description": "Maker Lab Kids Pico 2 W demo: bme280 (installs project files to the board root and drivers to /lib)",
+  "urls": [
+    [
+      "fs:main.py",
+      "github:acklenx/raspberrypi/projects/bme280/main.py"
+    ],
+    [
+      "fs:index.html",
+      "github:acklenx/raspberrypi/projects/bme280/index.html"
+    ],
+    [
+      "fs:bench.py",
+      "github:acklenx/raspberrypi/projects/bme280/bench.py"
+    ],
+    [
+      "picolab.py",
+      "github:acklenx/raspberrypi/lib/picolab.py"
+    ],
+    [
+      "ssd1306.py",
+      "github:acklenx/raspberrypi/lib/ssd1306.py"
+    ],
+    [
+      "bme280.py",
+      "github:acklenx/raspberrypi/lib/bme280.py"
+    ]
+  ]
+}

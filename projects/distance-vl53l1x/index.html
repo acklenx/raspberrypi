@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PicoLab Long Range</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, Segoe UI, sans-serif; text-align: center;
+         background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+  .card { background: #1e293b; padding: 24px; border-radius: 16px; max-width: 340px;
+          margin: 16px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  h3 { margin: 0; color: #94a3b8; font-weight: 600; letter-spacing: 1px; }
+  .val { font-size: 64px; color: #38bdf8; font-weight: 800; margin: 12px 0 0 0; }
+  .unit { font-size: 22px; color: #94a3b8; }
+  .meters { font-size: 18px; color: #94a3b8; margin-top: 4px; }
+  .bar-bg { background: #334155; height: 18px; border-radius: 9px; overflow: hidden; margin-top: 18px; }
+  .bar-fill { background: #38bdf8; height: 100%; width: 0%; transition: width 0.15s linear; }
+  .scale { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-top: 4px; }
+  .row { display: flex; justify-content: space-between; margin-top: 14px;
+         font-size: 14px; color: #94a3b8; }
+  .row b { color: #f8fafc; }
+  #status { margin-top: 16px; font-size: 13px; color: #64748b; }
+  #status.err { color: #f87171; }
+  button { margin-top: 14px; background: #334155; color: #f8fafc; border: 0;
+           padding: 8px 18px; border-radius: 8px; font-size: 14px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h3>LONG-RANGE DISTANCE</h3>
+    <div class="val"><span id="mm">--</span> <span class="unit">mm</span></div>
+    <div class="meters"><span id="m">--</span> meters</div>
+    <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+    <div class="scale"><span>0</span><span>1m</span><span>2m</span><span>3m</span><span>4m</span></div>
+    <div class="row"><span>Min: <b id="min">--</b></span><span>Max: <b id="max">--</b></span></div>
+    <button onclick="resetStats()">Reset min/max</button>
+    <div id="status">connecting...</div>
+  </div>
+<script>
+var minV = null, maxV = null, misses = 0;
+function resetStats() { minV = null; maxV = null; }
+function setStatus(text, bad) {
+  var s = document.getElementById('status');
+  s.textContent = text;
+  s.className = bad ? 'err' : '';
+}
+function show(mm) {
+  var mmEl = document.getElementById('mm');
+  var mEl = document.getElementById('m');
+  var bar = document.getElementById('bar');
+  if (mm === null || mm === undefined) {
+    mmEl.textContent = '--';
+    mEl.textContent = '--';
+    bar.style.width = '0%';
+  } else {
+    mmEl.textContent = mm;
+    mEl.textContent = (mm / 1000).toFixed(2);
+    bar.style.width = Math.min(100, mm / 40) + '%';
+    if (minV === null || mm < minV) minV = mm;
+    if (maxV === null || mm > maxV) maxV = mm;
+  }
+  document.getElementById('min').textContent = minV === null ? '--' : minV;
+  document.getElementById('max').textContent = maxV === null ? '--' : maxV;
+}
+function tick() {
+  fetch('/data', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      misses = 0;
+      if (!j.ok) {
+        show(null);
+        setStatus('sensor unplugged... waiting (hot-plug ready)', true);
+      } else if (!j.valid) {
+        show(null);
+        setStatus('no target in range (0.04 - 4 m) on ' + j.ssid, false);
+      } else {
+        show(j.dist_mm);
+        setStatus('live on ' + j.ssid, false);
+      }
+    })
+    .catch(function () {
+      misses++;
+      if (misses > 3) setStatus('lost connection... retrying', true);
+    });
+}
+setInterval(tick, 250);
+tick();
+</script>
+</body>
+</html>

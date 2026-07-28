@@ -1,0 +1,78 @@
+# VL53L1X long-range distance web demo: up to ~4 meters on the OLED,
+# the terminal, and a live web dashboard.
+#
+# The Pico opens a Wi-Fi network named PicoLab-<N>. Join it and browse
+# to http://192.168.4.1 (JSON at /data).
+#
+# Fault tolerant: runs with the sensor missing, the display missing, or
+# both, and picks either up the moment it is plugged in. No restarts.
+#
+# NOTE: the VL53L1X uses I2C address 0x29, the SAME address as the
+# VL53L0X. Only one of the two can be on the bus at a time.
+#
+# On the board: main.py, index.html, lib/picolab.py, lib/vl53l1x.py,
+# lib/ssd1306.py.
+
+import gc
+
+import picolab
+
+sensor = None
+
+
+def connect():
+  from vl53l1x import VL53L1X
+  return VL53L1X(picolab.i2c())
+
+
+def read(dev):
+  mm, valid = dev.read()
+  return {
+      "dist_mm": mm if valid else None,
+      "valid": valid,
+  }
+
+
+def data_fn():
+  d = {"ok": sensor.ok, "ssid": app.ssid}
+  if sensor.data:
+    d.update(sensor.data)
+  return d
+
+
+sensor = picolab.Sensor("VL53L1X", connect, read)
+display = picolab.Display()
+app = picolab.WebApp()
+heartbeat = picolab.Throttle(5000)
+
+app.announce("VL53L1X Long-Range Station Active!")
+
+while True:
+  data = sensor.poll()
+
+  if data and data["valid"]:
+    display.show([
+        app.ssid,
+        "%4d mm" % data["dist_mm"],
+        "%5.2f m" % (data["dist_mm"] / 1000.0),
+    ], bar=min(1.0, data["dist_mm"] / 4000.0))
+  elif data:
+    display.show([
+        app.ssid,
+        "192.168.4.1",
+        "no target...",
+        "(0.04 - 4 m)",
+    ])
+  else:
+    display.show([
+        app.ssid,
+        "192.168.4.1",
+        "no sensor...",
+        "hot-plug ready",
+    ])
+
+  if heartbeat.ready():
+    picolab.log("VL53L1X" if sensor.ok else "VL53L1X (unplugged)", data)
+
+  app.poll(data_fn)
+  gc.collect()

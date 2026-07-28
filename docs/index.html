@@ -156,7 +156,10 @@
   <p class="lead">Each project comes in two flavors: <span class="tag bench">bench.py</span>
      OLED + terminal only, no radio, and <span class="tag web">main.py + index.html</span>
      the same demo plus the PicoLab-N access point and live dashboard.
-     Grab the project files plus the listed <code>lib/</code> files.</p>
+     Grab the project files plus the listed <code>lib/</code> files, or skip the
+     uploading entirely: with your Pico connected in Viper IDE, one click on a
+     project's <b>Install</b> link below puts every needed file on the board
+     (<code>main.py</code>, <code>index.html</code>, and the <code>lib/</code> drivers).</p>
 
   <div class="cards wide">
 
@@ -172,6 +175,23 @@
       <p class="files">Upload: <code>main.py</code>, <code>index.html</code>,
          <code>lib/ssd1306.py</code>, <code>lib/vl53l0x.py</code></p>
       <p>Dashboard: big mm readout, moving bar, min/max tracking, <code>/data</code> JSON.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-station/package.json">Install in Viper IDE</a></p>
+    </div>
+
+    <div class="card a2">
+      <h3>distance-vl53l1x</h3>
+      <p>The VL53L0X's long-range sibling: same time-of-flight idea, but it reads out
+         to about 4 meters. Room-scale experiments: people counters, parking sensors.
+         Reports "no target" honestly instead of junk numbers.</p>
+      <table class="mini">
+        <tr><th>Part</th><th>Wiring</th></tr>
+        <tr><td>VL53L1X <code>0x29</code></td><td>3V3, GND, SDA GP0, SCL GP1</td></tr>
+      </table>
+      <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
+         <code>lib/picolab.py</code>, <code>lib/vl53l1x.py</code>, <code>lib/ssd1306.py</code></p>
+      <p>Same I2C address as the VL53L0X: only one of the two on the bus at a time.
+         Dashboard: mm and meters, 0 to 4 m bar, min/max tracking.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-vl53l1x/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a2">
@@ -185,6 +205,7 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/bme280.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: three big cards, temperature, humidity, pressure.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a3">
@@ -198,6 +219,7 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: moisture percent, bar, and the raw value for calibrating.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-moisture/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a4">
@@ -211,6 +233,7 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: one temperature card per probe, hot-plug friendly.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-temperature/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a1">
@@ -225,7 +248,8 @@
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: angle slider and mode buttons, live from any phone on the AP.</p>
       <div class="warn"><b>Power rule:</b> servos drink from VBUS (5V), never from 3V3.
-         Big servos (MG995) want their own supply with grounds joined.</div>
+         Big servos (MG995) want their own supply with grounds joined.  <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json">Install in Viper IDE</a></p>
+    </div>
     </div>
 
     <div class="card a2">
@@ -239,6 +263,7 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: light percent and raw value, bar graph.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-basic/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a3">
@@ -252,6 +277,7 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/bh1750.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: big lux readout with a sunlight-to-darkness scale.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-lux/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a4">
@@ -265,6 +291,7 @@
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: live level bar with peak hold. Try the clap test.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/sound/package.json">Install in Viper IDE</a></p>
     </div>
 
   </div>

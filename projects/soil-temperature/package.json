@@ -1,0 +1,27 @@
+{
+  "name": "picolab-soil-temperature",
+  "version": "0.2.0",
+  "description": "Maker Lab Kids Pico 2 W demo: soil-temperature (installs project files to the board root and drivers to /lib)",
+  "urls": [
+    [
+      "fs:main.py",
+      "github:acklenx/raspberrypi/projects/soil-temperature/main.py"
+    ],
+    [
+      "fs:index.html",
+      "github:acklenx/raspberrypi/projects/soil-temperature/index.html"
+    ],
+    [
+      "fs:bench.py",
+      "github:acklenx/raspberrypi/projects/soil-temperature/bench.py"
+    ],
+    [
+      "picolab.py",
+      "github:acklenx/raspberrypi/lib/picolab.py"
+    ],
+    [
+      "ssd1306.py",
+      "github:acklenx/raspberrypi/lib/ssd1306.py"
+    ]
+  ]
+}

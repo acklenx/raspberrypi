@@ -4,6 +4,7 @@
     ["lib/ssd1306.py", "github:acklenx/raspberrypi/lib/ssd1306.py"],
     ["lib/vl53l0x.py", "github:acklenx/raspberrypi/lib/vl53l0x.py"],
     ["lib/bme280.py", "github:acklenx/raspberrypi/lib/bme280.py"],
+    ["lib/vl53l1x.py", "github:acklenx/raspberrypi/lib/vl53l1x.py"],
     ["lib/bh1750.py", "github:acklenx/raspberrypi/lib/bh1750.py"]
   ],
   "version": "0.2.0",
