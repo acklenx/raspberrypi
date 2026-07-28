@@ -1,0 +1,8 @@
+{
+  "urls": [
+    ["lib/ssd1306.py", "github:acklenx/raspberrypi/lib/ssd1306.py"],
+    ["lib/vl53l0x.py", "github:acklenx/raspberrypi/lib/vl53l0x.py"]
+  ],
+  "version": "0.1.0",
+  "description": "OLED and VL53L0X drivers for Maker Lab Kids Pico 2 W samples"
+}
