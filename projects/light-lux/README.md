@@ -9,10 +9,10 @@ under 1 lux, a classroom is 300 to 500 lux, direct sun is over 30,000.
 
 | BH1750 pin | Pico |
 | ---------- | ---- |
-| VCC | 3V3 |
-| GND | GND |
-| SDA | GP0 |
-| SCL | GP1 |
+| VCC | 3V3 (pin 36) |
+| GND | GND (any GND pin, e.g. 38) |
+| SDA | GP0 (pin 1) |
+| SCL | GP1 (pin 2) |
 | ADDR | leave unconnected (address `0x23`) |
 
 It shares the I2C bus with the OLED (and any other I2C sensors).

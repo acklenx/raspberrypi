@@ -8,10 +8,10 @@ people-counters, parking sensors, how-tall-is-it rigs.
 
 | VL53L1X pin | Pico |
 | ----------- | ---- |
-| VIN | 3V3 |
-| GND | GND |
-| SDA | GP0 |
-| SCL | GP1 |
+| VIN | 3V3 (pin 36) |
+| GND | GND (any GND pin, e.g. 38) |
+| SDA | GP0 (pin 1) |
+| SCL | GP1 (pin 2) |
 
 **Address clash warning:** the VL53L1X and VL53L0X BOTH use I2C address
 `0x29`. Only one of the two can be on the bus at a time. The driver

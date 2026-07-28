@@ -96,8 +96,9 @@
     <ol class="steps">
       <li><b>Flash MicroPython (one time per board).</b> Hold the BOOTSEL button while
         plugging the Pico into USB. It shows up as a flash drive. Drag on the Pico 2 W
-        firmware (<code>.uf2</code>) from
-        <a href="https://micropython.org/download/RPI_PICO2_W/">micropython.org/download/RPI_PICO2_W</a>.
+        firmware (<code>.uf2</code>):
+        <a href="https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2">download the exact tested build (v1.28.0)</a>
+        from this repo, or the newest from <a href="https://micropython.org/download/RPI_PICO2_W/">micropython.org</a>.
         The drive disappears and the board reboots into MicroPython.</li>
       <li><b>Open <a href="https://viper-ide.org">viper-ide.org</a></b> in Chrome or Edge.</li>
       <li><b>Connect:</b> click the connect button (top right), pick USB, choose the Pico.</li>
@@ -139,15 +140,15 @@
   <div class="tablewrap">
   <table>
     <tr><th>Connection</th><th>Pico pin</th><th>Notes</th></tr>
-    <tr><td>I2C bus (shared)</td><td>SDA = GP0, SCL = GP1</td>
+    <tr><td>I2C bus (shared)</td><td>SDA = GP0 (pin 1), SCL = GP1 (pin 2)</td>
         <td>One bus, many devices: OLED <code>0x3C</code>, BME280 <code>0x76/0x77</code>,
             BH1750 <code>0x23</code>, ADS1115 <code>0x48</code></td></tr>
-    <tr><td>DS18B20 (soil temp)</td><td>GP22</td><td>One-wire data, needs a 4.7k pullup to 3V3</td></tr>
-    <tr><td>Soil moisture</td><td>GP26 (ADC0)</td><td>Capacitive sensor v1.2, analog out</td></tr>
-    <tr><td>MAX9814 sound</td><td>GP27 (ADC1)</td><td>Mic amp output, analog</td></tr>
-    <tr><td>GL5528 light</td><td>GP28 (ADC2)</td><td>Photoresistor divider with a 10k resistor</td></tr>
-    <tr><td>Servo signal</td><td>GP16</td><td>SG90 signal wire (orange)</td></tr>
-    <tr><td>Servo power</td><td>VBUS (5V)</td><td>Power servos from VBUS, never from 3V3</td></tr>
+    <tr><td>DS18B20 (soil temp)</td><td>GP22 (pin 29)</td><td>One-wire data, needs a 4.7k pullup to 3V3</td></tr>
+    <tr><td>Soil moisture</td><td>GP26 (pin 31, ADC0)</td><td>Capacitive sensor v1.2, analog out</td></tr>
+    <tr><td>MAX9814 sound</td><td>GP27 (pin 32, ADC1)</td><td>Mic amp output, analog</td></tr>
+    <tr><td>GL5528 light</td><td>GP28 (pin 34, ADC2)</td><td>Photoresistor divider with a 10k resistor</td></tr>
+    <tr><td>Servo signal</td><td>GP16 (pin 21)</td><td>SG90 signal wire (orange)</td></tr>
+    <tr><td>Servo power</td><td>VBUS (pin 40, 5V)</td><td>Power servos from VBUS, never from 3V3</td></tr>
   </table>
   </div>
 
@@ -214,7 +215,7 @@
          with DRY and WET constants you can calibrate in two minutes (dry in air, dip in water).</p>
       <table class="mini">
         <tr><th>Part</th><th>Wiring</th></tr>
-        <tr><td>Soil sensor</td><td>3V3, GND, AOUT to GP26 (ADC0)</td></tr>
+        <tr><td>Soil sensor</td><td>3V3 (pin 36), GND, AOUT to GP26 (pin 31)</td></tr>
       </table>
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
@@ -228,7 +229,7 @@
          one wire, and the demo reports each probe it finds.</p>
       <table class="mini">
         <tr><th>Part</th><th>Wiring</th></tr>
-        <tr><td>DS18B20</td><td>3V3, GND, data to GP22 + 4.7k pullup to 3V3</td></tr>
+        <tr><td>DS18B20</td><td>3V3 (pin 36), GND, data to GP22 (pin 29) + 4.7k pullup to 3V3</td></tr>
       </table>
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
@@ -242,7 +243,7 @@
          and a follow-light mode that aims the servo based on the light sensor.</p>
       <table class="mini">
         <tr><th>Part</th><th>Wiring</th></tr>
-        <tr><td>SG90 servo</td><td>signal (orange) GP16, power (red) VBUS 5V, GND (brown)</td></tr>
+        <tr><td>SG90 servo</td><td>signal (orange) GP16 (pin 21), power (red) VBUS (pin 40, 5V), GND (brown)</td></tr>
       </table>
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
@@ -258,7 +259,7 @@
          divider. Cheap, cheerful, and surprisingly useful for worm-box lids.</p>
       <table class="mini">
         <tr><th>Part</th><th>Wiring</th></tr>
-        <tr><td>GL5528 + 10k</td><td>divider on GP28 (ADC2): LDR to 3V3, 10k to GND</td></tr>
+        <tr><td>GL5528 + 10k</td><td>divider on GP28 (pin 34): LDR to 3V3, 10k to GND</td></tr>
       </table>
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
@@ -286,7 +287,7 @@
          or play music and watch the level jump.</p>
       <table class="mini">
         <tr><th>Part</th><th>Wiring</th></tr>
-        <tr><td>MAX9814</td><td>VDD 3V3, GND, OUT to GP27 (ADC1)</td></tr>
+        <tr><td>MAX9814</td><td>VDD 3V3 (pin 36), GND, OUT to GP27 (pin 32)</td></tr>
       </table>
       <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>

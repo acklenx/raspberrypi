@@ -9,9 +9,9 @@ higher voltage on the pin.
 
 | Part | Connection |
 | ---- | ---------- |
-| LDR leg 1 | 3V3 |
-| LDR leg 2 | GP28 (and one leg of the 10k resistor) |
-| 10k resistor | GP28 to GND |
+| LDR leg 1 | 3V3 (pin 36) |
+| LDR leg 2 | GP28 (pin 34, and one leg of the 10k resistor) |
+| 10k resistor | GP28 (pin 34) to GND |
 
 GP28 is ADC2. The LDR has no polarity; either leg can face 3V3.
 

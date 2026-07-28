@@ -13,9 +13,9 @@ the demo samples the pin flat out for 25ms and reports max minus min.
 
 | MAX9814 pin | Pico |
 | ----------- | ---- |
-| VDD | 3V3 |
-| GND | GND |
-| OUT | GP27 |
+| VDD | 3V3 (pin 36) |
+| GND | GND (any GND pin, e.g. 38) |
+| OUT | GP27 (pin 32) |
 | GAIN | leave floating (60dB, fine for this demo) |
 | AR | leave floating |
 

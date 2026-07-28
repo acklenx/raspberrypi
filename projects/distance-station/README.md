@@ -8,8 +8,8 @@ own Wi-Fi network with a live web dashboard.
 
 | Part | Connection |
 | ---- | ---------- |
-| VL53L0X distance sensor | 3V3, GND, SDA to GP0, SCL to GP1 (address `0x29`) |
-| SSD1306 OLED 128x64 | 3V3, GND, SDA to GP0, SCL to GP1 (address `0x3C`) |
+| VL53L0X distance sensor | 3V3 (pin 36), GND, SDA to GP0 (pin 1), SCL to GP1 (pin 2, address `0x29`) |
+| SSD1306 OLED 128x64 | 3V3 (pin 36), GND, SDA to GP0 (pin 1), SCL to GP1 (pin 2, address `0x3C`) |
 
 Both devices share the same two I2C wires. That is the point of I2C.
 

@@ -8,9 +8,9 @@ optional photoresistor steers the horn. Sensors moving the real world.
 
 | Servo wire | Pico |
 | ---------- | ---- |
-| Orange (signal) | GP16 |
-| Red (power) | VBUS (5V) |
-| Brown (ground) | GND |
+| Orange (signal) | GP16 (pin 21) |
+| Red (power) | VBUS (pin 40, 5V) |
+| Brown (ground) | GND (any GND pin, e.g. 38) |
 
 **Power the servo from VBUS, not 3V3.** The 3V3 regulator cannot feed a
 servo motor. Always share GND between servo and Pico. An SG90 runs fine
@@ -21,8 +21,8 @@ own 5V supply with a shared ground.
 
 | Part | Connection |
 | ---- | ---------- |
-| GL5528 photoresistor | one leg to 3V3, other leg to GP28 |
-| 10k resistor | GP28 to GND |
+| GL5528 photoresistor | one leg to 3V3 (pin 36), other leg to GP28 (pin 34) |
+| 10k resistor | GP28 (pin 34) to GND |
 
 ## Two versions
 

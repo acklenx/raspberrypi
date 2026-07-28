@@ -12,9 +12,9 @@ electronics at the top are not waterproof.
 
 | Sensor pin | Pico |
 | ---------- | ---- |
-| VCC | 3V3 |
-| GND | GND |
-| AOUT | GP26 (ADC0) |
+| VCC | 3V3 (pin 36) |
+| GND | GND (any GND pin, e.g. 38) |
+| AOUT | GP26 (pin 31, ADC0) |
 
 ## Two versions
 

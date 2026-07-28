@@ -9,9 +9,9 @@ each with its own factory-burned serial number.
 
 | Probe wire | Pico |
 | ---------- | ---- |
-| Red | 3V3 |
-| Black | GND |
-| Yellow (data) | GP22 |
+| Red | 3V3 (pin 36) |
+| Black | GND (any GND pin, e.g. 38) |
+| Yellow (data) | GP22 (pin 29) |
 
 **Required:** a 4.7k ohm resistor between GP22 and 3V3 (the bus pullup).
 Without it you get no probes found or garbage CRC errors. One resistor

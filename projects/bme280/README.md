@@ -8,10 +8,10 @@ sibling; the demo reports humidity as n/a).
 
 | BME280 pin | Pico |
 | ---------- | ---- |
-| VIN / VCC | 3V3 |
-| GND | GND |
-| SDA | GP0 |
-| SCL | GP1 |
+| VIN / VCC | 3V3 (pin 36) |
+| GND | GND (any GND pin, e.g. 38) |
+| SDA | GP0 (pin 1) |
+| SCL | GP1 (pin 2) |
 
 I2C address `0x76` or `0x77` (the demo finds either automatically).
 

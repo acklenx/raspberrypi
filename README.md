@@ -9,8 +9,10 @@ that runs entirely in your browser. Nothing to install.
 
 1. **Get MicroPython on the board (one time).** Hold the BOOTSEL button while
    plugging the Pico into USB. It appears as a flash drive. Drag on the
-   Pico 2 W firmware (`.uf2`) from
-   [micropython.org/download/RPI_PICO2_W](https://micropython.org/download/RPI_PICO2_W/).
+   Pico 2 W firmware:
+   [download the exact tested build from this repo](https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2)
+   (see [`firmware/`](firmware/); newer builds live at
+   [micropython.org/download/RPI_PICO2_W](https://micropython.org/download/RPI_PICO2_W/)).
    The drive disappears and the board reboots into MicroPython.
 2. **Open [viper-ide.org](https://viper-ide.org)** in Chrome or Edge.
 3. Click the **connect** button (top right), pick **USB**, and choose the
@@ -50,12 +52,12 @@ parts up the moment they are plugged in, no restart needed.
 | `projects/distance-station` | VL53L0X laser distance (the original demo) | I2C `0x29` |
 | `projects/distance-vl53l1x` | VL53L1X long-range laser distance, up to 4 m | I2C `0x29` (not with a VL53L0X!) |
 | `projects/bme280` | BME280 temperature + humidity + pressure | I2C `0x76/0x77` |
-| `projects/soil-moisture` | Capacitive soil moisture v1.2 | GP26 (ADC0) |
-| `projects/soil-temperature` | DS18B20 waterproof probes (many per wire) | GP22 + 4.7k pullup |
-| `projects/servo` | SG90 servo, driven from the web dashboard | GP16 (PWM), VBUS power |
-| `projects/light-basic` | GL5528 photoresistor divider | GP28 (ADC2) |
+| `projects/soil-moisture` | Capacitive soil moisture v1.2 | GP26 (pin 31, ADC0) |
+| `projects/soil-temperature` | DS18B20 waterproof probes (many per wire) | GP22 (pin 29) + 4.7k pullup |
+| `projects/servo` | SG90 servo, driven from the web dashboard | GP16 (pin 21, PWM), VBUS power |
+| `projects/light-basic` | GL5528 photoresistor divider | GP28 (pin 34, ADC2) |
 | `projects/light-lux` | BH1750 lux sensor | I2C `0x23` |
-| `projects/sound` | MAX9814 mic amp, sound level meter | GP27 (ADC1) |
+| `projects/sound` | MAX9814 mic amp, sound level meter | GP27 (pin 32, ADC1) |
 
 ## One-click installs from Viper IDE
 
@@ -100,8 +102,8 @@ All I2C devices share one bus on I2C0:
 | ------ | -------- |
 | SDA | GP0 (pin 1) |
 | SCL | GP1 (pin 2) |
-| Power | 3V3 |
-| Ground | GND |
+| Power | 3V3 (pin 36) |
+| Ground | GND (any GND pin, e.g. 38) |
 
 Device addresses: OLED `0x3C`, VL53L0X distance sensor `0x29`. Check your
 wiring any time with two lines in the REPL:
