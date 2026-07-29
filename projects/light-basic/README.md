@@ -44,3 +44,7 @@ web), or `ads1115.py` (the ADS1115 version).
   "unplugged". That is a good discussion point in class.
 - Terminal shows a startup banner and first readings immediately, then a
   heartbeat line every 5 seconds.
+
+---
+
+Fresh board? Flash the [tested MicroPython build](https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2) first: hold BOOTSEL while plugging in, drop the file on the drive that appears, done. Details in [firmware/](../../firmware).

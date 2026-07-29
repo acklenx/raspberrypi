@@ -120,7 +120,7 @@
     <tr><td>0</td><td><a href="https://docs.google.com/presentation/d/1VmO9SPvXj8zbI5XZCL2dS0yMJWh22NcaxGVX-JmjQQw/edit">Intro</a></td>
         <td>Why we are here</td><td></td></tr>
     <tr><td>1</td><td><a href="https://docs.google.com/presentation/d/1RxtswPo1zEJnJrIV_41OHcRE-VmT5EBSG0QASNvSTmc/edit">Microcontrollers</a></td>
-        <td>IDE connects, firmware loads, code pushes, board runs on wall power alone</td>
+        <td>IDE connects, <a href="https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2">firmware loads</a> (BOOTSEL + drop the .uf2), code pushes, board runs on wall power alone</td>
         <td><a href="#start-here">examples 01 to 04</a></td></tr>
     <tr><td>2</td><td><a href="https://docs.google.com/presentation/d/1kIFo55Gud8giLK1EXfJmg93TvXiee9olfJTwIP6mam0/edit">Electronics &amp; Breadboarding</a></td>
         <td>Wires between parts: breadboard an OLED, light it up with code you can already push</td>
@@ -476,6 +476,10 @@
        red to VBUS (5V).</p>
     <p><b>Board not connecting to the IDE?</b> Make sure the USB cable is a data cable,
        not a charge-only cable. They look identical. It matters.</p>
+    <p><b>Fresh board, or acting haunted?</b> Re-flash the exact tested MicroPython
+       build: hold BOOTSEL while plugging in, then drop
+       <a href="https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2">the .uf2 from this repo</a>
+       onto the drive that appears.</p>
     <p><b>Wi-Fi confusion:</b> every board runs its own PicoLabN network. Check the OLED
        (or the terminal banner) for which N you are, and join that one.</p>
   </div>

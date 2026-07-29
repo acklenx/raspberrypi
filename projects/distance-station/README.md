@@ -55,3 +55,7 @@ values to real millimeters with `CALIBRATION_MAP`, a table of measured
 we used to collect those pairs with a tape measure. Recalibrate if you
 mount the sensor differently: collect a few (raw, actual) points and edit
 the table.
+
+---
+
+Fresh board? Flash the [tested MicroPython build](https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2) first: hold BOOTSEL while plugging in, drop the file on the drive that appears, done. Details in [firmware/](../../firmware).

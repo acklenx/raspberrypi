@@ -51,3 +51,7 @@ GP26 floats and reads electrical noise, so the demo happily shows
 garbage numbers. That is not a bug, it is physics. The I2C demos (like
 the BME280) can detect a missing part; analog demos cannot. If the
 numbers look random and refuse to settle, check the wiring.
+
+---
+
+Fresh board? Flash the [tested MicroPython build](https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2) first: hold BOOTSEL while plugging in, drop the file on the drive that appears, done. Details in [firmware/](../../firmware).

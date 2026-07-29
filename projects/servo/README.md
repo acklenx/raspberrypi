@@ -51,3 +51,7 @@ driver needed.
   in `/data`), and the servo starts moving the moment it is connected.
 - Terminal shows a startup banner immediately, then a heartbeat line
   every 5 seconds, plus a line for every command from the web page.
+
+---
+
+Fresh board? Flash the [tested MicroPython build](https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2) first: hold BOOTSEL while plugging in, drop the file on the drive that appears, done. Details in [firmware/](../../firmware).

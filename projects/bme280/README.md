@@ -48,3 +48,7 @@ need one of each.
   heartbeat line every 5 seconds.
 - The onboard LED never lies: if it is dark, the code is not running; if
   it is blinking, the blink pattern says exactly which part is unhappy.
+
+---
+
+Fresh board? Flash the [tested MicroPython build](https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2) first: hold BOOTSEL while plugging in, drop the file on the drive that appears, done. Details in [firmware/](../../firmware).

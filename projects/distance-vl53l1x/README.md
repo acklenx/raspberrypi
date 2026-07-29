@@ -46,3 +46,7 @@ version only), plus from `lib/`: `picolab.py`, `vl53l1x.py`, `ssd1306.py`.
   drakxtwo/vl53l1x_pico port of the ST ultra lite driver.
 - Fault tolerance is the same as every demo: sensor and display are both
   optional and hot-pluggable, no restarts needed.
+
+---
+
+Fresh board? Flash the [tested MicroPython build](https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2) first: hold BOOTSEL while plugging in, drop the file on the drive that appears, done. Details in [firmware/](../../firmware).

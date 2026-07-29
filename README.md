@@ -17,7 +17,7 @@ you just added.
 | # | Session (Google Slides) | You prove | Code | One-click install |
 | - | ----------------------- | --------- | ---- | ----------------- |
 | 0 | [Intro](https://docs.google.com/presentation/d/1VmO9SPvXj8zbI5XZCL2dS0yMJWh22NcaxGVX-JmjQQw/edit) | Why we are here | | |
-| 1 | [Microcontrollers](https://docs.google.com/presentation/d/1RxtswPo1zEJnJrIV_41OHcRE-VmT5EBSG0QASNvSTmc/edit) | IDE connects, firmware loads, code pushes, board runs on wall power alone | [`01-hello-world`](examples/01-hello-world) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/01-hello-world/package.json) |
+| 1 | [Microcontrollers](https://docs.google.com/presentation/d/1RxtswPo1zEJnJrIV_41OHcRE-VmT5EBSG0QASNvSTmc/edit) | IDE connects, [firmware loads](https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2) (BOOTSEL + drop the .uf2), code pushes, board runs on wall power alone | [`01-hello-world`](examples/01-hello-world) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/01-hello-world/package.json) |
 | | | | [`02-repl`](examples/02-repl) | (live typing, nothing to install) |
 | | | | [`03-blink`](examples/03-blink) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/03-blink/package.json) |
 | | | | [`04-webserver`](examples/04-webserver) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/04-webserver/package.json) |
