@@ -1,0 +1,15 @@
+{
+  "name": "picolab-example-display",
+  "version": "0.1.0",
+  "description": "Maker Lab Kids Pico example: first breadboard circuit, an OLED on I2C (installs main.py to the board root and the driver to /lib)",
+  "urls": [
+    [
+      "fs:main.py",
+      "github:acklenx/raspberrypi/examples/05-display/main.py"
+    ],
+    [
+      "ssd1306.py",
+      "github:acklenx/raspberrypi/lib/ssd1306.py"
+    ]
+  ]
+}

@@ -8,6 +8,8 @@
 #     starts reporting within a couple of seconds, no restart needed.
 #   * Terminal logging: a startup banner and first readings immediately,
 #     then a slow heartbeat so the terminal stays readable.
+#   * The onboard LED is a truth light (StatusLight): if code is running
+#     the light is active, and blink codes say which part is unhappy.
 #   * Web demos open an access point named PicoLab-<N> (N is picked once
 #     per board and remembered in node_id.txt), serve index.html at
 #     http://192.168.4.1 and JSON at /data.
@@ -58,6 +60,76 @@ class Throttle:
       self._next = time.ticks_add(now, self.interval)
       return True
     return False
+
+
+class StatusLight:
+  """The onboard LED as a truth light. Poll it; it never blocks.
+
+  If code is running, the light is doing something. If a part is in
+  trouble, the light says so. Two modes:
+
+    set_ok(bool)    Simplest demos: solid ON means working, OFF means not.
+    set_slots(list) POST blinks: one blink per entry, in a fixed order,
+                    then a pause, then repeat. Short blink = that part is
+                    OK. Long blink = that part is in trouble. So with five
+                    probes, ". . . _ ." means probe 4 has a problem. No
+                    blinking at all means the code is not running.
+
+  Call poll() every trip through the main loop (50 ms or faster keeps the
+  blinks crisp). Changes from set_slots() take effect at the next cycle.
+  """
+
+  SHORT_MS = 100
+  LONG_MS = 600
+  GAP_MS = 250
+  PAUSE_MS = 1400
+
+  def __init__(self):
+    try:
+      self.led = Pin("LED", Pin.OUT)
+      self.led.off()
+    except Exception:
+      self.led = None
+    self._solid = None
+    self._slots = [True]
+    self._cycle = None
+    self._i = 0
+    self._lit = False
+    self._until = time.ticks_ms()
+
+  def set_ok(self, ok):
+    self._solid = bool(ok)
+
+  def set_slots(self, slots):
+    self._solid = None
+    self._slots = [bool(s) for s in slots] or [False]
+
+  def poll(self):
+    if not self.led:
+      return
+    if self._solid is not None:
+      self.led.value(1 if self._solid else 0)
+      return
+    now = time.ticks_ms()
+    if time.ticks_diff(now, self._until) < 0:
+      return
+    if self._lit:
+      self.led.off()
+      self._lit = False
+      self._i += 1
+      if self._cycle is None or self._i >= len(self._cycle):
+        self._cycle = None
+        self._until = time.ticks_add(now, self.PAUSE_MS)
+      else:
+        self._until = time.ticks_add(now, self.GAP_MS)
+    else:
+      if self._cycle is None:
+        self._cycle = self._slots[:]
+        self._i = 0
+      self.led.on()
+      self._lit = True
+      self._until = time.ticks_add(
+          now, self.SHORT_MS if self._cycle[self._i] else self.LONG_MS)
 
 
 class Display:

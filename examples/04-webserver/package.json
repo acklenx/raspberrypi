@@ -1,0 +1,11 @@
+{
+  "name": "picolab-example-webserver",
+  "version": "0.1.0",
+  "description": "Maker Lab Kids Pico example: the Pico serves its own website over Wi-Fi (installs main.py to the board root)",
+  "urls": [
+    [
+      "fs:main.py",
+      "github:acklenx/raspberrypi/examples/04-webserver/main.py"
+    ]
+  ]
+}

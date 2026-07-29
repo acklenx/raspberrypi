@@ -1,0 +1,11 @@
+{
+  "name": "picolab-example-hello-world",
+  "version": "0.1.0",
+  "description": "Maker Lab Kids Pico example: hello world in the terminal (installs main.py to the board root)",
+  "urls": [
+    [
+      "fs:main.py",
+      "github:acklenx/raspberrypi/examples/01-hello-world/main.py"
+    ]
+  ]
+}

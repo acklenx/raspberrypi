@@ -1,0 +1,11 @@
+{
+  "name": "picolab-example-blink",
+  "version": "0.1.0",
+  "description": "Maker Lab Kids Pico example: blink the onboard LED (installs main.py to the board root)",
+  "urls": [
+    [
+      "fs:main.py",
+      "github:acklenx/raspberrypi/examples/03-blink/main.py"
+    ]
+  ]
+}

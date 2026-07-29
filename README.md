@@ -5,6 +5,26 @@ MicroPython samples for the Raspberry Pi Pico 2 W, used in
 written to run from [Viper IDE](https://viper-ide.org), a MicroPython IDE
 that runs entirely in your browser. Nothing to install.
 
+## The workshop, in order
+
+The order is the point. Every session proves one new layer works before
+the next layer stacks on top of it. By the time you touch a sensor, the
+IDE, the firmware, the code push, the standalone boot, the breadboard,
+and your solder joints have each already been tested on their own. When
+something fails (and something always fails), you know it is the thing
+you just added.
+
+| # | Session (Google Slides) | You prove | Code | One-click install |
+| - | ----------------------- | --------- | ---- | ----------------- |
+| 0 | [Intro](https://docs.google.com/presentation/d/1VmO9SPvXj8zbI5XZCL2dS0yMJWh22NcaxGVX-JmjQQw/edit) | Why we are here | | |
+| 1 | [Microcontrollers](https://docs.google.com/presentation/d/1RxtswPo1zEJnJrIV_41OHcRE-VmT5EBSG0QASNvSTmc/edit) | IDE connects, firmware loads, code pushes, board runs on wall power alone | [`01-hello-world`](examples/01-hello-world) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/01-hello-world/package.json) |
+| | | | [`02-repl`](examples/02-repl) | (live typing, nothing to install) |
+| | | | [`03-blink`](examples/03-blink) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/03-blink/package.json) |
+| | | | [`04-webserver`](examples/04-webserver) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/04-webserver/package.json) |
+| 2 | [Electronics & Breadboarding](https://docs.google.com/presentation/d/1kIFo55Gud8giLK1EXfJmg93TvXiee9olfJTwIP6mam0/edit) | Wires between parts: breadboard an OLED, light it up with code you already know how to push | [`05-display`](examples/05-display) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/05-display/package.json) |
+| 3 | [Soldering](https://docs.google.com/presentation/d/11ljAAl6ed294Y0mCDvBkVQ-DEHRQteocGM60CHtX8OA/edit) | Your joints carry signal: solder headers, then re-run `05-display` through them | (re-use `05-display`) | |
+| 4 | [Sensors](https://docs.google.com/presentation/d/1UwEEIvA_2MJz9nRdW57ctLzZHtoa2Pqetn40p2y5BvY/edit) | Real measurements on a bus you trust | [all projects below](#sensor-demo-projects) | per-project links below |
+
 ## Quickstart
 
 1. **Get MicroPython on the board (one time).** Hold the BOOTSEL button while
@@ -23,6 +43,23 @@ that runs entirely in your browser. Nothing to install.
 A file saved to the board as `main.py` runs automatically every time the
 board powers up. That is how a finished project "ships."
 
+## Use the light
+
+Every demo drives the onboard LED as a **truth light**, so you never have
+to guess whether the code is running or whether 3V3 is shorted to ground.
+
+- **Simplest demos** (`hello.py` tier): solid ON means it is working,
+  OFF means it is not. That is the whole story.
+- **Framework demos** (everything built on `picolab.py`): POST blink
+  codes. One blink per part, in a fixed order, then a pause, then repeat.
+  Short blink = that part is OK. Long blink = that part is in trouble.
+  With five probes, `. . . _ .` means probe 4 has a problem. Fix the
+  loose wire and it goes back to `. . . . .`. Add a sixth probe and the
+  pattern grows to six blinks.
+- **No light at all** means the code is not running. Always.
+
+The pattern lives in `picolab.StatusLight`; every project wires it in.
+
 ## What's here
 
 | Folder | What it teaches |
@@ -31,6 +68,7 @@ board powers up. That is how a finished project "ships."
 | `examples/02-repl` | Talk to the board live at the `>>>` prompt, scan I2C |
 | `examples/03-blink` | Control real hardware: the onboard LED |
 | `examples/04-webserver` | The Pico becomes a Wi-Fi hotspot serving its own website |
+| `examples/05-display` | First breadboard circuit: an OLED on the I2C bus |
 | `lib/` | Shared code: drivers plus `picolab.py`, the fault-tolerance framework all sensor demos use |
 | `projects/` | One demo per sensor, plus the servo. See the table below |
 | `docs/` | The branded lab guide (GitHub Pages site) |
@@ -40,39 +78,39 @@ projects use all of them at once.
 
 ## Sensor demo projects
 
-Every project (except the original `distance-station`) comes in two
-versions: `bench.py` (OLED + terminal, no Wi-Fi) and `main.py` +
+Every project (except the original `distance-station`) comes in at least
+two versions: `bench.py` (OLED + terminal, no Wi-Fi) and `main.py` +
 `index.html` (adds the PicoLab-N access point with a live dashboard at
 http://192.168.4.1 and JSON at `/data`). All of them are fault tolerant:
 they run with the sensor missing, the display missing, or both, and pick
-parts up the moment they are plugged in, no restart needed.
+parts up the moment they are plugged in, no restart needed. And every one
+of them uses the truth light.
 
-| Project | Sensor / actuator | Signal |
-| ------- | ----------------- | ------ |
-| `projects/distance-station` | VL53L0X laser distance (the original demo) | I2C `0x29` |
-| `projects/distance-vl53l1x` | VL53L1X long-range laser distance, up to 4 m | I2C `0x29` (not with a VL53L0X!) |
-| `projects/bme280` | BME280 temperature + humidity + pressure | I2C `0x76/0x77` |
-| `projects/soil-moisture` | Capacitive soil moisture v1.2 | GP26 (pin 31, ADC0) |
-| `projects/soil-temperature` | DS18B20 waterproof probes (many per wire) | GP22 (pin 29) + 4.7k pullup |
-| `projects/servo` | SG90 servo, driven from the web dashboard | GP16 (pin 21, PWM), VBUS power |
-| `projects/light-basic` | GL5528 photoresistor divider | GP28 (pin 34, ADC2) |
-| `projects/light-lux` | BH1750 lux sensor | I2C `0x23` |
-| `projects/sound` | MAX9814 mic amp, sound level meter | GP27 (pin 32, ADC1) |
+| Project | Sensor / actuator | Signal | Wiring | One-click install |
+| ------- | ----------------- | ------ | ------ | ----------------- |
+| [`bme280`](projects/bme280) | BME280 temperature + humidity + pressure, in four tiers up to two hot-swappable sensors at once | I2C `0x76/0x77` | [diagram](docs/wiring/bme280.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json) |
+| [`soil-temperature`](projects/soil-temperature) | DS18B20 waterproof probes (many per wire) | GP22 (pin 29) + 4.7k pullup | [diagram](docs/wiring/soil-temperature.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-temperature/package.json) |
+| [`soil-moisture`](projects/soil-moisture) | Capacitive soil moisture v1.2 | GP26 (pin 31, ADC0) | [diagram](docs/wiring/soil-moisture.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-moisture/package.json) |
+| [`light-basic`](projects/light-basic) | GL5528 photoresistor divider | GP28 (pin 34, ADC2) | [diagram](docs/wiring/light-basic.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-basic/package.json) |
+| [`light-lux`](projects/light-lux) | BH1750 lux sensor | I2C `0x23` | [diagram](docs/wiring/light-lux.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-lux/package.json) |
+| [`sound`](projects/sound) | MAX9814 mic amp, sound level meter | GP27 (pin 32, ADC1) | [diagram](docs/wiring/sound.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/sound/package.json) |
+| [`servo`](projects/servo) | SG90 servo, driven from the web dashboard | GP16 (pin 21, PWM), VBUS power | [diagram](docs/wiring/servo.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json) |
+| [`distance-station`](projects/distance-station) | VL53L0X laser distance (the original demo) | I2C `0x29` | [diagram](docs/wiring/distance-station.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-station/package.json) |
+| [`distance-vl53l1x`](projects/distance-vl53l1x) | VL53L1X long-range laser distance, up to 4 m | I2C `0x29` (not with a VL53L0X!) | [diagram](docs/wiring/distance-vl53l1x.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-vl53l1x/package.json) |
 
 ## One-click installs from Viper IDE
 
-Every project has a `package.json`, so with your Pico connected in Viper
-IDE, one click installs the whole project: `main.py`, `index.html`, and
-`bench.py` onto the board's root, and the needed drivers into `/lib`.
+Every example and every project has a `package.json`, so with your Pico
+connected in Viper IDE, one click installs everything it needs: the
+project files onto the board's root and the needed drivers into `/lib`.
 Link format:
 
 ```
 https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/<name>/package.json
+https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/<name>/package.json
 ```
 
-For example: [install the BME280 demo](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json)
-or [install the servo demo](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json).
-Install links for every project are on the
+Install links for every project are in the tables above and on the
 [lab guide](https://acklenx.github.io/raspberrypi/). Installing just the
 drivers (no project files) is the plain repo link:
 `https://viper-ide.org/?install=github:acklenx/raspberrypi`.

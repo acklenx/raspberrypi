@@ -1,7 +1,7 @@
 {
   "name": "picolab-bme280",
-  "version": "0.2.0",
-  "description": "Maker Lab Kids Pico 2 W demo: bme280 (installs project files to the board root and drivers to /lib)",
+  "version": "0.3.0",
+  "description": "Maker Lab Kids Pico 2 W demo: bme280 in four tiers, hello / bench / web / multi (installs project files to the board root and drivers to /lib)",
   "urls": [
     [
       "fs:main.py",
@@ -14,6 +14,14 @@
     [
       "fs:bench.py",
       "github:acklenx/raspberrypi/projects/bme280/bench.py"
+    ],
+    [
+      "fs:hello.py",
+      "github:acklenx/raspberrypi/projects/bme280/hello.py"
+    ],
+    [
+      "fs:multi.py",
+      "github:acklenx/raspberrypi/projects/bme280/multi.py"
     ],
     [
       "picolab.py",

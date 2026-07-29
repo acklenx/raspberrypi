@@ -7,6 +7,10 @@
 # Fault tolerant: runs with the sensor missing, the display missing, or
 # both, and picks either up the moment it is plugged in. No restarts.
 #
+# The onboard LED is the truth light: a short blink every cycle means the
+# sensor is happy, a long blink means it is missing or misbehaving, and
+# no blinking at all means the code is not running.
+#
 # On the board: main.py, index.html, lib/picolab.py, lib/bme280.py,
 # lib/ssd1306.py.
 
@@ -40,13 +44,21 @@ def data_fn():
 
 sensor = picolab.Sensor("BME280", connect, read)
 display = picolab.Display()
+light = picolab.StatusLight()
 app = picolab.WebApp()
+tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 
 app.announce("BME280 Station Active!")
 
 while True:
+  light.poll()
+  app.poll(data_fn)
+  if not tick.ready():
+    continue
+
   data = sensor.poll()
+  light.set_slots([sensor.ok])
 
   if data:
     hum = "no hum" if data["hum_pct"] is None else "%5.1f %%" % data["hum_pct"]
@@ -67,5 +79,4 @@ while True:
   if heartbeat.ready():
     picolab.log("BME280" if sensor.ok else "BME280 (unplugged)", data)
 
-  app.poll(data_fn)
   gc.collect()
