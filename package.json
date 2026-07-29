@@ -5,8 +5,9 @@
     ["lib/vl53l0x.py", "github:acklenx/raspberrypi/lib/vl53l0x.py"],
     ["lib/bme280.py", "github:acklenx/raspberrypi/lib/bme280.py"],
     ["lib/vl53l1x.py", "github:acklenx/raspberrypi/lib/vl53l1x.py"],
-    ["lib/bh1750.py", "github:acklenx/raspberrypi/lib/bh1750.py"]
+    ["lib/bh1750.py", "github:acklenx/raspberrypi/lib/bh1750.py"],
+    ["lib/ads1115.py", "github:acklenx/raspberrypi/lib/ads1115.py"]
   ],
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Drivers and the picolab framework for Maker Lab Kids Pico 2 W samples"
 }

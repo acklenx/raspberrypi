@@ -22,15 +22,17 @@ GP28 is ADC2. The LDR has no polarity; either leg can face 3V3.
 
 Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-light-basic). Red = 3V3, dark grey = GND (shared rails), green = SDA, white = SCL, yellow = signal, orange = VBUS 5V (alternate voltage). Numbers outside the board are physical header pins.
 
-## Two versions
+## Three versions
 
 | File | What it does |
 | ---- | ------------ |
 | `bench.py` | OLED + terminal only. No Wi-Fi. |
 | `main.py` + `index.html` | Everything above plus the PicoLab-N access point with a live dashboard at http://192.168.4.1 and JSON at `/data`. |
+| `hello_ads1115.py` | The same divider read through an ADS1115 (I2C `0x48`) instead of a Pico ADC pin: the stepping stone to the worm-bin build, where all the slow analog signals ride the ADS1115. Bonus: unlike a bare ADC pin, it can actually detect the missing chip, so the truth light means it. |
 
 Files needed on the board: the version you chose, plus `index.html` (web
-version only), plus from `lib/`: `picolab.py`, `ssd1306.py`.
+version only), plus from `lib/`: `picolab.py`, `ssd1306.py` (bench and
+web), or `ads1115.py` (the ADS1115 version).
 
 ## Fault tolerance (all demos work this way)
 

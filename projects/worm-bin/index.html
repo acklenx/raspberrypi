@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Worm Bin Command Center</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, Segoe UI, sans-serif; text-align: center;
+         background: #0f172a; color: #f8fafc; margin: 0; padding: 16px; }
+  h1 { font-size: 20px; margin: 4px 0 10px 0; color: #a3e635; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 10px; max-width: 720px; margin: 0 auto; }
+  .card { background: #1e293b; padding: 12px 8px; border-radius: 14px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  .card.wide { grid-column: 1 / -1; }
+  h3 { margin: 0; color: #94a3b8; font-weight: 600; font-size: 12px; letter-spacing: 1px; }
+  .val { font-size: 30px; font-weight: 800; margin: 4px 0 0 0; }
+  .sub { font-size: 12px; color: #94a3b8; }
+  .t { color: #fb923c; } .h { color: #38bdf8; } .m { color: #34d399; }
+  .l { color: #facc15; } .s { color: #f472b6; } .d { color: #a78bfa; }
+  .unit { font-size: 14px; color: #94a3b8; font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .chip { font-size: 11px; padding: 3px 9px; border-radius: 12px; background: #334155; }
+  .chip.ok { background: #14532d; color: #86efac; }
+  .chip.bad { background: #7f1d1d; color: #fca5a5; }
+  .probes div { font-size: 14px; padding: 2px 0; }
+  .probes .fault { color: #f87171; font-weight: 700; }
+  input[type=range] { width: 90%; }
+  button { background: #334155; color: #f8fafc; border: 0; border-radius: 10px;
+           padding: 10px 18px; font-size: 15px; font-weight: 700; }
+  button.on { background: #14532d; color: #86efac; }
+  #status { margin-top: 10px; font-size: 13px; color: #64748b; }
+  #status.err { color: #f87171; }
+</style>
+</head>
+<body>
+  <h1>WORM BIN COMMAND CENTER</h1>
+
+  <div class="grid">
+    <div class="card wide chips" id="parts"></div>
+
+    <div class="card"><h3>BIN AIR</h3>
+      <div class="val t"><span id="tin">--</span><span class="unit"> &deg;C</span></div>
+      <div class="sub"><span id="hin">--</span>% RH inside</div></div>
+    <div class="card"><h3>OUTSIDE AIR</h3>
+      <div class="val t"><span id="tout">--</span><span class="unit"> &deg;C</span></div>
+      <div class="sub"><span id="hout">--</span>% RH outside</div></div>
+
+    <div class="card"><h3>MOISTURE 1</h3>
+      <div class="val m"><span id="m1">--</span><span class="unit"> %</span></div>
+      <div class="sub"><span id="m1v">--</span> V raw</div></div>
+    <div class="card"><h3>MOISTURE 2</h3>
+      <div class="val m"><span id="m2">--</span><span class="unit"> %</span></div>
+      <div class="sub"><span id="m2v">--</span> V raw</div></div>
+
+    <div class="card"><h3>LIGHT</h3>
+      <div class="val l"><span id="lt">--</span><span class="unit"> %</span></div></div>
+    <div class="card"><h3>SOUND</h3>
+      <div class="val s"><span id="snd">--</span><span class="unit"> %</span></div></div>
+    <div class="card"><h3>DISTANCE</h3>
+      <div class="val d"><span id="dist">--</span><span class="unit"> mm</span></div></div>
+
+    <div class="card wide probes"><h3>SOIL PROBES <span id="pcount"></span></h3>
+      <div id="probes">--</div></div>
+
+    <div class="card wide"><h3>BIG SERVO <span id="bigv">90</span>&deg;</h3>
+      <input type="range" min="0" max="180" value="90" id="big"></div>
+    <div class="card wide"><h3>SMALL SERVO <span id="smallv">90</span>&deg;</h3>
+      <input type="range" min="0" max="180" value="90" id="small"></div>
+    <div class="card wide"><h3>RELAY</h3>
+      <button id="relay">OFF</button></div>
+  </div>
+
+  <div id="status">connecting...</div>
+<script>
+var misses = 0, relayOn = 0, holdoff = 0;
+function $(id) { return document.getElementById(id); }
+function put(id, v) { $(id).textContent = (v === null || v === undefined) ? '--' : v; }
+function setStatus(text, bad) {
+  $('status').textContent = text;
+  $('status').className = bad ? 'err' : '';
+}
+function send(q) {
+  holdoff = Date.now() + 1500;
+  fetch('/set?' + q, { cache: 'no-store' }).catch(function () {});
+}
+$('big').oninput = function () { $('bigv').textContent = this.value; };
+$('small').oninput = function () { $('smallv').textContent = this.value; };
+$('big').onchange = function () { send('big=' + this.value); };
+$('small').onchange = function () { send('small=' + this.value); };
+$('relay').onclick = function () { relayOn = relayOn ? 0 : 1; paintRelay(); send('relay=' + relayOn); };
+function paintRelay() {
+  $('relay').textContent = relayOn ? 'ON' : 'OFF';
+  $('relay').className = relayOn ? 'on' : '';
+}
+function tick() {
+  fetch('/data', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      misses = 0;
+      put('tin', j.in_temp_c); put('hin', j.in_hum_pct);
+      put('tout', j.out_temp_c); put('hout', j.out_hum_pct);
+      put('m1', j.moist1_pct); put('m1v', j.moist1_v);
+      put('m2', j.moist2_pct); put('m2v', j.moist2_v);
+      put('lt', j.light_pct); put('snd', j.sound_pct); put('dist', j.dist_mm);
+
+      var chips = '';
+      (j.parts || []).forEach(function (p) {
+        chips += '<span class="chip ' + (p.ok ? 'ok' : 'bad') + '">' + p.name + '</span>';
+      });
+      $('parts').innerHTML = chips;
+
+      var temps = j.probe_temps_c || [];
+      $('pcount').textContent = temps.length ? (j.probe_count + '/' + j.probes) : '';
+      var html = '';
+      for (var i = 0; i < temps.length; i++) {
+        html += temps[i] == null
+          ? '<div class="fault">probe ' + (i + 1) + ': fault! (check wiring)</div>'
+          : '<div>probe ' + (i + 1) + ': ' + temps[i] + ' &deg;C</div>';
+      }
+      $('probes').innerHTML = html || 'no probes on the wire';
+
+      if (Date.now() > holdoff) {
+        relayOn = j.relay ? 1 : 0; paintRelay();
+        $('big').value = j.big; $('bigv').textContent = j.big;
+        $('small').value = j.small; $('smallv').textContent = j.small;
+      }
+      setStatus('live on ' + j.ssid, false);
+    })
+    .catch(function () {
+      misses++;
+      if (misses > 3) setStatus('lost connection... retrying', true);
+    });
+}
+setInterval(tick, 1000);
+tick();
+</script>
+</body>
+</html>

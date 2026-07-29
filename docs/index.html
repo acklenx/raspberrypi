@@ -197,8 +197,10 @@
     <tr><td>Soil moisture</td><td>GP26 (pin 31, ADC0)</td><td>Capacitive sensor v1.2, analog out</td></tr>
     <tr><td>MAX9814 sound</td><td>GP27 (pin 32, ADC1)</td><td>Mic amp output, analog</td></tr>
     <tr><td>GL5528 light</td><td>GP28 (pin 34, ADC2)</td><td>Photoresistor divider with a 10k resistor</td></tr>
-    <tr><td>Servo signal</td><td>GP16 (pin 21)</td><td>SG90 signal wire (orange)</td></tr>
-    <tr><td>Servo power</td><td>VBUS (pin 40, 5V)</td><td>Power servos from VBUS, never from 3V3</td></tr>
+    <tr><td>Servo signal</td><td>GP16 (pin 21)</td><td>SG90 signal wire (orange); the worm-bin build puts the BIG servo (MG995) here</td></tr>
+    <tr><td>Servo 2 signal</td><td>GP17 (pin 22)</td><td>Second servo in the worm-bin build (the SG90)</td></tr>
+    <tr><td>Relay</td><td>GP15 (pin 20)</td><td>Relay module IN pin</td></tr>
+    <tr><td>Servo power</td><td>VBUS (pin 40, 5V)</td><td>Power SG90s from VBUS, never from 3V3. MG995: its own 5V supply, grounds joined</td></tr>
   </table>
   </div>
 
@@ -213,6 +215,27 @@
      (<code>main.py</code>, <code>index.html</code>, and the <code>lib/</code> drivers).</p>
 
   <div class="cards wide">
+
+    <div class="card a3">
+      <h3>worm-bin (the capstone)</h3>
+      <p>Everything at once, on ONE Pico: two BME280s (in/out), the DS18B20 probe
+         array, two soil moistures and the light divider riding an ADS1115, the mic,
+         the distance sensor, two servos, and a relay. POST codes cover every part in
+         a fixed order (probes last, so adding one grows the tail), the OLED rotates
+         status pages, and the dashboard has live cards plus servo sliders and a
+         relay button.</p>
+      <table class="mini">
+        <tr><th>Part</th><th>Where</th></tr>
+        <tr><td>BME280 x2</td><td>I2C <code>0x76</code> in, <code>0x77</code> out</td></tr>
+        <tr><td>ADS1115 <code>0x48</code></td><td>A0/A1 moisture, A2 light divider</td></tr>
+        <tr><td>DS18B20 + mic + VL53L0X</td><td>GP22, GP27, I2C <code>0x29</code></td></tr>
+        <tr><td>Servos + relay</td><td>GP16 (big), GP17 (small), GP15</td></tr>
+      </table>
+      <p class="files">Upload: <code>main.py</code>, <code>index.html</code>,
+         <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code>, <code>lib/bme280.py</code>,
+         <code>lib/ads1115.py</code>, <code>lib/vl53l0x.py</code></p>
+      <p class="files"><a href="https://github.com/acklenx/raspberrypi/tree/main/projects/worm-bin">Full wiring table</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/worm-bin/package.json">Install in Viper IDE</a></p>
+    </div>
 
     <div class="card a1">
       <h3>distance-station</h3>
@@ -326,7 +349,8 @@
     <div class="card a3">
       <h3>light-lux</h3>
       <p>BH1750 digital lux meter, the higher-quality light option: real lux numbers
-         you can compare between rooms, boxes, and days.</p>
+         you can compare between rooms, boxes, and days. The school owns one shared
+         3-pack (classroom kit); per-bin light sensing uses the GL5528 instead.</p>
       <table class="mini">
         <tr><th>Part</th><th>Wiring</th></tr>
         <tr><td>BH1750 <code>0x23</code></td><td>3V3, GND, SDA GP0, SCL GP1</td></tr>

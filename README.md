@@ -70,7 +70,7 @@ The pattern lives in `picolab.StatusLight`; every project wires it in.
 | `examples/04-webserver` | The Pico becomes a Wi-Fi hotspot serving its own website |
 | `examples/05-display` | First breadboard circuit: an OLED on the I2C bus |
 | `lib/` | Shared code: drivers plus `picolab.py`, the fault-tolerance framework all sensor demos use |
-| `projects/` | One demo per sensor, plus the servo. See the table below |
+| `projects/` | One demo per sensor, plus the servo, plus `worm-bin`, the everything-at-once capstone. See the table below |
 | `docs/` | The branded lab guide (GitHub Pages site) |
 
 Work top to bottom. Each example is one idea bigger than the last, and the
@@ -88,6 +88,7 @@ of them uses the truth light.
 
 | Project | Sensor / actuator | Signal | Wiring | One-click install |
 | ------- | ----------------- | ------ | ------ | ----------------- |
+| [`worm-bin`](projects/worm-bin) | THE CAPSTONE: 2 BME280s, DS18B20 array, 2 soil moistures + light on an ADS1115, mic, distance, 2 servos, relay, all on one Pico with POST codes and a control dashboard | see its README | [table](projects/worm-bin#the-full-wiring) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/worm-bin/package.json) |
 | [`bme280`](projects/bme280) | BME280 temperature + humidity + pressure, in four tiers up to two hot-swappable sensors at once | I2C `0x76/0x77` | [diagram](docs/wiring/bme280.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json) |
 | [`soil-temperature`](projects/soil-temperature) | DS18B20 waterproof probes (many per wire) | GP22 (pin 29) + 4.7k pullup | [diagram](docs/wiring/soil-temperature.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-temperature/package.json) |
 | [`soil-moisture`](projects/soil-moisture) | Capacitive soil moisture v1.2 | GP26 (pin 31, ADC0) | [diagram](docs/wiring/soil-moisture.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-moisture/package.json) |
