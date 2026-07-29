@@ -121,7 +121,7 @@ else:
   node_id = random.choice(list(set(range(10, 254)) - BANNED_IDS))
   save_node_id(node_id)
 
-ssid_name = "PicoLab-" + str(node_id)
+ssid_name = "PicoLab" + str(node_id)
 
 # ---------------------------------------------------------------------
 # 3. Access Point Setup

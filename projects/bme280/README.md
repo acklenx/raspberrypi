@@ -28,7 +28,7 @@ Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-bme280). Red
 | ---- | ------------ | ----------- |
 | `hello.py` | The fewest lines that prove the sensor works. Terminal only, no framework. | Solid ON while readings are good, OFF when not |
 | `bench.py` | OLED + terminal, fault tolerant, hot-pluggable. No Wi-Fi. | Short blink = OK, long blink = trouble |
-| `main.py` + `index.html` | Everything above plus the PicoLab-N access point with a live dashboard at http://192.168.4.1 and JSON at `/data`. | Same as bench |
+| `main.py` + `index.html` | Everything above plus the PicoLabN access point with a live dashboard at http://192.168.4.1 and JSON at `/data`. | Same as bench |
 | `multi.py` | TWO hot-swappable BME280s (0x76 inside the bin, 0x77 outside), both on the OLED plus the temperature difference. | POST codes: one blink per sensor in order. `. .` = both happy, `_ .` = sensor 1 unhappy |
 
 Files needed on the board: the tier you chose, plus `index.html` (web

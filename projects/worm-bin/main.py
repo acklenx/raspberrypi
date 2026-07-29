@@ -9,7 +9,7 @@
 #   Big servo GP16, small servo GP17, relay GP15
 #   OLED 0x3C, rotating status pages
 #
-# The Pico opens a Wi-Fi network named PicoLab-<N>. Join it and browse
+# The Pico opens a Wi-Fi network named PicoLab<N>. Join it and browse
 # to http://192.168.4.1 (JSON at /data, actuators at /set).
 #
 # Everything is optional and hot-pluggable. The truth light runs POST
@@ -299,7 +299,7 @@ while True:
 
   d = data_fn()
   page = (time.ticks_ms() // 3000) % 4
-  lines = [app.ssid + "  p%d/4" % (page + 1)] + page_lines(page, d)
+  lines = [app.ssid + " p%d/4" % (page + 1)] + page_lines(page, d)
   display.show(lines[:5])
 
   if heartbeat.ready():

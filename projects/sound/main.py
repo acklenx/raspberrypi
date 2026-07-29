@@ -1,7 +1,7 @@
 # MAX9814 web demo: sound level meter on the OLED, the terminal, and a
 # live web dashboard. Clap and watch the bars jump.
 #
-# The Pico opens a Wi-Fi network named PicoLab-<N>. Join it and browse
+# The Pico opens a Wi-Fi network named PicoLab<N>. Join it and browse
 # to http://192.168.4.1 (JSON at /data).
 #
 # The MAX9814 outputs audio centered around ~1.25V. Loudness is the size

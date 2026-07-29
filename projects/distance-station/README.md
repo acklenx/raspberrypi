@@ -34,7 +34,7 @@ terminal, or power cycle).
 
 ## Using it
 
-1. On boot the OLED shows the station's network name, like `PicoLab-42`.
+1. On boot the OLED shows the station's network name, like `PicoLab42`.
    Each board picks a random station number once and remembers it in
    `node_id.txt`.
 2. Join that Wi-Fi network with a phone or laptop (no password).

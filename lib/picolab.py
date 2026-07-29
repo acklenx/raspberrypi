@@ -10,7 +10,7 @@
 #     then a slow heartbeat so the terminal stays readable.
 #   * The onboard LED is a truth light (StatusLight): if code is running
 #     the light is active, and blink codes say which part is unhappy.
-#   * Web demos open an access point named PicoLab-<N> (N is picked once
+#   * Web demos open an access point named PicoLab<N> (N is picked once
 #     per board and remembered in node_id.txt), serve index.html at
 #     http://192.168.4.1 and JSON at /data.
 
@@ -271,7 +271,7 @@ class WebApp:
   def __init__(self, import_network=True):
     import network
 
-    self.ssid = "PicoLab-" + str(node_id())
+    self.ssid = "PicoLab" + str(node_id())
 
     self.ap = network.WLAN(network.AP_IF)
     self.ap.active(True)

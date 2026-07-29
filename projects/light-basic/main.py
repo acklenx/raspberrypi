@@ -1,7 +1,7 @@
 # GL5528 LDR web demo: basic light level on the OLED, the terminal, and
 # a live web dashboard.
 #
-# The Pico opens a Wi-Fi network named PicoLab-<N>. Join it and browse
+# The Pico opens a Wi-Fi network named PicoLab<N>. Join it and browse
 # to http://192.168.4.1 (JSON at /data).
 #
 # Wiring: LDR from 3V3 to GP28, 10k resistor from GP28 to GND.

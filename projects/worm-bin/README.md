@@ -41,7 +41,7 @@ disappears; the pattern only ever shows what you claim to have wired.
 
 ## Dashboard
 
-Join the PicoLab-N network, browse to http://192.168.4.1: live cards
+Join the PicoLabN network, browse to http://192.168.4.1: live cards
 for both airs, both moistures, light, sound, distance, and every probe,
 plus sliders for both servos and a relay button. JSON at `/data`,
 actuator control at `/set?big=90`, `/set?small=45`, `/set?relay=1`.

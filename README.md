@@ -80,7 +80,7 @@ projects use all of them at once.
 
 Every project (except the original `distance-station`) comes in at least
 two versions: `bench.py` (OLED + terminal, no Wi-Fi) and `main.py` +
-`index.html` (adds the PicoLab-N access point with a live dashboard at
+`index.html` (adds the PicoLabN access point with a live dashboard at
 http://192.168.4.1 and JSON at `/data`). All of them are fault tolerant:
 they run with the sensor missing, the display missing, or both, and pick
 parts up the moment they are plugged in, no restart needed. And every one

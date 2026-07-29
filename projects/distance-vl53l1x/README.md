@@ -30,7 +30,7 @@ Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-distance-vl5
 | File | What it does |
 | ---- | ------------ |
 | `bench.py` | OLED + terminal only. No Wi-Fi. |
-| `main.py` + `index.html` | Everything above plus the PicoLab-N access point with a live dashboard at http://192.168.4.1 (0 to 4 m bar, min/max) and JSON at `/data`. |
+| `main.py` + `index.html` | Everything above plus the PicoLabN access point with a live dashboard at http://192.168.4.1 (0 to 4 m bar, min/max) and JSON at `/data`. |
 
 Files needed on the board: the version you chose, plus `index.html` (web
 version only), plus from `lib/`: `picolab.py`, `vl53l1x.py`, `ssd1306.py`.

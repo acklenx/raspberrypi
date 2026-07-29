@@ -29,7 +29,7 @@ Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-soil-tempera
 | File | What it does |
 | ---- | ------------ |
 | `bench.py` | OLED + terminal only. No Wi-Fi. |
-| `main.py` + `index.html` | Everything above plus the PicoLab-N access point with a live dashboard at http://192.168.4.1 and JSON at `/data`. |
+| `main.py` + `index.html` | Everything above plus the PicoLabN access point with a live dashboard at http://192.168.4.1 and JSON at `/data`. |
 
 Files needed on the board: the version you chose, plus `index.html` (web
 version only), plus from `lib/`: `picolab.py`, `ssd1306.py`. The 1-Wire

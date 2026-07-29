@@ -36,7 +36,7 @@ Also in the [lab guide](https://acklenx.github.io/raspberrypi/#wire-servo). Red 
 | File | What it does |
 | ---- | ------------ |
 | `bench.py` | Slow automatic 0 to 180 sweep, angle on OLED + terminal. No Wi-Fi. |
-| `main.py` + `index.html` | PicoLab-N access point; dashboard at http://192.168.4.1 with a live dial, a slider, and Manual / Sweep / Follow light modes. JSON at `/data`, control at `/set?angle=N` and `/set?mode=manual|sweep|auto`. |
+| `main.py` + `index.html` | PicoLabN access point; dashboard at http://192.168.4.1 with a live dial, a slider, and Manual / Sweep / Follow light modes. JSON at `/data`, control at `/set?angle=N` and `/set?mode=manual|sweep|auto`. |
 
 Files needed on the board: the version you chose, plus `index.html` (web
 version only), plus from `lib/`: `picolab.py` and `ssd1306.py`. No sensor

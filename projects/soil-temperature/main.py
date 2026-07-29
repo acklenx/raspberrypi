@@ -1,7 +1,7 @@
 # DS18B20 soil temperature web demo: waterproof probe temps on the OLED,
 # the terminal, and a live web dashboard.
 #
-# The Pico opens a Wi-Fi network named PicoLab-<N>. Join it and browse
+# The Pico opens a Wi-Fi network named PicoLab<N>. Join it and browse
 # to http://192.168.4.1 (JSON at /data).
 #
 # Fault tolerant: runs with the probes missing, the display missing, or

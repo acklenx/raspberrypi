@@ -1,6 +1,6 @@
 # Servo web demo: move something in the real world from a web page.
 #
-# The Pico opens a Wi-Fi network named PicoLab-<N>. Join it and browse
+# The Pico opens a Wi-Fi network named PicoLab<N>. Join it and browse
 # to http://192.168.4.1: a dial, a slider, and three modes:
 #   manual = the slider commands the servo
 #   sweep  = slow automatic 0 to 180 sweep
