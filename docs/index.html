@@ -110,6 +110,30 @@
        point them at the worm bins.</p>
   </div>
 
+  <h2>The workshop, in order</h2>
+  <hr class="rule g">
+  <p class="lead">Every session proves one new layer works before the next stacks on top of it.
+     When something fails, you know it is the thing you just added.</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>#</th><th>Session slides</th><th>You prove</th><th>Code</th></tr>
+    <tr><td>0</td><td><a href="https://docs.google.com/presentation/d/1VmO9SPvXj8zbI5XZCL2dS0yMJWh22NcaxGVX-JmjQQw/edit">Intro</a></td>
+        <td>Why we are here</td><td></td></tr>
+    <tr><td>1</td><td><a href="https://docs.google.com/presentation/d/1RxtswPo1zEJnJrIV_41OHcRE-VmT5EBSG0QASNvSTmc/edit">Microcontrollers</a></td>
+        <td>IDE connects, firmware loads, code pushes, board runs on wall power alone</td>
+        <td><a href="#start-here">examples 01 to 04</a></td></tr>
+    <tr><td>2</td><td><a href="https://docs.google.com/presentation/d/1kIFo55Gud8giLK1EXfJmg93TvXiee9olfJTwIP6mam0/edit">Electronics &amp; Breadboarding</a></td>
+        <td>Wires between parts: breadboard an OLED, light it up with code you can already push</td>
+        <td><a href="#start-here">example 05-display</a></td></tr>
+    <tr><td>3</td><td><a href="https://docs.google.com/presentation/d/11ljAAl6ed294Y0mCDvBkVQ-DEHRQteocGM60CHtX8OA/edit">Soldering</a></td>
+        <td>Your joints carry signal: solder headers, re-run 05-display through them</td>
+        <td>(re-use 05-display)</td></tr>
+    <tr><td>4</td><td><a href="https://docs.google.com/presentation/d/1UwEEIvA_2MJz9nRdW57ctLzZHtoa2Pqetn40p2y5BvY/edit">Sensors</a></td>
+        <td>Real measurements on a bus you trust</td>
+        <td><a href="#projects">all the projects below</a></td></tr>
+  </table>
+  </div>
+
   <h2>Quickstart</h2>
   <hr class="rule b">
   <div class="card a1">
@@ -152,6 +176,12 @@
       <p>Web versions open a Wi-Fi network named <b>PicoLab-N</b> (N is remembered
          per board). Dashboard at <code>http://192.168.4.1</code>, raw JSON at <code>/data</code>.</p>
     </div>
+    <div class="card a1">
+      <h3>The truth light</h3>
+      <p>The onboard LED never lies: one short blink per part, in order, then a pause.
+         Long blink = that part is in trouble. Five probes reading
+         <b>. . . _ .</b> means probe 4 has a loose wire. Dark = code not running.</p>
+    </div>
   </div>
 
   <h2>The standard pin map</h2>
@@ -172,7 +202,7 @@
   </table>
   </div>
 
-  <h2>Sensor and actuator projects</h2>
+  <h2 id="projects">Sensor and actuator projects</h2>
   <hr class="rule y">
   <p class="lead">Each project comes in two flavors: <span class="tag bench">bench.py</span>
      OLED + terminal only, no radio, and <span class="tag web">main.py + index.html</span>
@@ -218,13 +248,17 @@
     <div class="card a2">
       <h3>bme280</h3>
       <p>Air temperature, relative humidity, and barometric pressure in one I2C part.
-         Also accepts a BMP280 (reports humidity as n/a).</p>
+         Also accepts a BMP280 (reports humidity as n/a). Comes in <b>four tiers</b>:
+         <code>hello.py</code> (bare minimum, solid truth light), <code>bench.py</code>,
+         <code>main.py</code> (web), and <code>multi.py</code>, TWO hot-swappable BME280s
+         (0x76 in the bin, 0x77 outside) with POST blink codes.</p>
       <table class="mini">
         <tr><th>Part</th><th>Wiring</th></tr>
         <tr><td>BME280 <code>0x76/0x77</code></td><td>3V3, GND, SDA GP0, SCL GP1</td></tr>
       </table>
-      <p class="files">Upload: <code>bench.py</code> or <code>main.py</code> + <code>index.html</code>,
-         <code>lib/picolab.py</code>, <code>lib/bme280.py</code>, <code>lib/ssd1306.py</code></p>
+      <p class="files">Upload: your tier + <code>lib/bme280.py</code>, plus
+         <code>lib/picolab.py</code> + <code>lib/ssd1306.py</code> (all tiers except hello),
+         plus <code>index.html</code> (web tier)</p>
       <p>Dashboard: three big cards, temperature, humidity, pressure.</p>
       <p class="files"><a href="#wire-bme280">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json">Install in Viper IDE</a></p>
     </div>
@@ -246,7 +280,9 @@
     <div class="card a4">
       <h3>soil-temperature</h3>
       <p>DS18B20 waterproof probes, the in-ground thermometer. Several probes can share
-         one wire, and the demo reports each probe it finds.</p>
+         one wire, and the demo reports each probe it finds. The truth light blinks one
+         slot per probe: <b>. . . _ .</b> means probe 4 is in trouble, and adding a probe
+         mid-run grows the pattern by one blink.</p>
       <table class="mini">
         <tr><th>Part</th><th>Wiring</th></tr>
         <tr><td>DS18B20</td><td>3V3 (pin 36), GND, data to GP22 (pin 29) + 4.7k pullup to 3V3</td></tr>
@@ -269,8 +305,8 @@
          <code>lib/picolab.py</code>, <code>lib/ssd1306.py</code></p>
       <p>Dashboard: angle slider and mode buttons, live from any phone on the AP.</p>
       <div class="warn"><b>Power rule:</b> servos drink from VBUS (5V), never from 3V3.
-         Big servos (MG995) want their own supply with grounds joined.  <p class="files"><a href="#wire-servo">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json">Install in Viper IDE</a></p>
-    </div>
+         Big servos (MG995) want their own supply with grounds joined.</div>
+      <p class="files"><a href="#wire-servo">Wiring diagram</a> &nbsp;·&nbsp; <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json">Install in Viper IDE</a></p>
     </div>
 
     <div class="card a2">
@@ -371,26 +407,38 @@
     <figcaption>SG90 signal on GP16 (pin 21). Power comes from VBUS 5V (orange), not 3V3. Optional GL5528 enables follow-light mode.</figcaption>
   </figure>
 
-  <h2>Start-here examples</h2>
+  <h2 id="start-here">Start-here examples</h2>
   <hr class="rule b">
+  <p class="lead">Sessions 1 and 2 live here. Work top to bottom: each one is one idea
+     bigger than the last, and each proves a layer the next one depends on.</p>
   <div class="cards">
     <div class="card a1">
       <h3>01-hello-world</h3>
       <p>Your first program: print to the terminal, change it, run it again.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/01-hello-world/package.json">Install in Viper IDE</a></p>
     </div>
     <div class="card a2">
       <h3>02-repl</h3>
       <p>Talk to the board live at the <code>&gt;&gt;&gt;</code> prompt, blink the LED by hand,
          and learn <code>i2c.scan()</code>, the one-line wiring detective.</p>
+      <p class="files">(live typing, nothing to install)</p>
     </div>
     <div class="card a3">
       <h3>03-blink</h3>
       <p>The hello world of hardware: blink the onboard LED, then an external one.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/03-blink/package.json">Install in Viper IDE</a></p>
     </div>
     <div class="card a4">
       <h3>04-webserver</h3>
       <p>The Pico becomes a Wi-Fi hotspot serving a webpage with a visit counter
          and its own chip temperature. No extra hardware.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/04-webserver/package.json">Install in Viper IDE</a></p>
+    </div>
+    <div class="card a1">
+      <h3>05-display</h3>
+      <p>Your first breadboard circuit: an OLED on the I2C bus, and the truth light
+         tells you honestly whether your four wires are right.</p>
+      <p class="files"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/05-display/package.json">Install in Viper IDE</a></p>
     </div>
   </div>
 

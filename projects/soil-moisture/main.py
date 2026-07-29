@@ -6,7 +6,9 @@
 #
 # NOTE: an analog pin cannot tell if the sensor is unplugged. With
 # nothing on GP26 the pin floats and the numbers are noise. The I2C
-# demos can detect a missing part; analog demos cannot.
+# demos can detect a missing part; analog demos cannot. So here the
+# truth light (the onboard LED, short blink every cycle) mostly proves
+# the CODE is running; no blinking at all means it is not.
 #
 # Wiring: VCC=3V3, GND=GND, AOUT=GP26 (ADC0).
 # On the board: main.py, index.html, lib/picolab.py, lib/ssd1306.py.
@@ -50,13 +52,21 @@ def data_fn():
 
 sensor = picolab.Sensor("Soil moisture", connect, read)
 display = picolab.Display()
+light = picolab.StatusLight()
 app = picolab.WebApp()
+tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 
 app.announce("Soil Moisture Station Active!")
 
 while True:
+  light.poll()
+  app.poll(data_fn)
+  if not tick.ready():
+    continue
+
   data = sensor.poll()
+  light.set_slots([sensor.ok])
 
   if data:
     display.show([
@@ -74,5 +84,4 @@ while True:
   if heartbeat.ready():
     picolab.log("Soil", data)
 
-  app.poll(data_fn)
   gc.collect()

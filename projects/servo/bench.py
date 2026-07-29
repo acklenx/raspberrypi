@@ -5,6 +5,8 @@
 # A servo gives no feedback, so this demo cannot tell if the servo is
 # actually plugged in. It just keeps commanding angles; plug the servo
 # in mid-run and it starts moving. The display stays optional too.
+# The truth light (the onboard LED, short blink every cycle) proves the
+# CODE is running; if the servo still does not move, check its wiring.
 #
 # Wiring: orange signal wire to GP16, red to VBUS (5V), brown to GND.
 # On the board: this file (as main.py or run it from the IDE),
@@ -43,9 +45,12 @@ write_angle(current)
 picolab.log("Servo sweep started at 0 degrees.")
 
 display = picolab.Display()
+light = picolab.StatusLight()
+light.set_slots([True])
 heartbeat = picolab.Throttle(5000)
 
 while True:
+  light.poll()
   if current < target:
     current = min(target, current + STEP)
   elif current > target:

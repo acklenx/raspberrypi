@@ -10,6 +10,8 @@
 # A servo gives no feedback, so this demo cannot tell if the servo is
 # actually plugged in; it keeps commanding angles and the servo starts
 # moving the moment it is connected. Display optional as always.
+# The truth light (the onboard LED, short blink every cycle) proves the
+# CODE is running; if the servo still does not move, check its wiring.
 #
 # Wiring: orange signal wire to GP16, red to VBUS (5V), brown to GND.
 # Auto mode (optional): GL5528 photoresistor from 3V3 to GP28, plus a
@@ -78,6 +80,8 @@ def data_fn():
 
 
 display = picolab.Display()
+light = picolab.StatusLight()
+light.set_slots([True])
 app = picolab.WebApp()
 heartbeat = picolab.Throttle(5000)
 motion = picolab.Throttle(50)
@@ -86,6 +90,7 @@ app.announce("Servo Station Active!")
 picolab.log("Servo ready at 90 degrees, mode:", mode)
 
 while True:
+  light.poll()
   light_pct = ldr.read_u16() / 65535 * 100
 
   if mode == "auto":

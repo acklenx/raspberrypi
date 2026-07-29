@@ -9,6 +9,9 @@
 # out for 25ms and takes max minus min.
 #
 # Wiring: VDD=3V3, GND=GND, OUT=GP27 (ADC1). GAIN floating = 60dB.
+# Note: an ADC pin cannot tell if the mic is unplugged, so here the
+# truth light (the onboard LED, short blink every cycle) mostly proves
+# the CODE is running; no blinking at all means it is not.
 #
 # On the board: main.py, index.html, lib/picolab.py, lib/ssd1306.py.
 
@@ -54,13 +57,21 @@ def data_fn():
 
 sensor = picolab.Sensor("MAX9814", connect, read)
 display = picolab.Display()
+light = picolab.StatusLight()
 app = picolab.WebApp()
+tick = picolab.Throttle(100)  # fast: keeps the level meter lively
 heartbeat = picolab.Throttle(5000)
 
 app.announce("MAX9814 Sound Station Active!")
 
 while True:
+  light.poll()
+  app.poll(data_fn)
+  if not tick.ready():
+    continue
+
   data = sensor.poll()
+  light.set_slots([sensor.ok])
 
   if data:
     display.show([
@@ -78,5 +89,4 @@ while True:
   if heartbeat.ready():
     picolab.log("MAX9814", data)
 
-  app.poll(data_fn)
   gc.collect()

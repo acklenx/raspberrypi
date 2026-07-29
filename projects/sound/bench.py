@@ -8,7 +8,9 @@
 #
 # Wiring: VDD=3V3, GND=GND, OUT=GP27 (ADC1). GAIN floating = 60dB.
 # Note: an ADC pin cannot tell if the mic is unplugged; a floating pin
-# just reads electrical noise.
+# just reads electrical noise. So here the truth light (the onboard LED,
+# short blink every cycle) mostly proves the CODE is running; no
+# blinking at all means it is not.
 #
 # On the board: this file (as main.py or run it from the IDE),
 # lib/picolab.py, lib/ssd1306.py.
@@ -53,10 +55,18 @@ def read(dev):
 
 sensor = picolab.Sensor("MAX9814", connect, read)
 display = picolab.Display()
+light = picolab.StatusLight()
+tick = picolab.Throttle(100)  # fast: keeps the level meter lively
 heartbeat = picolab.Throttle(5000)
 
 while True:
+  if not tick.ready():
+    light.poll()
+    time.sleep_ms(10)
+    continue
+
   data = sensor.poll()
+  light.set_slots([sensor.ok])
 
   if data:
     display.show([
@@ -73,5 +83,5 @@ while True:
   if heartbeat.ready():
     picolab.log("MAX9814", data)
 
-  time.sleep_ms(200)
+  light.poll()
   gc.collect()

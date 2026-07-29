@@ -3,6 +3,10 @@
 # missing, or both, and picks either up the moment it is plugged in.
 # No restarts needed.
 #
+# The onboard LED is the truth light: a short blink every cycle means the
+# sensor is happy, a long blink means it is missing or misbehaving, and
+# no blinking at all means the code is not running.
+#
 # Wiring (shared I2C bus): SDA=GP0, SCL=GP1, 3V3, GND.
 # On the board: this file (as main.py or run it from the IDE),
 # lib/picolab.py, lib/bh1750.py, lib/ssd1306.py.
@@ -30,10 +34,18 @@ def read(dev):
 
 sensor = picolab.Sensor("BH1750", connect, read)
 display = picolab.Display()
+light = picolab.StatusLight()
+tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 
 while True:
+  if not tick.ready():
+    light.poll()
+    time.sleep_ms(20)
+    continue
+
   data = sensor.poll()
+  light.set_slots([sensor.ok])
 
   if data:
     display.show([
@@ -51,5 +63,5 @@ while True:
   if heartbeat.ready():
     picolab.log("BH1750" if sensor.ok else "BH1750 (unplugged)", data)
 
-  time.sleep_ms(200)
+  light.poll()
   gc.collect()

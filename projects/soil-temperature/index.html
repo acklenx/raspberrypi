@@ -44,7 +44,8 @@ function tick() {
         document.getElementById('count').textContent = j.count;
         var html = '';
         for (var i = 0; i < j.temps_c.length; i++) {
-          html += '<div><span>probe ' + (i + 1) + ':</span> ' + j.temps_c[i] + ' &deg;C</div>';
+          var val = j.temps_c[i] == null ? 'fault! (check probe)' : j.temps_c[i] + ' &deg;C';
+          html += '<div><span>probe ' + (i + 1) + ':</span> ' + val + '</div>';
         }
         document.getElementById('probes').innerHTML = html;
         setStatus('live on ' + j.ssid, false);

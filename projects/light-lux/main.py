@@ -7,6 +7,10 @@
 # Fault tolerant: runs with the sensor missing, the display missing, or
 # both, and picks either up the moment it is plugged in. No restarts.
 #
+# The onboard LED is the truth light: a short blink every cycle means the
+# sensor is happy, a long blink means it is missing or misbehaving, and
+# no blinking at all means the code is not running.
+#
 # On the board: main.py, index.html, lib/picolab.py, lib/bh1750.py,
 # lib/ssd1306.py.
 
@@ -35,13 +39,21 @@ def data_fn():
 
 sensor = picolab.Sensor("BH1750", connect, read)
 display = picolab.Display()
+light = picolab.StatusLight()
 app = picolab.WebApp()
+tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 
 app.announce("BH1750 Lux Station Active!")
 
 while True:
+  light.poll()
+  app.poll(data_fn)
+  if not tick.ready():
+    continue
+
   data = sensor.poll()
+  light.set_slots([sensor.ok])
 
   if data:
     display.show([
@@ -59,5 +71,4 @@ while True:
   if heartbeat.ready():
     picolab.log("BH1750" if sensor.ok else "BH1750 (unplugged)", data)
 
-  app.poll(data_fn)
   gc.collect()

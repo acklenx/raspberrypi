@@ -5,7 +5,9 @@
 # Wiring: LDR from 3V3 to GP28, 10k resistor from GP28 to GND.
 # More light = lower LDR resistance = higher voltage on GP28.
 # Note: an ADC pin cannot tell if the divider is unplugged; a floating
-# pin just reads electrical noise.
+# pin just reads electrical noise. So here the truth light (the onboard
+# LED, short blink every cycle) mostly proves the CODE is running; no
+# blinking at all means it is not.
 #
 # On the board: this file (as main.py or run it from the IDE),
 # lib/picolab.py, lib/ssd1306.py.
@@ -40,10 +42,18 @@ def read(dev):
 
 sensor = picolab.Sensor("GL5528", connect, read)
 display = picolab.Display()
+light = picolab.StatusLight()
+tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 
 while True:
+  if not tick.ready():
+    light.poll()
+    time.sleep_ms(20)
+    continue
+
   data = sensor.poll()
+  light.set_slots([sensor.ok])
 
   if data:
     display.show([
@@ -60,5 +70,5 @@ while True:
   if heartbeat.ready():
     picolab.log("GL5528", data)
 
-  time.sleep_ms(200)
+  light.poll()
   gc.collect()

@@ -6,7 +6,9 @@
 #
 # Wiring: LDR from 3V3 to GP28, 10k resistor from GP28 to GND.
 # Note: an ADC pin cannot tell if the divider is unplugged; a floating
-# pin just reads electrical noise.
+# pin just reads electrical noise. So here the truth light (the onboard
+# LED, short blink every cycle) mostly proves the CODE is running; no
+# blinking at all means it is not.
 #
 # On the board: main.py, index.html, lib/picolab.py, lib/ssd1306.py.
 
@@ -42,13 +44,21 @@ def data_fn():
 
 sensor = picolab.Sensor("GL5528", connect, read)
 display = picolab.Display()
+light = picolab.StatusLight()
 app = picolab.WebApp()
+tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 
 app.announce("GL5528 Light Station Active!")
 
 while True:
+  light.poll()
+  app.poll(data_fn)
+  if not tick.ready():
+    continue
+
   data = sensor.poll()
+  light.set_slots([sensor.ok])
 
   if data:
     display.show([
@@ -66,5 +76,4 @@ while True:
   if heartbeat.ready():
     picolab.log("GL5528", data)
 
-  app.poll(data_fn)
   gc.collect()

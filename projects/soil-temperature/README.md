@@ -39,9 +39,14 @@ drivers (`onewire`, `ds18x20`) are built into MicroPython.
 
 - Boots and runs fine with no probes, no display, or neither.
 - Plug a probe in mid-run: readings appear within a couple of seconds.
-- Probes are found by scanning the wire. The scan happens on every
-  reconnect, so if you ADD a probe mid-run, unplug and replug the data
-  wire (or any probe) and the rescan will discover the newcomer.
+- The wire is rescanned every cycle, so a probe added mid-run just
+  appears, and an unplugged one drops off. No replugging ritual.
+- Each probe is read separately: ONE bad probe cannot take down the
+  rest. Its reading shows "fault!" and its truth-light slot goes long.
+- The truth light runs POST codes: one blink per probe, in wire order.
+  Short = OK, long = trouble. Five probes reading `. . . _ .` means
+  probe 4 has a loose wire; fix it and the pattern heals. Add a sixth
+  probe and the pattern grows to six blinks. Dark = code not running.
 - Readings never block the loop: the DS18B20 needs 750 ms to convert,
   so the demo reads the finished conversion and immediately starts the
   next one in the background.

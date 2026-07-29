@@ -7,6 +7,10 @@
 # Fault tolerant: runs with the sensor missing, the display missing, or
 # both, and picks either up the moment it is plugged in. No restarts.
 #
+# The onboard LED is the truth light: a short blink every cycle means the
+# sensor is happy, a long blink means it is missing or misbehaving, and
+# no blinking at all means the code is not running.
+#
 # NOTE: the VL53L1X uses I2C address 0x29, the SAME address as the
 # VL53L0X. Only one of the two can be on the bus at a time.
 #
@@ -42,13 +46,21 @@ def data_fn():
 
 sensor = picolab.Sensor("VL53L1X", connect, read)
 display = picolab.Display()
+light = picolab.StatusLight()
 app = picolab.WebApp()
+tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 
 app.announce("VL53L1X Long-Range Station Active!")
 
 while True:
+  light.poll()
+  app.poll(data_fn)
+  if not tick.ready():
+    continue
+
   data = sensor.poll()
+  light.set_slots([sensor.ok])
 
   if data and data["valid"]:
     display.show([
@@ -74,5 +86,4 @@ while True:
   if heartbeat.ready():
     picolab.log("VL53L1X" if sensor.ok else "VL53L1X (unplugged)", data)
 
-  app.poll(data_fn)
   gc.collect()
