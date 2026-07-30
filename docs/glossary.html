@@ -147,8 +147,11 @@
         sides carry power and ground. Watch out: on big boards the rails <em>break in the
         middle</em>.</dd>
     <dt id="jumper-wires">Jumper wires (DuPont wires)</dt>
-    <dd>The pluggable wires. Class color convention: <em>red</em> 3V3, <em>black</em> GND,
-        <em>green</em> SDA, <em>white</em> SCL, yellow for signals.</dd>
+    <dd>The pluggable wires. Our color convention, one meaning per color:
+        <em>red</em> = 3V3 power, <em>orange</em> = 5V (VBUS), <em>black</em> = GND,
+        <em>green</em> = data (I2C SDA, the 1-Wire probe bus, and SPI MISO/POCI),
+        <em>white</em> = clock (I2C SCL and SPI SCK), <em>yellow</em> = a lone signal and SPI
+        chip-select (CS), <em>blue</em> = SPI MOSI (PICO, data out from the Pico).</dd>
     <dt id="multimeter">Multimeter</dt>
     <dd>The measuring tool: volts, ohms, continuity (the beep mode that tells you two points
         are connected). When wiring lies, the multimeter tells the truth.</dd>

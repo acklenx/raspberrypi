@@ -14,7 +14,7 @@
 # problem. Plug in a sixth probe mid-run and the pattern grows to six
 # blinks. No blinking at all means the code is not running.
 #
-# Wiring: red=3V3, black=GND, yellow (data)=GP22, and a REQUIRED 4.7k
+# Wiring: red=3V3, black=GND, green (data)=GP22, and a REQUIRED 4.7k
 # ohm resistor from GP22 to 3V3 (the pullup). Several probes can share
 # the same three wires; the demo reads them all. Bus capacity: 10-15
 # probes are easy on 4.7k; a 27-probe 3x3x3 bin wants a 2.2k-3.3k
