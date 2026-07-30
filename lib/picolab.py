@@ -24,7 +24,8 @@ _i2c = None
 
 
 def i2c():
-  """The shared I2C0 bus: SDA=GP0, SCL=GP1, 400kHz."""
+  """The shared I2C0 bus: SDA=GP0, SCL=GP1, 400kHz. (Hardware I2C is fine;
+  the "displays down" bug was never here -- see the port-80 handling.)"""
   global _i2c
   if _i2c is None:
     _i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
