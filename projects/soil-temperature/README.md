@@ -1,5 +1,7 @@
 # Soil Temperature: DS18B20 Waterproof Probes
 
+**[Open this project in Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-temperature/package.json)**: one click installs everything it needs onto a connected Pico.
+
 Reads temperature from DS18B20 probes: the steel-tipped waterproof ones
 made to bury in a worm bin. They speak the 1-Wire protocol, which means
 MANY probes can share one single data wire and the demo reads them all,

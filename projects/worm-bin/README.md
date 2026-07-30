@@ -1,5 +1,7 @@
 # Worm Bin Command Center
 
+**[Open this project in Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/worm-bin/package.json)**: one click installs everything it needs onto a connected Pico.
+
 The capstone: every sensor in the toolbox, and the actuators, running
 off ONE Pico at the same time. Everything is optional, hot-pluggable,
 and reported honestly by the truth light, the OLED, and a live web

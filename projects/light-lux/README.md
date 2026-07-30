@@ -1,5 +1,7 @@
 # BH1750: Light in Real Lux
 
+**[Open this project in Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-lux/package.json)**: one click installs everything it needs onto a connected Pico.
+
 The higher-quality light demo. The BH1750 is a digital lux meter: instead
 of a rough "brighter / darker" voltage, it reports illuminance in real
 lux over I2C, the same unit lighting engineers use. Roughly: moonlight is

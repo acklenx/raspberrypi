@@ -1,5 +1,7 @@
 # Soil Moisture: Capacitive Sensor v1.2
 
+**[Open this project in Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-moisture/package.json)**: one click installs everything it needs onto a connected Pico.
+
 Reads how wet the soil is. The sensor changes capacitance with moisture,
 and outputs a voltage the Pico reads on an analog pin. More moisture
 means a LOWER voltage, so the demo flips it into a friendly 0-100%.

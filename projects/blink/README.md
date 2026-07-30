@@ -1,5 +1,7 @@
 # Blink: a real project, in levels
 
+**[Open this project in Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/blink/package.json)**: one click installs everything it needs onto a connected Pico.
+
 Blink is not a toy, it is the smallest honest program: hardware you can
 see obeying code you wrote. So it gets the full project treatment,
 levels and all, and every level runs on a bare Pico with zero wiring.

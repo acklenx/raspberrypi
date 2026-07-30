@@ -1,5 +1,7 @@
 # VL53L1X: Long-Range Laser Distance (4 meters)
 
+**[Open this project in Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-vl53l1x/package.json)**: one click installs everything it needs onto a connected Pico.
+
 The VL53L0X's big sibling. Same time-of-flight idea, but it reaches to
 about 4 meters instead of 1.2. Great for room-scale experiments:
 people-counters, parking sensors, how-tall-is-it rigs.

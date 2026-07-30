@@ -1,5 +1,7 @@
 # GL5528 LDR: Basic Light Level
 
+**[Open this project in Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-basic/package.json)**: one click installs everything it needs onto a connected Pico.
+
 The cheap-and-cheerful light demo. A GL5528 photoresistor (LDR) changes
 resistance with light; putting it in a voltage divider turns that into a
 voltage the Pico's ADC can read. More light = lower LDR resistance =

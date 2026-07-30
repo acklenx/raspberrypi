@@ -1,5 +1,7 @@
 # Distance Station
 
+**[Open this project in Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-station/package.json)**: one click installs everything it needs onto a connected Pico.
+
 The full class build: a Pico 2 W reads a VL53L0X time-of-flight laser
 distance sensor, shows the distance on an SSD1306 OLED, and broadcasts its
 own Wi-Fi network with a live web dashboard.

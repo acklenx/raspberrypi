@@ -1,5 +1,7 @@
 # Servo: Move Something In Real Life
 
+**[Open this project in Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json)**: one click installs everything it needs onto a connected Pico.
+
 An SG90 hobby servo driven by the Pico's PWM, controlled from a web page:
 a slider, an automatic sweep mode, and a "follow light" mode where an
 optional photoresistor steers the horn. Sensors moving the real world.

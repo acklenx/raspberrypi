@@ -1,5 +1,7 @@
 # BME280: Temperature, Humidity, Pressure
 
+**[Open this project in Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json)**: one click installs everything it needs onto a connected Pico.
+
 The environment sensor. Reads air temperature, relative humidity, and
 barometric pressure over I2C. Also works with a BMP280 (its humidity-free
 sibling; the demo reports humidity as n/a).

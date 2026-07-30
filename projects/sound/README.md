@@ -1,5 +1,7 @@
 # MAX9814: Sound Level Meter
 
+**[Open this project in Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/sound/package.json)**: one click installs everything it needs onto a connected Pico.
+
 A microphone with a built-in amplifier and automatic gain control (AGC).
 The AGC quietly turns its own volume up and down so quiet sounds are
 audible and loud sounds do not clip. The demo turns it into a sound level
