@@ -13,7 +13,14 @@
 # The truth light (the onboard LED, short blink every cycle) proves the
 # CODE is running; if the servo still does not move, check its wiring.
 #
-# Wiring: orange signal wire to GP16, red to VBUS (5V), brown to GND.
+# Wiring, the 3 servo wires (a servo with no power CANNOT move, no matter
+# what the code does -- this is the #1 reason a servo "does nothing"):
+#   RED (power)   -> VBUS = physical PIN 40 (5V). NOT 3V3! Wrong pin = no
+#                    movement. (VBUS is the top-RIGHT pin, USB at the top.)
+#   BROWN/black   -> any GND (e.g. physical pin 38).
+#   ORANGE/yellow -> the signal, GP16 = physical PIN 21.
+# On boot the servo does a small self-test wiggle: if it does NOT wiggle,
+# it is power/wiring (check the RED wire on pin 40), not the code.
 # Auto mode (optional): GL5528 photoresistor from 3V3 to GP28, plus a
 # 10k resistor from GP28 to GND.
 # On the board: main.py, index.html, lib/picolab.py, lib/ssd1306.py.
@@ -21,6 +28,7 @@
 # Project page (docs, wiring, install link): https://github.com/acklenx/raspberrypi/tree/main/projects/servo
 
 import gc
+import time
 from machine import ADC, PWM, Pin
 
 import picolab
@@ -49,6 +57,15 @@ current = 90.0
 target = 90.0
 light_pct = 0.0
 write_angle(current)
+
+# Power-on self-test: a visible wiggle so you can tell RIGHT AWAY whether
+# the servo is wired and powered, WITHOUT needing the web page (which can
+# be held up by a busy port 80 after a soft re-run). No wiggle = power or
+# wiring: check the RED wire is on VBUS (physical PIN 40), signal on GP16
+# (pin 21), ground on GND. This runs before any Wi-Fi, so it always fires.
+for _a in (75, 105, 90):
+  write_angle(_a)
+  time.sleep_ms(350)
 
 
 def set_handler(req):
@@ -110,9 +127,12 @@ while True:
       current = max(target, current - STEP)
     write_angle(current)
 
+  # If port 80 never bound (busy after a soft re-run), say so plainly so
+  # you know to power-cycle rather than wondering why the page won't load.
+  webline = app.ip if app.server else "web off: replug"
   display.show([
       app.ssid,
-      app.ip,
+      webline,
       "mode: " + mode,
       "angle: %3d deg" % int(current),
   ], bar=current / 180.0)

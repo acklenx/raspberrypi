@@ -218,6 +218,11 @@
       <p class="what">an actuator: it moves to any angle you tell it</p>
       <p>Drive it from a slider on your phone, sweep it automatically, or make it follow the light. The
          moment code moves something real.</p>
+      <p class="multi" style="border-left:4px solid var(--red)"><b>Wiring, the part that trips everyone up:</b>
+         the <b style="color:var(--red)">red</b> power wire goes to <b>VBUS = physical pin 40</b> (5V),
+         <b>never 3V3</b> &mdash; a servo with no power just sits there, no matter what the code says.
+         Signal (orange) to GP16 (physical pin 21); ground (brown) to any GND (e.g. pin 38). The demo does
+         a little wiggle on boot: no wiggle means it is power or wiring, not the code.</p>
       <p class="multi"><b>More than one?</b> Each servo needs its own PWM-capable GPIO (most pins qualify)
          and 5V power. One or two run fine on USB power; more than that want their own 5V supply so a
          stalling servo can't brown-out the Pico. Share the ground.</p>
