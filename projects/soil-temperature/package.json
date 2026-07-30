@@ -24,6 +24,10 @@
       "github:acklenx/raspberrypi/lib/ssd1306.py"
     ],
     [
+      "fs:cal.js",
+      "github:acklenx/raspberrypi/web/cal.js"
+    ],
+    [
       "fs:toc.txt",
       "github:acklenx/raspberrypi/docs/TOC.txt"
     ]

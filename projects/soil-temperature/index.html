@@ -52,7 +52,7 @@
     <h3>SETTINGS</h3>
     <div class="set"><b>UNITS</b>
       <label><input type="radio" name="units" value="C" checked> &deg;C (metric, this is science)</label>
-      <label><input type="radio" name="units" value="F"> &deg;F</label>
+      <label><input type="radio" name="units" value="F"> &deg;F (freedom units)</label>
     </div>
     <div class="set"><b>TIME SCALE (waterfall)</b>
       <select id="rowsevery">
@@ -70,19 +70,7 @@
       <label><input type="checkbox" id="showlog"> show data log table</label><br>
       <label><input type="checkbox" id="showids"> show sensor serials in the log</label>
     </div>
-    <div class="set"><b>CALIBRATE (saved on the board, survives reboot)</b>
-      <div class="calrow">probe <select id="calsel"></select> raw now: <span id="calraw">--</span>&deg;C</div>
-      <div class="calrow">point A true value <input class="pos" id="actA" value="0"> <button id="capA">capture</button> <span id="gotA"></span></div>
-      <div class="calrow">point B true value <input class="pos" id="actB" value="100"> <button id="capB">capture</button> <span id="gotB"></span></div>
-      <div class="calrow">
-        <button id="cal2">apply two-point</button>
-        <button id="cal1">offset only (point A)</button>
-        <button id="calreset">reset cal</button>
-      </div>
-      <div class="calrow hint">ice slurry = 0, rolling boil = 100 (at sea level). Capture A in the
-        ice, capture B in the boil, apply two-point. In a hurry: one known temp + offset only.</div>
-      <div id="calmsg"></div>
-    </div>
+    <div class="set" id="calbox"></div>
   </div>
 
   <div class="card">
@@ -117,6 +105,7 @@
     <div class="count">probes on the wire: <span id="count">--</span></div>
   </div>
   <div id="status">connecting...</div>
+<script src="/cal.js"></script>
 <script>
 // ---- config at the top, house rule ----
 var POLL_MS = 500;        // how often to ask the Pico for readings
@@ -304,9 +293,9 @@ function tick() {
         if (pollN % S.rowsEvery === 0) { drawFallRow(temps); logSweep(info); }
         drawBin(info);
         var sig = info.map(function (p) { return p.id; }).join(',');
-        if (sig !== tableSig) { tableSig = sig; buildTable(info); buildCalSel(info); }
+        if (sig !== tableSig) { tableSig = sig; buildTable(info); }
         updateTable(info);
-        updateCalRaw();
+        probeCal.update(j);
         setStatus('live on ' + j.ssid, false);
       } else {
         document.getElementById('count').textContent = '--';
@@ -372,7 +361,13 @@ document.getElementById('gear').onclick = function () {
 var radios = document.getElementsByName('units');
 for (var r = 0; r < radios.length; r++) {
   radios[r].checked = radios[r].value === S.units;
-  radios[r].onchange = function () { S.units = this.value; saveS(); };
+  radios[r].onchange = function () {
+    if (this.value === 'F' && !confirm('Are you sure? I thought we were doing science here!')) {
+      for (var i = 0; i < radios.length; i++) radios[i].checked = radios[i].value === S.units;
+      return;
+    }
+    S.units = this.value; saveS();
+  };
 }
 var re = document.getElementById('rowsevery');
 re.value = String(S.rowsEvery);
@@ -399,64 +394,17 @@ si.checked = S.showIds || false;
 si.onchange = function () { S.showIds = this.checked; saveS(); if (S.showLog) renderLog(); };
 syncLogCard();
 
-// ---- calibration ----------------------------------------------------
-function calProbe() {
-  var id = document.getElementById('calsel').value;
-  for (var i = 0; i < latestInfo.length; i++) if (latestInfo[i].id === id) return latestInfo[i];
-  return null;
-}
-function buildCalSel(info) {
-  var sel = document.getElementById('calsel'), keep = sel.value, html = '';
-  info.forEach(function (p) {
-    html += '<option value="' + p.id + '">' + p.label + '</option>';
-  });
-  sel.innerHTML = html;
-  if (keep) sel.value = keep;
-}
-function updateCalRaw() {
-  var p = calProbe();
-  document.getElementById('calraw').textContent = p && p.raw != null ? p.raw.toFixed(2) : '--';
-}
-function calMsg(t) { document.getElementById('calmsg').textContent = t; }
-document.getElementById('capA').onclick = function () {
-  var p = calProbe();
-  if (!p || p.raw == null) { calMsg('no raw reading to capture'); return; }
-  capA = { raw: p.raw, act: parseFloat(document.getElementById('actA').value), id: p.id };
-  document.getElementById('gotA').textContent = 'raw ' + capA.raw.toFixed(2) + ' = ' + capA.act;
-};
-document.getElementById('capB').onclick = function () {
-  var p = calProbe();
-  if (!p || p.raw == null) { calMsg('no raw reading to capture'); return; }
-  capB = { raw: p.raw, act: parseFloat(document.getElementById('actB').value), id: p.id };
-  document.getElementById('gotB').textContent = 'raw ' + capB.raw.toFixed(2) + ' = ' + capB.act;
-};
-function sendCal(q, done) {
-  fetch('/cal?' + q, { cache: 'no-store' })
-    .then(function (r) { return r.json(); })
-    .then(function (j) { calMsg(j.error ? 'error: ' + j.error : done); })
-    .catch(function () { calMsg('request failed'); });
-}
-document.getElementById('cal2').onclick = function () {
-  var p = calProbe();
-  if (!p || !capA || !capB) { calMsg('capture point A and point B first'); return; }
-  if (capA.id !== p.id || capB.id !== p.id) { calMsg('captures were for a different probe'); return; }
-  sendCal('id=' + p.id + '&raw1=' + capA.raw + '&act1=' + capA.act
-    + '&raw2=' + capB.raw + '&act2=' + capB.act, 'two-point calibration saved to the board');
-};
-document.getElementById('cal1').onclick = function () {
-  var p = calProbe();
-  if (!p || !capA) { calMsg('capture point A first'); return; }
-  if (capA.id !== p.id) { calMsg('capture was for a different probe'); return; }
-  sendCal('id=' + p.id + '&raw1=' + capA.raw + '&act1=' + capA.act, 'offset saved to the board');
-};
-document.getElementById('calreset').onclick = function () {
-  var p = calProbe();
-  if (!p) return;
-  capA = capB = null;
-  document.getElementById('gotA').textContent = '';
-  document.getElementById('gotB').textContent = '';
-  sendCal('id=' + p.id + '&reset=1', 'calibration cleared');
-};
+// ---- calibration (shared widget) ------------------------------------
+var probeCal = Cal.create(document.getElementById('calbox'), {
+  title: 'CALIBRATE (saved on the board, survives reboot)',
+  hint: 'Ice water = 0, boiling = 100 (at sea level). Put a probe in the ice, type 0, set A; in the boil, type 100, set B; apply.',
+  unit: '°C', lowName: 'A', highName: 'B', entered: true,
+  itemsFrom: function (d) {
+    return (d.probes_info || []).map(function (p) {
+      return { id: p.id, label: p.label, raw: p.raw };
+    });
+  }
+});
 
 setInterval(tick, POLL_MS);
 tick();

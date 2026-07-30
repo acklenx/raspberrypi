@@ -188,6 +188,10 @@
       "github:acklenx/raspberrypi/lib/bh1750.py"
     ],
     [
+      "fs:cal.js",
+      "github:acklenx/raspberrypi/web/cal.js"
+    ],
+    [
       "fs:toc.txt",
       "github:acklenx/raspberrypi/docs/TOC.txt"
     ]

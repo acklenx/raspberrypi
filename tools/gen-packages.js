@@ -139,6 +139,7 @@ for (const l of LIBS) {
   // fs: keeps the drivers as readable .py source on the board
   urls.push([`fs:lib/${l}`, `${GH}/lib/${l}`]);
 }
+urls.push(["fs:cal.js", GH + "/web/cal.js"]);
 urls.push(TOC_ENTRY);
 
 fs.mkdirSync(path.join(ROOT, "projects", "everything"), { recursive: true });

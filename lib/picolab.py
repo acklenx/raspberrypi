@@ -392,6 +392,26 @@ NAME_FILE = "name.txt"
 HEADER_HTML = b"HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n"
 HEADER_JSON = b"HTTP/1.0 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n"
 
+_CTYPES = {"js": "application/javascript", "css": "text/css", "html": "text/html",
+           "svg": "image/svg+xml", "json": "application/json", "txt": "text/plain"}
+
+
+def _req_path(req):
+  """Pull the path out of a raw 'GET /path HTTP/1.0' request."""
+  try:
+    text = req.decode() if isinstance(req, bytes) else req
+    parts = text.split(" ", 2)
+    return parts[1] if len(parts) > 1 else None
+  except Exception:
+    return None
+
+
+def _static_header(name):
+  ext = name.rsplit(".", 1)[-1] if "." in name else ""
+  ct = _CTYPES.get(ext, "application/octet-stream")
+  return ("HTTP/1.0 200 OK\r\nContent-Type: " + ct
+          + "\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n").encode()
+
 
 def _try_join(sta, ssid, password, attempts=2, wait_s=12):
   """Try to join one network a couple of times. Returns True on success.
@@ -731,6 +751,26 @@ class WebApp:
         handled = True
 
       if not handled:
+        # Serve a real static file if the request names one (e.g.
+        # /cal.js, the shared calibration widget). Anything else falls
+        # back to the dashboard page.
+        path = _req_path(req)
+        static = None
+        if path and path != "/" and "." in path and ".." not in path:
+          static = path.lstrip("/")
+        if static:
+          try:
+            with open(static, "rb") as f:
+              cl.sendall(_static_header(static))
+              while True:
+                chunk = f.read(512)
+                if not chunk:
+                  break
+                cl.sendall(chunk)
+            cl.close()
+            return
+          except Exception:
+            pass
         cl.sendall(HEADER_HTML)
         served = False
         for page in (self.index, "index.html"):

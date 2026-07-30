@@ -57,23 +57,11 @@
   <div id="drawer">
     <div class="card"><h3>UNITS</h3>
       <label><input type="radio" name="u" value="C" checked> &deg;C (metric)</label>
-      <label><input type="radio" name="u" value="F"> &deg;F</label>
+      <label><input type="radio" name="u" value="F"> &deg;F (freedom units)</label>
     </div>
 
-    <div class="card"><h3>CALIBRATE MOISTURE</h3>
-      <div class="wirenote">Hold a probe in the AIR and tap "set dry"; put it in WATER to the line and
-        tap "set wet". Saved on the board.</div>
-      <div class="calrow"><b>Probe 1</b> now: <span id="c1v">--</span> V &nbsp;
-        <button class="sm" data-k="m1dry">set dry</button>
-        <button class="sm" data-k="m1wet">set wet</button>
-        <span>dry <span id="c1d">--</span> / wet <span id="c1w">--</span></span></div>
-      <div class="calrow"><b>Probe 2</b> now: <span id="c2v">--</span> V &nbsp;
-        <button class="sm" data-k="m2dry">set dry</button>
-        <button class="sm" data-k="m2wet">set wet</button>
-        <span>dry <span id="c2d">--</span> / wet <span id="c2w">--</span></span></div>
-      <div class="calrow"><button class="sm" id="calreset">reset to defaults</button>
-        <span id="calmsg"></span></div>
-    </div>
+    <div class="card"><div id="calbox"></div></div>
+    <div class="card"><div id="calbox2"></div></div>
 
     <div class="card"><h3>WIRING &amp; PINS</h3>
       <div class="wirenote">Hold the board with the <b>USB at the top</b>. Pins are numbered 1&ndash;40:
@@ -139,10 +127,26 @@
   </div>
 
   <div id="status">connecting...</div>
+<script src="/cal.js"></script>
 <script>
 var misses = 0, relayOn = 0, holdoff = 0;
-var units = 'C', m1vLive = null, m2vLive = null;
+var units = 'C';
 try { units = localStorage.getItem('wb_units') || 'C'; } catch (e) {}
+var moistCal = Cal.create(document.getElementById('calbox'), {
+  title: 'CALIBRATE MOISTURE',
+  hint: 'Hold a probe in the AIR and set dry; put it in WATER to the line and set wet.',
+  unit: 'V', lowName: 'dry', lowVal: 0, highName: 'wet', highVal: 100,
+  itemsFrom: function (d) {
+    return [{ id: 'moist1', label: 'Probe 1', raw: d.moist1_v },
+            { id: 'moist2', label: 'Probe 2', raw: d.moist2_v }];
+  }
+});
+var distCal = Cal.create(document.getElementById('calbox2'), {
+  title: 'CALIBRATE DISTANCE (compaction)',
+  hint: 'Put a target at a measured distance, type the mm, and capture. Do a near and a far point.',
+  unit: 'mm', lowName: 'near', highName: 'far', entered: true,
+  itemsFrom: function (d) { return [{ id: 'distance', label: 'Surface', raw: d.surface_raw_mm }]; }
+});
 function $(id) { return document.getElementById(id); }
 function put(id, v) { $(id).textContent = (v === null || v === undefined) ? '--' : v; }
 function dispT(c) { return c == null ? null : (units === 'F' ? Math.round((c * 9 / 5 + 32) * 10) / 10 : c); }
@@ -177,12 +181,8 @@ function tick() {
       put('m1', j.moist1_pct); put('m1v', j.moist1_v);
       put('m2', j.moist2_pct); put('m2v', j.moist2_v);
       put('lt', j.light_pct); put('snd', j.sound_pct); put('dist', j.surface_mm);
-      m1vLive = j.moist1_v; m2vLive = j.moist2_v;
-      if (j.cfg) {
-        put('c1v', j.moist1_v); put('c2v', j.moist2_v);
-        put('c1d', j.cfg.m1dry); put('c1w', j.cfg.m1wet);
-        put('c2d', j.cfg.m2dry); put('c2w', j.cfg.m2wet);
-      }
+      if (moistCal) moistCal.update(j);
+      if (distCal) distCal.update(j);
 
       var chips = '';
       (j.parts || []).forEach(function (p) {
@@ -218,25 +218,15 @@ var ur = document.getElementsByName('u');
 for (var k = 0; k < ur.length; k++) {
   ur[k].checked = ur[k].value === units;
   ur[k].onchange = function () {
+    if (this.value === 'F' && !confirm('Are you sure? I thought we were doing science here!')) {
+      for (var i = 0; i < ur.length; i++) ur[i].checked = ur[i].value === units;
+      return;
+    }
     units = this.value;
     try { localStorage.setItem('wb_units', units); } catch (e) {}
     paintUnits();
   };
 }
-function sendCfg(q, msg) {
-  fetch('/cfg?' + q, { cache: 'no-store' })
-    .then(function () { $('calmsg').textContent = msg; })
-    .catch(function () { $('calmsg').textContent = 'failed'; });
-}
-var cbtns = document.querySelectorAll('#drawer button[data-k]');
-for (var b = 0; b < cbtns.length; b++) {
-  cbtns[b].onclick = function () {
-    var key = this.dataset.k, live = key[1] === '1' ? m1vLive : m2vLive;
-    if (live == null) { $('calmsg').textContent = 'no reading yet'; return; }
-    sendCfg('key=' + key + '&val=' + live, 'saved ' + key + ' = ' + live + ' V');
-  };
-}
-$('calreset').onclick = function () { sendCfg('reset=1', 'reset to defaults'); };
 paintUnits();
 
 setInterval(tick, 1000);

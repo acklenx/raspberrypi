@@ -121,6 +121,7 @@ def data_fn():
                    "raw": raws[i] if i < len(raws) else None,
                    "cal": pid in cal.data})
     d["probes_info"] = info
+    d["cal_ids"] = list(cal.data)
   return d
 
 

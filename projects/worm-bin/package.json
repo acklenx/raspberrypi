@@ -32,6 +32,10 @@
       "github:acklenx/raspberrypi/lib/vl53l0x.py"
     ],
     [
+      "fs:cal.js",
+      "github:acklenx/raspberrypi/web/cal.js"
+    ],
+    [
       "fs:toc.txt",
       "github:acklenx/raspberrypi/docs/TOC.txt"
     ]
