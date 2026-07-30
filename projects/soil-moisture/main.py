@@ -53,7 +53,8 @@ def data_fn():
 sensor = picolab.Sensor("Soil moisture", connect, read)
 display = picolab.Display()
 light = picolab.StatusLight()
-app = picolab.WebApp(index="soil-moisture/index.html")
+app = picolab.WebApp()
+app.index = "soil-moisture/index.html"  # dashboard path under the everything layout
 tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 

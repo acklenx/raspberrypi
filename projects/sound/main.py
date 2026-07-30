@@ -58,7 +58,8 @@ def data_fn():
 sensor = picolab.Sensor("MAX9814", connect, read)
 display = picolab.Display()
 light = picolab.StatusLight()
-app = picolab.WebApp(index="sound/index.html")
+app = picolab.WebApp()
+app.index = "sound/index.html"  # dashboard path under the everything layout
 tick = picolab.Throttle(100)  # fast: keeps the level meter lively
 heartbeat = picolab.Throttle(5000)
 

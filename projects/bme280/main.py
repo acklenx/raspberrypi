@@ -45,7 +45,8 @@ def data_fn():
 sensor = picolab.Sensor("BME280", connect, read)
 display = picolab.Display()
 light = picolab.StatusLight()
-app = picolab.WebApp(index="bme280-demos/index.html")
+app = picolab.WebApp()
+app.index = "bme280-demos/index.html"  # dashboard path under the everything layout
 tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 

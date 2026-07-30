@@ -40,7 +40,8 @@ def data_fn():
 sensor = picolab.Sensor("BH1750", connect, read)
 display = picolab.Display()
 light = picolab.StatusLight()
-app = picolab.WebApp(index="light-lux/index.html")
+app = picolab.WebApp()
+app.index = "light-lux/index.html"  # dashboard path under the everything layout
 tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 

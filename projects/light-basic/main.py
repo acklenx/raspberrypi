@@ -45,7 +45,8 @@ def data_fn():
 sensor = picolab.Sensor("GL5528", connect, read)
 display = picolab.Display()
 light = picolab.StatusLight()
-app = picolab.WebApp(index="light-basic/index.html")
+app = picolab.WebApp()
+app.index = "light-basic/index.html"  # dashboard path under the everything layout
 tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 

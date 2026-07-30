@@ -82,7 +82,8 @@ def data_fn():
 display = picolab.Display()
 light = picolab.StatusLight()
 light.set_slots([True])
-app = picolab.WebApp(index="servo/index.html")
+app = picolab.WebApp()
+app.index = "servo/index.html"  # dashboard path under the everything layout
 heartbeat = picolab.Throttle(5000)
 motion = picolab.Throttle(50)
 

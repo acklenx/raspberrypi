@@ -93,7 +93,8 @@ def data_fn():
 sensor = picolab.Sensor("DS18B20", connect, read)
 display = picolab.Display()
 light = picolab.StatusLight()
-app = picolab.WebApp(index="soil-temperature/index.html")
+app = picolab.WebApp()
+app.index = "soil-temperature/index.html"  # dashboard path under the everything layout
 tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 
