@@ -43,7 +43,7 @@
   <a class="brand" href="index.html">🪱 Wormhole</a>
   <div class="links">
     <a class="nl" href="index.html">Home</a><a class="nl" href="start.html">Start Here</a>
-    <a class="nl" href="sessions.html">Sessions</a><a class="nl" href="stations.html">Stations</a>
+    <a class="nl" href="sessions.html">Sessions</a><a class="nl" href="stations.html">Sensors</a>
     <a class="nl" href="research.html">Ideas</a><a class="nl" href="demos/mission-control.html">Demos</a>
     <a class="nl on" href="glossary.html">Glossary</a><a class="nl" href="cheatsheet.html">Code</a>
     <a class="nl" href="reset.html">Fix a Board</a>
@@ -61,17 +61,17 @@
   <dl>
     <dt id="microcontroller">Microcontroller</dt>
     <dd>A tiny, cheap, complete computer on a single chip. It does one job, instantly, forever. Our
-        one is the <em>Pico 2 W</em> ("Pico" for short) &mdash; about $8, and it has WiFi built in.</dd>
+        one is the <em>Pico 2 W</em> ("Pico" for short), about $8, and it has WiFi built in.</dd>
     <dt id="program-code">Program / code</dt>
     <dd>A list of instructions you write for the computer to follow. "Code" is the same thing: the
         text you type. Writing code is just writing very precise instructions.</dd>
     <dt id="micropython">MicroPython</dt>
-    <dd>The <em>language</em> we write our code in &mdash; a version of Python shrunk to run on a tiny
+    <dd>The <em>language</em> we write our code in, a version of Python shrunk to run on a tiny
         computer like the Pico. Friendly, readable, forgiving. You put it on the Pico one time (see
         <em>firmware</em>, below).</dd>
     <dt id="ide">IDE (we use Viper IDE)</dt>
     <dd>The place where you write code and press "run." Ours, <a href="https://viper-ide.org" class="ext">Viper
-        IDE</a>, runs right in a web browser &mdash; nothing to install. (IDE stands for "integrated
+        IDE</a>, runs right in a web browser, nothing to install. (IDE stands for "integrated
         development environment," a fancy phrase for "code workbench.")</dd>
     <dt id="run">Run</dt>
     <dd>Tell the Pico to actually do what your program says, right now. You press Run; things happen.</dd>
@@ -237,7 +237,7 @@
         <em>Firmware</em> is software that is installed INTO a piece of hardware and lives
         there, one layer up from the metal. The name is the answer to "why not just call it
         software": it sits between <b>hard</b>ware and <b>soft</b>ware, so it is
-        <b>firm</b> &mdash; software by nature, part-of-the-device by residence. It survives
+        <b>firm</b>, software by nature, part-of-the-device by residence. It survives
         power-off, ships with the device, and changes rarely and deliberately (you flash it,
         you don't edit it). On our Pico the firmware is MicroPython itself: the thing that
         wakes the chip up and teaches it to understand Python. Flash once, ever.
@@ -248,7 +248,7 @@
         your program just asks it for a temperature. It is called a driver because it
         <b>operates the device on your behalf</b>, like a chauffeur: you say where to go, it
         works the pedals. And the follow-up question, answered: drivers aren't firmware
-        because of where they live &mdash; ours are readable files in <code>lib/</code> you
+        because of where they live, ours are readable files in <code>lib/</code> you
         can open and change like any code. If we burned them into the chip, they would
         become part of the firmware. (Fun fact: layers go all the way down. The BME280
         sensor has its own tiny factory firmware inside, running its own measurements
@@ -338,15 +338,14 @@
     <dd>An input connected to nothing, reading random noise. Why an unplugged analog sensor
         still "reads" something: the pin is guessing.</dd>
     <dt id="brown-out">Brown-out</dt>
-    <dd>A momentary voltage sag that resets the board. When something draws a big gulp of current
-        &mdash; a <em>servo</em> starting or stalling, a motor, a fistful of LEDs &mdash; it can dip
+    <dd>A momentary voltage sag that resets the board. When something draws a big gulp of current, a <em>servo</em> starting or stalling, a motor, a fistful of LEDs, it can dip
         the shared 5&nbsp;V or 3V3 rail below what the chip needs, and the Pico reboots (screen blanks,
         program restarts from the top). The tell: it only misbehaves <em>when the hungry part moves</em>.
         Cures: give that part its own power supply (share grounds), and/or add a <em>bulk capacitor</em>
         (470&ndash;1000&nbsp;&micro;F) right next to it to buffer the spike.</dd>
     <dt id="stall">Stall (servo)</dt>
     <dd>When a servo is told to push past its limit or against something it can't move, it doesn't give
-        up &mdash; it keeps pulling maximum current trying. That's the biggest current spike a servo
+        up, it keeps pulling maximum current trying. That's the biggest current spike a servo
         makes and the most common <em>brown-out</em> trigger. Don't command a servo into a hard stop,
         and give thirsty servos their own 5&nbsp;V supply.</dd>
     <dt id="stale-library">Stale library</dt>

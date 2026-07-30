@@ -31,7 +31,7 @@
   <a class="brand" href="index.html">🪱 Wormhole</a>
   <div class="links">
     <a class="nl" href="index.html">Home</a><a class="nl" href="start.html">Start Here</a>
-    <a class="nl on" href="sessions.html">Sessions</a><a class="nl" href="stations.html">Stations</a>
+    <a class="nl on" href="sessions.html">Sessions</a><a class="nl" href="stations.html">Sensors</a>
     <a class="nl" href="research.html">Ideas</a><a class="nl" href="demos/mission-control.html">Demos</a><a class="nl" href="glossary.html">Glossary</a>
     <a class="nl" href="cheatsheet.html">Code</a><a class="nl" href="reset.html">Fix a Board</a>
   </div>
@@ -41,7 +41,7 @@
   <h1>The Sessions</h1>
   <p class="lead">The workshop is four steps, in order. Each one proves that a single new thing works
      before the next step builds on top of it. So when something goes wrong, you know it's the thing
-     you just added &mdash; not a mystery.</p>
+     you just added, not a mystery.</p>
 
   <div class="session s1"><div class="n">1</div><div>
     <h3>Microcontrollers</h3>
@@ -70,11 +70,11 @@
 
   <div class="session s4"><div class="n">4</div><div>
     <h3>Sensors</h3>
-    <p>The payoff. On wiring you now trust, add real sensors and take real measurements &mdash; heat,
+    <p>The payoff. On wiring you now trust, add real sensors and take real measurements: heat,
        water, light, and more.</p>
     <p class="prove"><b>You prove:</b> real data, from the real world.
        &nbsp;·&nbsp; <a href="https://docs.google.com/presentation/d/1UwEEIvA_2MJz9nRdW57ctLzZHtoa2Pqetn40p2y5BvY/edit" class="ext">Slides</a>
-       &nbsp;·&nbsp; <a href="stations.html">Build a Station</a></p>
+       &nbsp;·&nbsp; <a href="stations.html">See the sensors</a></p>
   </div></div>
 
   <h2>A few things that are true of every station</h2>
@@ -90,7 +90,7 @@
          problem. Dark = nothing is running.</p></div>
     <div class="card"><h3>It makes its own WiFi</h3>
       <p>Each station creates a little WiFi network named after itself (like <code>PicoLab530</code>).
-         Join it on your phone and browse to the address on the screen &mdash; no internet required.</p></div>
+         Join it on your phone and browse to the address on the screen, no internet required.</p></div>
     <div class="card"><h3>One click loads everything</h3>
       <p>Every sensor has an "Install" link. With your Pico connected, one click puts all the code it
          needs onto the board. No copying files by hand.</p></div>
@@ -104,11 +104,11 @@
     <tr><th>Wire color</th><th>What it carries</th></tr>
     <tr><td><b style="color:#C62828">Red</b></td><td>Power (3.3 volts). The part's "VCC" or "VIN".</td></tr>
     <tr><td><b>Black</b></td><td>Ground. The shared zero. Every part connects back to it.</td></tr>
-    <tr><td><b style="color:#7CB342">Green &mdash; SDA</b></td><td>The I2C <b>data</b> line (and any data line, like the 1-Wire probe bus). Green = data.</td></tr>
-    <tr><td><span style="display:inline-block;width:11px;height:11px;background:#fff;border:1px solid #94A3B8;border-radius:2px;vertical-align:-1px;margin-right:5px"></span><b>White &mdash; SCL</b></td><td>The I2C <b>clock</b> line. Many parts share this SDA + SCL pair.</td></tr>
-    <tr><td><b style="color:#E8B62C">Yellow</b></td><td>A part's own signal wire &mdash; anything that isn't power, ground, data, or clock.</td></tr>
+    <tr><td><b style="color:#7CB342">Green (SDA)</b></td><td>The I2C <b>data</b> line (and any data line, like the 1-Wire probe bus). Green = data.</td></tr>
+    <tr><td><span style="display:inline-block;width:11px;height:11px;background:#fff;border:1px solid #94A3B8;border-radius:2px;vertical-align:-1px;margin-right:5px"></span><b>White (SCL)</b></td><td>The I2C <b>clock</b> line. Many parts share this SDA + SCL pair.</td></tr>
+    <tr><td><b style="color:#E8B62C">Yellow</b></td><td>A part's own signal wire, anything that isn't power, ground, data, or clock.</td></tr>
   </table></div>
-  <p style="margin-top:12px">Ready to wire one up? <a href="stations.html"><b>Build a Station &rarr;</b></a></p>
+  <p style="margin-top:12px">Ready to wire one up? <a href="stations.html"><b>See the sensors &rarr;</b></a></p>
 </div>
 <footer>&copy; 2026 Maker Lab Kids LLC · MakerLabKids.com · Learn. Make. Share.</footer>
 </body>

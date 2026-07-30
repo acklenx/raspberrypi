@@ -41,7 +41,7 @@
   <a class="brand" href="index.html">🪱 Wormhole</a>
   <div class="links">
     <a class="nl" href="index.html">Home</a><a class="nl" href="start.html">Start Here</a>
-    <a class="nl" href="sessions.html">Sessions</a><a class="nl" href="stations.html">Stations</a>
+    <a class="nl" href="sessions.html">Sessions</a><a class="nl" href="stations.html">Sensors</a>
     <a class="nl" href="research.html">Ideas</a><a class="nl" href="demos/mission-control.html">Demos</a><a class="nl" href="glossary.html">Glossary</a>
     <a class="nl" href="cheatsheet.html">Code</a><a class="nl on" href="reset.html">Fix a Board</a>
   </div>
@@ -49,7 +49,7 @@
 
 <div class="wrap">
   <h1>Fix a Board</h1>
-  <p class="lead">A board acting up &mdash; dark screen, won't connect, ignoring your code, "address in
+  <p class="lead">A board acting up, dark screen, won't connect, ignoring your code, "address in
      use," anything? Work down this page from the top. Stop as soon as it's working. Nothing here can
      hurt the board.</p>
   <div class="reassure">The single most useful fact: <b>a Pico needs nothing but power to run.</b> If a
@@ -58,30 +58,30 @@
 
   <h2>First: the clean-slate ritual</h2>
   <hr class="rule">
-  <p class="lead">Nine times out of ten, this alone fixes it. Do it in order &mdash; each step clears a
+  <p class="lead">Nine times out of ten, this alone fixes it. Do it in order, each step clears a
      different kind of "stuck."</p>
   <div class="ritual">
     <div class="rstep"><div class="n"></div><div><b>Stop the program.</b><p>In Viper, click Stop (or click the terminal and press Ctrl+C). A running program can't be changed.</p></div></div>
     <div class="rstep"><div class="n"></div><div><b>Disconnect Viper.</b><p>Click disconnect (top right). This lets go of the board so nothing is holding it.</p></div></div>
-    <div class="rstep"><div class="n"></div><div><b>Unplug the board.</b><p>Pull the USB. This is a full power-off &mdash; it clears leftover network sockets and any wedged state. (A "soft reset" does <em>not</em>; only real power-off does.)</p></div></div>
+    <div class="rstep"><div class="n"></div><div><b>Unplug the board.</b><p>Pull the USB. This is a full power-off, it clears leftover network sockets and any wedged state. (A "soft reset" does <em>not</em>; only real power-off does.)</p></div></div>
     <div class="rstep"><div class="n"></div><div><b>Refresh the Viper page.</b><p>Reload viper-ide.org in the browser. Clears any stuck connection on the computer's side.</p></div></div>
     <div class="rstep"><div class="n"></div><div><b>Plug the board back in.</b><p>Use a cable you know carries data (charge-only cables power the board but won't connect). Reseat both ends firmly.</p></div></div>
     <div class="rstep"><div class="n"></div><div><b>Connect Viper.</b><p>Connect button &rarr; USB &rarr; pick the Pico. You should land at the <code>&gt;&gt;&gt;</code> prompt.</p></div></div>
     <div class="rstep"><div class="n"></div><div><b>Reinstall the code.</b><p>Click the project's one-click Install link again. This pulls the current, known-good code fresh. (Just editing a file can leave old code in charge.)</p></div></div>
     <div class="rstep"><div class="n"></div><div><b>Reset and run.</b><p>Press Viper's reset, or run <code>main.py</code>. Fresh start, fresh code.</p></div></div>
   </div>
-  <p>Working now? You're done. Still off? Don't guess &mdash; test one layer at a time. &darr;</p>
+  <p>Working now? You're done. Still off? Don't guess, test one layer at a time. &darr;</p>
 
   <h2>Still stuck? Test one layer at a time</h2>
   <hr class="rule g">
   <p class="lead">Instead of poking at the whole station, load these tiny programs in order. Each one
      proves a single layer works. The first one that <em>fails</em> tells you exactly where the problem
-     is &mdash; no more mystery.</p>
+     is, no more mystery.</p>
 
   <div class="rung">
     <div class="lbl">Test 1</div>
     <div class="body test">
-      <h3>Does code run at all? &mdash; Blink</h3>
+      <h3>Does code run at all?, Blink</h3>
       <p>No wiring needed. Loads a program that blinks the Pico's own green light.
          <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/03-blink/package.json" class="ext"><b>Install &amp; run Blink</b></a></p>
       <p class="verdict"><span class="ok">Light blinks?</span> The Pico, its firmware, and code-pushing all work. Go to Test 2.<br>
@@ -92,7 +92,7 @@
   <div class="rung">
     <div class="lbl">Test 2</div>
     <div class="body test">
-      <h3>Does the screen work? &mdash; Display</h3>
+      <h3>Does the screen work?, Display</h3>
       <p>Needs the OLED wired (4 wires: 3V3, GND, SDA=GP0, SCL=GP1). Draws text to the screen.
          <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/05-display/package.json" class="ext"><b>Install &amp; run Display</b></a></p>
       <p class="verdict"><span class="ok">Text on the screen?</span> Your wiring and the screen are good. Go to Test 3.<br>
@@ -103,11 +103,11 @@
   <div class="rung">
     <div class="lbl">Test 3</div>
     <div class="body test">
-      <h3>Does WiFi work? &mdash; Webserver</h3>
+      <h3>Does WiFi work?, Webserver</h3>
       <p>No wiring. The Pico makes its own WiFi network and serves a web page.
          <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/04-webserver/package.json" class="ext"><b>Install &amp; run Webserver</b></a></p>
-      <p class="verdict"><span class="ok">You can join its WiFi and see the page?</span> Everything works &mdash; load your real station, it should be fine.<br>
-         <span class="no">"Address in use" error?</span> A leftover socket from a previous run. Do the clean-slate ritual above (the <b>unplug</b> step clears it). Our current code also recovers from this on its own &mdash; reinstall to get the latest.</p>
+      <p class="verdict"><span class="ok">You can join its WiFi and see the page?</span> Everything works, load your real station, it should be fine.<br>
+         <span class="no">"Address in use" error?</span> A leftover socket from a previous run. Do the clean-slate ritual above (the <b>unplug</b> step clears it). Our current code also recovers from this on its own, reinstall to get the latest.</p>
     </div>
   </div>
 
@@ -118,7 +118,7 @@
     <div class="lbl">Wipe</div>
     <div class="body">
       <h3>Wipe the board clean (keeps the firmware)</h3>
-      <p>Removes <em>every</em> file &mdash; old programs, leftover settings, junk from past projects &mdash;
+      <p>Removes <em>every</em> file (old programs, leftover settings, junk from past projects)
          back to bare MicroPython. The reliable "make it behave" reset. Then reinstall.</p>
       <div class="paths">
         <div class="p"><b>In Viper:</b> open <a href="https://github.com/acklenx/raspberrypi/blob/main/tools/wipe.py" class="ext"><code>tools/wipe.py</code></a>, paste into a new file, Run. Then reinstall.</div>
@@ -145,13 +145,13 @@
 
   <div class="warn"><b>Note on old boards:</b> a board set up before this guide may carry leftover compiled
      <code>.mpy</code> files that override newer code. If an update won't take even after reinstalling,
-     Wipe it (above) and reinstall &mdash; that clears them for good. New installs are all readable source, so
+     Wipe it (above) and reinstall, that clears them for good. New installs are all readable source, so
      this won't happen going forward.</div>
 
   <h2>The golden rule</h2>
   <hr class="rule y">
   <p>When in doubt, <b>wipe and reinstall</b>. Ten seconds of certainty beats an hour of chasing a ghost.
-     And remember: a finished board needs only power &mdash; it runs <code>main.py</code> from flash every
+     And remember: a finished board needs only power, it runs <code>main.py</code> from flash every
      time it boots and rejoins the network on its own.</p>
 </div>
 <footer>&copy; 2026 Maker Lab Kids LLC · MakerLabKids.com · Learn. Make. Share.</footer>

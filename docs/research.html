@@ -73,7 +73,7 @@
   <a class="brand" href="index.html">🪱 Wormhole</a>
   <div class="links">
     <a class="nl" href="index.html">Home</a><a class="nl" href="start.html">Start Here</a>
-    <a class="nl" href="sessions.html">Sessions</a><a class="nl" href="stations.html">Stations</a>
+    <a class="nl" href="sessions.html">Sessions</a><a class="nl" href="stations.html">Sensors</a>
     <a class="nl on" href="research.html">Ideas</a><a class="nl" href="demos/mission-control.html">Demos</a>
     <a class="nl" href="glossary.html">Glossary</a><a class="nl" href="cheatsheet.html">Code</a>
     <a class="nl" href="reset.html">Fix a Board</a>
@@ -91,11 +91,11 @@
   <div class="panel">
     <h2>How to read a card</h2>
     <div class="legend">
-      <span><span class="dot" style="background:var(--green)"></span><b>Starter</b> — one sensor, one session, clear result</span>
-      <span><span class="dot" style="background:var(--blue)"></span><b>Basic</b> — a real experiment with a control</span>
-      <span><span class="dot" style="background:var(--orange)"></span><b>Advanced</b> — multi-day or multi-sensor, more moving parts</span>
-      <span><span class="dot" style="background:var(--mack)"></span><b>Next Level</b> — marquee build, show it off (only 5 of these)</span>
-      <span><span class="dot" style="background:var(--meta)"></span><b>Meta</b> — improve our own setup</span>
+      <span><span class="dot" style="background:var(--green)"></span><b>Starter</b>: one sensor, one session, clear result</span>
+      <span><span class="dot" style="background:var(--blue)"></span><b>Basic</b>: a real experiment with a control</span>
+      <span><span class="dot" style="background:var(--orange)"></span><b>Advanced</b>: multi-day or multi-sensor, more moving parts</span>
+      <span><span class="dot" style="background:var(--mack)"></span><b>Next Level</b>: marquee build, show it off (only 5 of these)</span>
+      <span><span class="dot" style="background:var(--meta)"></span><b>Meta</b>: improve our own setup</span>
     </div>
     <p style="margin:10px 0 0 0"><b style="color:var(--orange)">Horse-trade flag</b>: the orange
        box means the project needs more of something than one bin normally gets (extra temp
@@ -287,7 +287,7 @@ var DIFFLABEL = { starter: "Starter", solid: "Basic", stretch: "Advanced", mack:
 var active = "all";
 
 // Turn sensor names in the Gear line into deep links to their section on
-// the Stations page. One combined regex, single pass, so an inserted
+// the Sensors page. One combined regex, single pass, so an inserted
 // href never gets re-matched.
 var GEAR_RE = /\b(BME280|DS18B20|VL53L0X|VL53L1X|GL5528|BH1750|MAX9814|SG90|servos?|moisture)\b/gi;
 function gearAnchor(w) {
