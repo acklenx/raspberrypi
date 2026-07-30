@@ -14,7 +14,8 @@ main.py, index.html      worm-bin, the capstone: runs at every boot
 toc.txt                  install links to everything (read it in Viper)
 lib/                     ALL drivers, as readable .py source
 blink/                   the 4-level blink suite (01 simple ... morse)
-bme280/                  hello / bench / main / multi tiers
+bme280-demos/            hello / bench / main / multi tiers (named so the
+                         folder cannot shadow the lib/bme280.py driver)
 soil-temperature/        probe-array demos     soil-moisture/
 light-basic/  light-lux/  sound/  servo/
 distance-vl53l1x/  distance-station/

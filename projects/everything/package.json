@@ -28,23 +28,23 @@
       "github:acklenx/raspberrypi/projects/worm-bin/index.html"
     ],
     [
-      "fs:bme280/hello.py",
+      "fs:bme280-demos/hello.py",
       "github:acklenx/raspberrypi/projects/bme280/hello.py"
     ],
     [
-      "fs:bme280/bench.py",
+      "fs:bme280-demos/bench.py",
       "github:acklenx/raspberrypi/projects/bme280/bench.py"
     ],
     [
-      "fs:bme280/main.py",
+      "fs:bme280-demos/main.py",
       "github:acklenx/raspberrypi/projects/bme280/main.py"
     ],
     [
-      "fs:bme280/multi.py",
+      "fs:bme280-demos/multi.py",
       "github:acklenx/raspberrypi/projects/bme280/multi.py"
     ],
     [
-      "fs:bme280/index.html",
+      "fs:bme280-demos/index.html",
       "github:acklenx/raspberrypi/projects/bme280/index.html"
     ],
     [

@@ -34,7 +34,10 @@ const PROJECTS = [
   { name: "worm-bin", dir: "projects/worm-bin", boardDir: "",   // board ROOT: ships as main.py
     desc: "THE CAPSTONE: every sensor + actuator at once (root main.py, runs at boot)",
     files: ["main.py", "index.html"] },
-  { name: "bme280", dir: "projects/bme280", boardDir: "bme280",
+  // boardDir must NOT equal a lib module name: a root folder named
+  // bme280 shadows lib/bme280.py and breaks every import of the driver
+  // (found the hard way, on real hardware).
+  { name: "bme280", dir: "projects/bme280", boardDir: "bme280-demos",
     desc: "temp/humidity/pressure in 4 tiers up to two hot-swap sensors",
     files: ["hello.py", "bench.py", "main.py", "multi.py", "index.html"] },
   { name: "soil-temperature", dir: "projects/soil-temperature", boardDir: "soil-temperature",
@@ -69,6 +72,15 @@ const EXAMPLES = [
   { name: "04-webserver", files: ["main.py"] },
   { name: "05-display", files: ["main.py"] },
 ];
+
+// Guard: a board folder that matches a driver module name shadows the
+// driver on import. Refuse to generate such a layout.
+const libNames = new Set(LIBS.map(l => l.replace(/\.py$/, "")));
+for (const p of PROJECTS) {
+  if (p.boardDir && libNames.has(p.boardDir)) {
+    throw new Error(`boardDir "${p.boardDir}" shadows lib module ${p.boardDir}.py`);
+  }
+}
 
 // ---- docs/TOC.txt -------------------------------------------------
 let toc = `MAKER LAB KIDS - PICO PROJECT INDEX
