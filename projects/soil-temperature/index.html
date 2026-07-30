@@ -1,25 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <title>PicoLab Soil Temperature</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   body { font-family: -apple-system, Segoe UI, sans-serif; text-align: center;
          background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-  .card { background: #1e293b; padding: 20px; border-radius: 16px; max-width: 340px;
+  .card { background: #1e293b; padding: 20px; border-radius: 16px; max-width: 420px;
           margin: 16px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-  h3 { margin: 0; color: #94a3b8; font-weight: 600; letter-spacing: 1px; }
-  .val { font-size: 60px; font-weight: 800; margin: 6px 0 0 0; color: #fb923c; }
+  h3 { margin: 0 0 8px 0; color: #94a3b8; font-weight: 600; letter-spacing: 1px; }
+  .val { font-size: 54px; font-weight: 800; margin: 6px 0 0 0; color: #fb923c; }
   .unit { font-size: 22px; color: #94a3b8; font-weight: 600; }
-  #probes { margin-top: 14px; font-size: 18px; color: #f8fafc; }
+  #probes { margin-top: 14px; font-size: 17px; }
   #probes div { padding: 3px 0; }
   #probes span { color: #94a3b8; }
+  #probes .fault { color: #f87171; font-weight: 700; }
   .count { margin-top: 10px; font-size: 13px; color: #64748b; }
+  canvas { width: 100%; border-radius: 8px; display: block; }
+  .scale { display: flex; justify-content: space-between; font-size: 12px;
+           color: #94a3b8; margin: 4px 2px 10px 2px; }
+  .scale b.cold { color: #38bdf8; } .scale b.hot { color: #fb7185; }
+  .hint { font-size: 11.5px; color: #64748b; margin-top: 6px; }
+  button { background: #334155; color: #94a3b8; border: 0; border-radius: 8px;
+           padding: 4px 12px; font-size: 12px; margin-top: 8px; }
   #status { margin-top: 4px; font-size: 13px; color: #64748b; }
   #status.err { color: #f87171; }
 </style>
 </head>
 <body>
+  <div class="card">
+    <h3>HEAT MAP</h3>
+    <canvas id="strip" width="380" height="64"></canvas>
+    <div class="scale"><b class="cold" id="tmin">--</b><span>probe position along the wire</span><b class="hot" id="tmax">--</b></div>
+    <canvas id="fall" width="380" height="160"></canvas>
+    <div class="hint">time flows down: newest at the bottom. Touch a probe and watch its column warm up.</div>
+    <button id="rescale">reset color scale</button>
+  </div>
+
   <div class="card">
     <h3>SOIL TEMPERATURE</h3>
     <div class="val"><span id="temp">--</span> <span class="unit">&deg;C</span></div>
@@ -28,26 +46,97 @@
   </div>
   <div id="status">connecting...</div>
 <script>
-var misses = 0;
+// ---- config at the top, house rule ----
+var POLL_MS = 500;       // how often to ask the Pico for temps
+var MIN_SPAN = 4;        // color scale never narrower than this many degC
+var FAULT_COLOR = '#475569';
+
+var misses = 0, tLo = null, tHi = null;
+var strip = document.getElementById('strip'), sctx = strip.getContext('2d');
+var fall = document.getElementById('fall'), fctx = fall.getContext('2d');
+fctx.fillStyle = '#0b1120'; fctx.fillRect(0, 0, fall.width, fall.height);
+
 function setStatus(text, bad) {
   var s = document.getElementById('status');
   s.textContent = text;
   s.className = bad ? 'err' : '';
 }
+function colorFor(t) {
+  if (t == null) return FAULT_COLOR;
+  var n = (t - tLo) / (tHi - tLo);
+  n = Math.max(0, Math.min(1, n));
+  return 'hsl(' + Math.round(240 * (1 - n)) + ', 90%, 55%)';
+}
+function updateScale(temps) {
+  temps.forEach(function (t) {
+    if (t == null) return;
+    if (tLo === null || t < tLo) tLo = t;
+    if (tHi === null || t > tHi) tHi = t;
+  });
+  if (tLo !== null && tHi - tLo < MIN_SPAN) {
+    var mid = (tLo + tHi) / 2;
+    tLo = mid - MIN_SPAN / 2; tHi = mid + MIN_SPAN / 2;
+  }
+  document.getElementById('tmin').textContent = tLo === null ? '--' : tLo.toFixed(1) + '°';
+  document.getElementById('tmax').textContent = tHi === null ? '--' : tHi.toFixed(1) + '°';
+}
+document.getElementById('rescale').onclick = function () { tLo = tHi = null; };
+
+function gradientFor(ctx, temps, w) {
+  if (temps.length === 1) { ctx.fillStyle = colorFor(temps[0]); return; }
+  var g = ctx.createLinearGradient(0, 0, w, 0);
+  temps.forEach(function (t, i) {
+    g.addColorStop(i / (temps.length - 1), colorFor(t));
+  });
+  ctx.fillStyle = g;
+}
+function drawStrip(temps) {
+  var w = strip.width, h = strip.height;
+  sctx.clearRect(0, 0, w, h);
+  if (!temps.length) return;
+  gradientFor(sctx, temps, w);
+  sctx.fillRect(0, 0, w, 42);
+  // probe markers + labels
+  temps.forEach(function (t, i) {
+    var x = temps.length === 1 ? w / 2 : (i / (temps.length - 1)) * (w - 20) + 10;
+    sctx.fillStyle = '#f8fafc';
+    sctx.fillRect(x - 1, 34, 2, 8);
+    sctx.font = 'bold 11px sans-serif';
+    sctx.textAlign = 'center';
+    sctx.fillStyle = t == null ? '#f87171' : '#e2e8f0';
+    var lx = Math.max(26, Math.min(w - 26, x));   // keep edge labels on-canvas
+    sctx.fillText((i + 1) + (t == null ? ' !' : ': ' + t.toFixed(1)), lx, 58);
+  });
+}
+function drawFallRow(temps) {
+  if (!temps.length) return;
+  // scroll history up one row, paint the newest row at the bottom
+  fctx.drawImage(fall, 0, -1);
+  gradientFor(fctx, temps, fall.width);
+  fctx.fillRect(0, fall.height - 1, fall.width, 1);
+}
+
 function tick() {
   fetch('/data', { cache: 'no-store' })
     .then(function (r) { return r.json(); })
     .then(function (j) {
       misses = 0;
-      if (j.ok && j.count > 0) {
+      var temps = j.temps_c || [];
+      if (j.ok && temps.length > 0) {
         document.getElementById('temp').textContent = j.temp_c;
-        document.getElementById('count').textContent = j.count;
+        document.getElementById('count').textContent =
+          (j.probes !== undefined) ? j.count + '/' + j.probes : j.count;
         var html = '';
-        for (var i = 0; i < j.temps_c.length; i++) {
-          var val = j.temps_c[i] == null ? 'fault! (check probe)' : j.temps_c[i] + ' &deg;C';
+        for (var i = 0; i < temps.length; i++) {
+          var val = temps[i] == null
+            ? '<span class="fault">fault! (check probe)</span>'
+            : temps[i] + ' &deg;C';
           html += '<div><span>probe ' + (i + 1) + ':</span> ' + val + '</div>';
         }
         document.getElementById('probes').innerHTML = html;
+        updateScale(temps);
+        drawStrip(temps);
+        drawFallRow(temps);
         setStatus('live on ' + j.ssid, false);
       } else {
         document.getElementById('temp').textContent = '--';
@@ -61,7 +150,7 @@ function tick() {
       if (misses > 3) setStatus('lost connection... retrying', true);
     });
 }
-setInterval(tick, 500);
+setInterval(tick, POLL_MS);
 tick();
 </script>
 </body>

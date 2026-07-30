@@ -8,6 +8,8 @@
 # This is the same trick every fault-tolerant web demo in this repo
 # uses (they do it with poll() calls; asyncio is the cleaner way you
 # will grow into).
+#
+# Project page (docs, all levels, install link): https://github.com/acklenx/raspberrypi/tree/main/projects/blink
 
 BLINK_ON_MS = 100      # short flash...
 BLINK_OFF_MS = 900     # ...once a second: the classic heartbeat

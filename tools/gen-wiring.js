@@ -158,6 +158,46 @@ function bus(pinNum, dps, color) {
   return s;
 }
 
+// ---- resistors with real color bands --------------------------------
+const BAND_HEX = ["#1B1B1B", "#7B4A12", "#C62828", "#F57C00", "#F2C400",
+                  "#3B8C3F", "#1E64B4", "#7E2AA8", "#8E8E8E", "#FAFAFA"];
+const BAND_NAME = ["black", "brown", "red", "orange", "yellow",
+                   "green", "blue", "violet", "grey", "white"];
+const GOLD = "#C9A227";
+
+function bandDigits(ohms) {
+  let mult = 0, v = ohms;
+  while (v >= 100) { v /= 10; mult++; }
+  v = Math.round(v);
+  return [Math.floor(v / 10), v % 10, mult];   // 2 digits + multiplier
+}
+// 4-band (5%) name string, e.g. "yellow violet red gold"
+function bandWords(ohms) {
+  const [a, b, m] = bandDigits(ohms);
+  return `${BAND_NAME[a]} ${BAND_NAME[b]} ${BAND_NAME[m]} gold`;
+}
+// 5-band (1%) name string: 3 digits + multiplier + brown
+function bandWords5(ohms) {
+  const [a, b, m] = bandDigits(ohms);
+  return `${BAND_NAME[a]} ${BAND_NAME[b]} black ${BAND_NAME[m - 1]} brown`;
+}
+// Tan resistor body with its actual 4 bands. vertical=true stands it up.
+function resistorGlyph(x, y, w, h, ohms, vertical) {
+  const [a, b, m] = bandDigits(ohms);
+  const cols = [BAND_HEX[a], BAND_HEX[b], BAND_HEX[m], GOLD];
+  let s = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3"`
+    + ` fill="#E9D9B6" stroke="${C.ink}" stroke-width="1.3"/>`;
+  cols.forEach((c, i) => {
+    const f = 0.16 + i * 0.2;
+    if (vertical) {
+      s += `<rect x="${x + 1}" y="${y + h * f}" width="${w - 2}" height="${Math.max(3, h * 0.09)}" fill="${c}"/>`;
+    } else {
+      s += `<rect x="${x + w * f}" y="${y + 1}" width="${Math.max(3, w * 0.09)}" height="${h - 2}" fill="${c}"/>`;
+    }
+  });
+  return s;
+}
+
 function deviceBox(x, y, w, h, title, sub, accent, dashed) {
   let s = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" fill="${dashed ? "#FFFFFF" : C.light}"`
     + ` stroke="${accent}" stroke-width="2.5"${dashed ? ' stroke-dasharray="6 4"' : ""}/>`;
@@ -202,6 +242,10 @@ function diagram(title, sub, usedPins, bodyFn, legend) {
   leg += text(lx, ly - 6, "Connections", { size: 13, color: C.navy, bold: true });
   legend.forEach((r, i) => {
     const yy = ly + 18 + i * 23;
+    if (!r.color) {   // text-only row (e.g. resistor band names)
+      leg += text(lx, yy, r.text, { size: 11, color: C.ink });
+      return;
+    }
     if (CASED().includes(r.color)) {
       leg += `<line x1="${lx}" y1="${yy - 4}" x2="${lx + 26}" y2="${yy - 4}" stroke="${CASING}" stroke-width="6.6" stroke-linecap="round"/>`;
     }
