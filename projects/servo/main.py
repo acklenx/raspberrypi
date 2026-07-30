@@ -21,6 +21,16 @@
 #   ORANGE/yellow -> the signal, GP16 = physical PIN 21.
 # On boot the servo does a small self-test wiggle: if it does NOT wiggle,
 # it is power/wiring (check the RED wire on pin 40), not the code.
+#
+# BROWN-OUTS: a servo gulps a big spike of current the instant it starts
+# moving (and a lot more if it stalls). Off USB that spike can dip the 5V
+# rail enough to RESET the Pico -- the screen blanks and it reboots every
+# time the servo moves. Best fix: power the servo from its OWN 5V supply
+# (a phone charger or battery pack), sharing ONLY the ground with the Pico
+# (signal still goes to GP16). If you must run it off USB/VBUS, solder a
+# fat capacitor (470-1000uF electrolytic, mind the polarity) across the
+# servo's 5V and GND right at the servo to soak up the spikes.
+#
 # Auto mode (optional): GL5528 photoresistor from 3V3 to GP28, plus a
 # 10k resistor from GP28 to GND.
 # On the board: main.py, index.html, lib/picolab.py, lib/ssd1306.py.

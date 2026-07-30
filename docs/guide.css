@@ -35,6 +35,11 @@ a { color: var(--blue); }
 .ext::after { content: "\2197"; font-size: 0.82em; margin-left: 1px; vertical-align: 1px;
               color: var(--gray); font-weight: bold; }
 .btn.ext::after { color: rgba(255,255,255,0.8); }
+/* links that jump to a glossary definition: dashed + orange, so you can
+   tell you're headed to the glossary before you click */
+a.term { color: var(--orange); text-decoration: underline dashed;
+         text-underline-offset: 2px; text-decoration-thickness: 1px; }
+a.term:hover { text-decoration-style: solid; background: #FDF3E7; }
 code { background: #E5EBF1; border-radius: 4px; padding: 1px 6px;
        font-family: Consolas, Menlo, monospace; font-size: 13px; color: var(--navy); }
 

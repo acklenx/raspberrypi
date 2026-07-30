@@ -56,66 +56,66 @@
        don't know, it's on this page. Start with the basics below.</p>
   </header>
 
-  <h2>The absolute basics</h2>
+  <h2 id="the-absolute-basics">The absolute basics</h2>
   <hr class="rule b">
   <dl>
-    <dt>Microcontroller</dt>
+    <dt id="microcontroller">Microcontroller</dt>
     <dd>A tiny, cheap, complete computer on a single chip. It does one job, instantly, forever. Our
         one is the <em>Pico 2 W</em> ("Pico" for short) &mdash; about $8, and it has WiFi built in.</dd>
-    <dt>Program / code</dt>
+    <dt id="program-code">Program / code</dt>
     <dd>A list of instructions you write for the computer to follow. "Code" is the same thing: the
         text you type. Writing code is just writing very precise instructions.</dd>
-    <dt>MicroPython</dt>
+    <dt id="micropython">MicroPython</dt>
     <dd>The <em>language</em> we write our code in &mdash; a version of Python shrunk to run on a tiny
         computer like the Pico. Friendly, readable, forgiving. You put it on the Pico one time (see
         <em>firmware</em>, below).</dd>
-    <dt>IDE (we use Viper IDE)</dt>
+    <dt id="ide">IDE (we use Viper IDE)</dt>
     <dd>The place where you write code and press "run." Ours, <a href="https://viper-ide.org" class="ext">Viper
         IDE</a>, runs right in a web browser &mdash; nothing to install. (IDE stands for "integrated
         development environment," a fancy phrase for "code workbench.")</dd>
-    <dt>Run</dt>
+    <dt id="run">Run</dt>
     <dd>Tell the Pico to actually do what your program says, right now. You press Run; things happen.</dd>
-    <dt>File</dt>
+    <dt id="file">File</dt>
     <dd>A saved piece of code (or text) with a name. Programs live in files, like <code>main.py</code>.</dd>
-    <dt>Upload / install</dt>
+    <dt id="upload-install">Upload / install</dt>
     <dd>Copy a file from your computer onto the Pico. Our one-click "Install" links do this for you.</dd>
-    <dt>Sensor vs. actuator</dt>
+    <dt id="sensor-vs-actuator">Sensor vs. actuator</dt>
     <dd>A <em>sensor</em> measures the world (heat, light, moisture). An <em>actuator</em> changes it
         (a servo that moves, a relay that switches something on). A station usually has some of each.</dd>
-    <dt>Dashboard</dt>
+    <dt id="dashboard">Dashboard</dt>
     <dd>The little web page a station serves to show its readings live. You open it on your phone.</dd>
   </dl>
 
-  <h2>Electricity basics</h2>
+  <h2 id="electricity-basics">Electricity basics</h2>
   <hr class="rule b">
   <dl>
-    <dt>Voltage (V, volts)</dt>
+    <dt id="voltage">Voltage (V, volts)</dt>
     <dd>Electrical pressure. Our logic runs at <em>3.3&nbsp;V</em>; USB provides 5&nbsp;V.
         Think water pressure in a pipe.</dd>
-    <dt>Current (A, amps)</dt>
+    <dt id="current">Current (A, amps)</dt>
     <dd>How much electricity is flowing. Small numbers here: an LED sips about 0.01&nbsp;A
         (10&nbsp;mA); a stalled servo can gulp over 1&nbsp;A.</dd>
-    <dt>Resistance (&Omega;, ohms)</dt>
+    <dt id="resistance">Resistance (&Omega;, ohms)</dt>
     <dd>How hard a part pushes back against current. Ohm's law ties the three together:
         <em>V = I &times; R</em>.</dd>
-    <dt>Ground (GND)</dt>
+    <dt id="ground">Ground (GND)</dt>
     <dd>The shared zero-volt reference every circuit measures against. Everything on the
         breadboard connects back to it. Black wire, always.</dd>
-    <dt>Short circuit</dt>
+    <dt id="short-circuit">Short circuit</dt>
     <dd>Power connected straight to ground with (almost) nothing in between. Big current,
         hot parts, sad Pico. The truth light staying dark is often the first clue.</dd>
-    <dt>Open circuit</dt>
+    <dt id="open-circuit">Open circuit</dt>
     <dd>The opposite problem: a break somewhere, so no current flows at all. Loose jumper,
         cold solder joint, probe lead folded over in the breadboard hole.</dd>
   </dl>
 
-  <h2>Parts</h2>
+  <h2 id="parts">Parts</h2>
   <hr class="rule g">
   <dl>
-    <dt>Resistor</dt>
+    <dt id="resistor">Resistor</dt>
     <dd>Sets or limits current. Value painted on in color bands: our 4.7k pullup reads
         yellow-violet-red-gold, our 10k divider resistor reads brown-black-orange-gold.</dd>
-    <dt>Pullup resistor</dt>
+    <dt id="pullup-resistor">Pullup resistor</dt>
     <dd>A resistor from a signal wire up to 3.3&nbsp;V that holds the line HIGH when nobody is
         talking. The DS18B20 bus needs one (4.7k). A pull<em>down</em> does the same job toward
         ground. Putting the pullup toward ground instead is the classic silent killer.
@@ -124,69 +124,69 @@
           <figcaption>A pullup in the wild: the banded 4.7k (yellow-violet-red-gold) from the
             DS18B20 data line up to the 3V3 rail.</figcaption>
         </figure></dd>
-    <dt>Voltage divider</dt>
+    <dt id="voltage-divider">Voltage divider</dt>
     <dd>Two resistors in series splitting a voltage. Our light sensor is one: photoresistor on
         top, 10k on the bottom, and the middle point's voltage says how bright it is.</dd>
-    <dt>LED</dt>
+    <dt id="led">LED</dt>
     <dd>Light-emitting diode. Has a polarity: long leg to positive, and always with a
         current-limiting resistor (330&nbsp;&Omega; is our habit) or it burns out.</dd>
-    <dt>Photoresistor (LDR)</dt>
+    <dt id="photoresistor">Photoresistor (LDR)</dt>
     <dd>A resistor that changes with light: more light, less resistance. Cheap and cheerful
         (GL5528 in our kit).</dd>
-    <dt>Servo</dt>
+    <dt id="servo">Servo</dt>
     <dd>A motor that goes to the angle you ask for (0&ndash;180&deg;) and holds it. Commanded with
         PWM pulses. Powered from 5&nbsp;V, never 3V3; big ones (MG995) get their own supply.</dd>
-    <dt>Relay</dt>
+    <dt id="relay">Relay</dt>
     <dd>An electrically controlled switch: a tiny signal from the Pico safely switches a much
         bigger circuit on or off. You can hear it click.</dd>
-    <dt>Sensor vs actuator</dt>
+    <dt id="sensor-vs-actuator-2">Sensor vs actuator</dt>
     <dd>A sensor measures the world (temperature, light, sound). An actuator changes it
         (servo, relay, buzzer). A station usually has some of each.</dd>
-    <dt>Breadboard</dt>
+    <dt id="breadboard">Breadboard</dt>
     <dd>The plug-in prototyping board. Rows of 5 holes are connected; the long rails down the
         sides carry power and ground. Watch out: on big boards the rails <em>break in the
         middle</em>.</dd>
-    <dt>Jumper wires (DuPont wires)</dt>
+    <dt id="jumper-wires">Jumper wires (DuPont wires)</dt>
     <dd>The pluggable wires. Class color convention: <em>red</em> 3V3, <em>black</em> GND,
         <em>green</em> SDA, <em>white</em> SCL, yellow for signals.</dd>
-    <dt>Multimeter</dt>
+    <dt id="multimeter">Multimeter</dt>
     <dd>The measuring tool: volts, ohms, continuity (the beep mode that tells you two points
         are connected). When wiring lies, the multimeter tells the truth.</dd>
   </dl>
 
-  <h2>Buses and signals</h2>
+  <h2 id="buses-and-signals">Buses and signals</h2>
   <hr class="rule o">
   <dl>
-    <dt>GPIO</dt>
+    <dt id="gpio">GPIO</dt>
     <dd>General Purpose Input/Output: the Pico's programmable pins. Named GP0&hellip;GP28.
         <em>GP numbers are not physical pin numbers</em>: GP22 lives at physical pin 29. Our
         wiring diagrams show both.</dd>
-    <dt>Digital vs analog</dt>
+    <dt id="digital-vs-analog">Digital vs analog</dt>
     <dd>Digital signals are on/off (HIGH = 3.3&nbsp;V, LOW = 0&nbsp;V). Analog signals can be any
         voltage in between, which is how a moisture probe says "53%".</dd>
-    <dt>ADC</dt>
+    <dt id="adc">ADC</dt>
     <dd>Analog-to-Digital Converter: reads an analog voltage as a number. The Pico has three
         ADC pins (GP26/27/28); the ADS1115 chip adds four more over I2C, with better precision.</dd>
-    <dt>PWM</dt>
+    <dt id="pwm">PWM</dt>
     <dd>Pulse Width Modulation: switching a pin on and off fast, where the on-fraction encodes
         the message. Dims LEDs, and (at 50&nbsp;Hz with 1&ndash;2&nbsp;ms pulses) commands servos.</dd>
-    <dt>I2C</dt>
+    <dt id="i2c">I2C</dt>
     <dd>A two-wire bus (SDA = data, SCL = clock) that many devices share, each with its own
         address: our OLED is <code>0x3C</code>, BME280 <code>0x76/0x77</code>, ADS1115
         <code>0x48</code>. One bus, four wires total, many devices.</dd>
-    <dt>I2C address</dt>
+    <dt id="i2c-address">I2C address</dt>
     <dd>A device's house number on the bus. Two devices with the same address can't share
         (VL53L0X and VL53L1X both live at <code>0x29</code>). <code>i2c.scan()</code> lists who
         is home.</dd>
-    <dt>OneWire</dt>
+    <dt id="onewire">OneWire</dt>
     <dd>A one-data-wire bus used by DS18B20 temperature probes. Every probe has a unique
         factory serial number, so dozens can share the same three wires.</dd>
-    <dt>UART / serial</dt>
+    <dt id="uart-serial">UART / serial</dt>
     <dd>The classic two-wire send/receive link. Your USB cable carries a serial conversation
         between the Pico and Viper's terminal.</dd>
   </dl>
 
-  <h2>The Pico itself</h2>
+  <h2 id="the-pico">The Pico itself</h2>
   <hr class="rule y">
   <figure>
     <img src="img/pico-anatomy.svg" alt="Pico 2 W with BOOTSEL, LED, 3V3, GND, VBUS, I2C pins, GP22, and the ADC pins circled and labeled">
@@ -195,34 +195,34 @@
       pin positions (what you count to when wiring).</figcaption>
   </figure>
   <dl>
-    <dt>Microcontroller</dt>
+    <dt id="microcontroller-2">Microcontroller</dt>
     <dd>A tiny complete computer on one chip that runs exactly one program, instantly, forever.
         The Pico 2&nbsp;W's chip is the RP2350, plus Wi-Fi.</dd>
-    <dt>3V3 pin</dt>
+    <dt id="3v3-pin">3V3 pin</dt>
     <dd>The Pico's 3.3&nbsp;V power output (physical pin 36). Powers every sensor we use.</dd>
-    <dt>VBUS / VSYS</dt>
+    <dt id="vbus-vsys">VBUS / VSYS</dt>
     <dd>VBUS (pin 40) is raw 5&nbsp;V straight from USB: servo food. VSYS (pin 39) is the Pico's
         own supply input for battery projects.</dd>
-    <dt>BOOTSEL ("Boot SELect")</dt>
+    <dt id="bootsel">BOOTSEL ("Boot SELect")</dt>
     <dd>The button that selects <em>where the chip boots from</em>. Held while plugging in
         USB, the chip boots from its built-in USB bootloader, which shows up as a flash drive
         you drop firmware onto. Untouched, it boots from flash memory: MicroPython and your
         <code>main.py</code>. One button, two boot sources. Software can pick the bootloader
         too: <code>machine.bootloader()</code>, no finger required.</dd>
-    <dt>Firmware</dt>
+    <dt id="firmware">Firmware</dt>
     <dd>The software that is flashed <em>into</em> the board and lives there: for us,
         MicroPython v1.28.0. Full story under
-        <a href="#fourwords">"Four words, one machine"</a> in the Code words section.</dd>
-    <dt>Flash memory</dt>
+        <a class="term" href="#fourwords">"Four words, one machine"</a> in the Code words section.</dd>
+    <dt id="flash-memory">Flash memory</dt>
     <dd>The Pico's onboard storage (4&nbsp;MB) where your files live: <code>main.py</code>,
         <code>lib/</code>, <code>placements.json</code>. Survives power-off.</dd>
-    <dt>Onboard LED / the truth light</dt>
+    <dt id="onboard-led-the-truth-light">Onboard LED / the truth light</dt>
     <dd>The little LED on the board, which our programs use honestly: blinking means code is
         running; POST blink codes (short = OK, long = trouble, one blink per part) say exactly
         which part is unhappy; dark means nothing is running.</dd>
   </dl>
 
-  <h2>Code words</h2>
+  <h2 id="code-words">Code words</h2>
   <hr class="rule b">
   <dl>
     <dt id="fourwords">Four words, one machine: hardware, firmware, driver, software</dt>
@@ -259,65 +259,65 @@
         The stack, bottom to top: <b>hardware</b> (the board) &rarr; <b>firmware</b>
         (MicroPython, flashed in) &rarr; <b>drivers</b> (one per device, in lib/) &rarr;
         <b>your program</b> (main.py, the boss).</dd>
-    <dt>MicroPython</dt>
+    <dt id="micropython-2">MicroPython</dt>
     <dd>Python, shrunk to run on microcontrollers. What every program in this repo is written in.</dd>
-    <dt>REPL</dt>
+    <dt id="repl">REPL</dt>
     <dd>The <code>&gt;&gt;&gt;</code> prompt: type a line, the board runs it immediately. The
         fastest wiring detective there is (<code>i2c.scan()</code>).</dd>
-    <dt><code>main.py</code></dt>
+    <dt id="main-py"><code>main.py</code></dt>
     <dd>The file the board runs automatically at every power-up. Saving your program as
         main.py is how a project "ships".</dd>
-    <dt>Library / driver</dt>
+    <dt id="library-driver">Library / driver</dt>
     <dd>Ready-made code you import instead of writing. Our <code>lib/</code> folder holds
         one driver per sensor plus <code>picolab.py</code>, the shared fault-tolerance
         framework. (Driver vs library: a driver is a library whose specialty is one piece of
-        hardware; see <a href="#fourwords">the four words</a>.)</dd>
-    <dt>Exception / try-except</dt>
+        hardware; see <a class="term" href="#fourwords">the four words</a>.)</dd>
+    <dt id="exception-try-except">Exception / try-except</dt>
     <dd>How Python reports "that went wrong" and how code survives it. Our house style: a
         missing sensor never crashes a program; it goes in the POST blinks instead.</dd>
-    <dt>Calibration</dt>
+    <dt id="calibration">Calibration</dt>
     <dd>Teaching a sensor the truth: ice water is 0&deg;, boiling is 100&deg;, and the board
         stores the correction (<code>cal.json</code>) and applies it forever after.</dd>
   </dl>
 
-  <h2>Networking words</h2>
+  <h2 id="networking-words">Networking words</h2>
   <hr class="rule g">
   <dl>
-    <dt>Access point (AP) vs station</dt>
+    <dt id="access-point-vs-station">Access point (AP) vs station</dt>
     <dd>An AP <em>hosts</em> a Wi-Fi network (each Pico can host PicoLabN); a station
         <em>joins</em> one (our mission-control mode joins WormHole). Same radio, two roles.</dd>
-    <dt>IP address</dt>
+    <dt id="ip-address">IP address</dt>
     <dd>A device's number on a network, like 192.168.4.1 (a Pico hosting its own AP) or
         192.168.8.57 (a station on the classroom router).</dd>
-    <dt>HTTP / webserver</dt>
+    <dt id="http-webserver">HTTP / webserver</dt>
     <dd>The language of the web. Our Picos run a tiny webserver: your phone asks for the page,
         the Pico answers with it.</dd>
-    <dt>JSON</dt>
+    <dt id="json">JSON</dt>
     <dd>A simple text format for data that both Python and web pages read natively. Every
         station serves its readings as JSON at <code>/data</code>.</dd>
-    <dt>SSID</dt>
+    <dt id="ssid">SSID</dt>
     <dd>Just the fancy name for a Wi-Fi network's name.</dd>
   </dl>
 
-  <h2>At the soldering bench</h2>
+  <h2 id="at-the-soldering-bench">At the soldering bench</h2>
   <hr class="rule o">
   <dl>
-    <dt>Soldering</dt>
+    <dt id="soldering">Soldering</dt>
     <dd>Joining metal to metal with melted solder so electricity (and a little strength) flows
         through the joint. Heat the parts, feed the solder, count two seconds, done.</dd>
-    <dt>Tinning</dt>
+    <dt id="tinning">Tinning</dt>
     <dd>Pre-coating a wire or iron tip with a thin layer of solder so the real joint goes fast
         and clean.</dd>
-    <dt>Flux</dt>
+    <dt id="flux">Flux</dt>
     <dd>The chemical helper (inside our solder wire) that cleans the metal as you work so
         solder flows instead of beading up.</dd>
-    <dt>Wetting</dt>
+    <dt id="wetting">Wetting</dt>
     <dd>What good solder does: flows smooth and shiny onto both parts, like water on clean
         glass. A joint that wetted looks like a tiny volcano.</dd>
-    <dt>Cold joint</dt>
+    <dt id="cold-joint">Cold joint</dt>
     <dd>A joint that LOOKS attached but never truly bonded: dull, lumpy, cracked. The #1 cause
         of "it works when I hold the wire". Reheat it properly and it heals.</dd>
-    <dt>Header pins</dt>
+    <dt id="header-pins">Header pins</dt>
     <dd>The rows of metal pins soldered to boards so they plug into breadboards. Our Picos and
         OLEDs come pre-soldered; sensors are where you earn your solder badge.</dd>
   </dl>
@@ -325,16 +325,28 @@
   <h2 id="post">Debugging words</h2>
   <hr class="rule y">
   <dl>
-    <dt>POST codes</dt>
+    <dt id="post-codes">POST codes</dt>
     <dd>Power-On Self-Test, borrowed from big computers: our truth light blinks one slot per
         part, in order. <code>. . _ .</code> means part 3 is in trouble. Dark = code not running.</dd>
-    <dt>Hot-plug</dt>
+    <dt id="hot-plug">Hot-plug</dt>
     <dd>Plugging a part in while the program runs. Our demos pick it up within a couple of
         seconds, no restart.</dd>
-    <dt>Floating pin</dt>
+    <dt id="floating-pin">Floating pin</dt>
     <dd>An input connected to nothing, reading random noise. Why an unplugged analog sensor
         still "reads" something: the pin is guessing.</dd>
-    <dt>Stale library</dt>
+    <dt id="brown-out">Brown-out</dt>
+    <dd>A momentary voltage sag that resets the board. When something draws a big gulp of current
+        &mdash; a <em>servo</em> starting or stalling, a motor, a fistful of LEDs &mdash; it can dip
+        the shared 5&nbsp;V or 3V3 rail below what the chip needs, and the Pico reboots (screen blanks,
+        program restarts from the top). The tell: it only misbehaves <em>when the hungry part moves</em>.
+        Cures: give that part its own power supply (share grounds), and/or add a <em>bulk capacitor</em>
+        (470&ndash;1000&nbsp;&micro;F) right next to it to buffer the spike.</dd>
+    <dt id="stall">Stall (servo)</dt>
+    <dd>When a servo is told to push past its limit or against something it can't move, it doesn't give
+        up &mdash; it keeps pulling maximum current trying. That's the biggest current spike a servo
+        makes and the most common <em>brown-out</em> trigger. Don't command a servo into a hard stop,
+        and give thirsty servos their own 5&nbsp;V supply.</dd>
+    <dt id="stale-library">Stale library</dt>
     <dd>An old compiled copy (<code>.mpy</code>) shadowing a newer <code>.py</code> after an
         update. Symptom: errors right after an install. Cure: delete the old .mpy, reinstall.</dd>
   </dl>

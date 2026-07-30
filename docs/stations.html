@@ -224,8 +224,16 @@
          Signal (orange) to GP16 (physical pin 21); ground (brown) to any GND (e.g. pin 38). The demo does
          a little wiggle on boot: no wiggle means it is power or wiring, not the code.</p>
       <p class="multi"><b>More than one?</b> Each servo needs its own PWM-capable GPIO (most pins qualify)
-         and 5V power. One or two run fine on USB power; more than that want their own 5V supply so a
-         stalling servo can't brown-out the Pico. Share the ground.</p>
+         and 5V power. Share the ground.</p>
+      <p class="multi" style="border-left:4px solid var(--orange)"><b><a class="term" href="glossary.html#brown-out">Brown-outs</a>
+         (why the Pico keeps rebooting):</b> a servo gulps a big spike of current the instant it starts
+         moving, and far more if it <a class="term" href="glossary.html#stall">stalls</a>. Off USB that
+         spike can dip the 5V rail enough to <b>reset the Pico</b> &mdash; the
+         screen blanks and it reboots every time the servo moves. Best fix: give the servo its <b>own 5V
+         supply</b> (a phone charger or battery pack), sharing only the <b>ground</b> with the Pico (signal
+         still goes to the Pico). Sticking with USB power? Solder a fat <b>capacitor (470&ndash;1000&micro;F
+         electrolytic, mind the +/- polarity)</b> across the servo's 5V and GND, right at the servo, to
+         soak up the spikes.</p>
       <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json">Install</a>
         <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/servo">Project README</a></p>
     </div>

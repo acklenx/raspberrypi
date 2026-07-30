@@ -374,20 +374,38 @@
 
 <script>
 // ================= shared fake-data engine =================
-// 58 distinct names so all 46 bins (7 classes x 6-7 groups) get their own,
-// with headroom. Assigned by a running index below, never reused.
-var NAMEPOOL = ['Compost Cowboys','Worm Rangers','Dirt Nerds','The Decomposers',
-  'Castings Inc','Team Wiggle','Soil Society','Bin There Done That','The Wrigglers',
-  'Mud Lab','Deep Roots','The Burrowers','Casting Crew','Tunnel Vision',
-  'Rot Stars','Night Crawlers','Squirm Squad','Wormholes','Humus Heroes',
-  'The Underminers','Loam Rangers','Vermi-Best','The Verminators','Dirt First',
-  'Compost Mentis','Wriggle Room','Soil Mates','The Rot Squad','Bed Heads',
-  'The Munchers','Scrap Happy','Peel Appeal','The Turn-Ups','Aeration Nation',
-  'Damp Champs','Wiggle Wranglers','The Castaways','Crumble Crew','Bin Bosses',
-  'Earthworm Squad','The Diggers','Subterraneans','The Recyclers','Worm Wide Web',
-  'Poop Troop','Muck Rakers','The Wormongers','Bin Diesel','Worm and Fuzzy',
-  'Soil Patrol','Decompose Crew','Grime Time','Dirt Devils','Mudslingers',
-  'The Composters','Squiggle Squad','Underground Inc','The Tunnelers'];
+// A big pool of distinct names so all 46-47 bins get their own with room
+// to spare (no repeats across classes, or across years). Assigned by a
+// running index below. Themes: compost/soil, worm science, worm types,
+// puns, and movie riffs.
+var NAMEPOOL = [
+  // classic compost & soil
+  'Compost Cowboys','Worm Rangers','Dirt Nerds','The Decomposers','Castings Inc',
+  'Team Wiggle','Soil Society','Bin There Done That','The Wrigglers','Mud Lab',
+  'Deep Roots','The Burrowers','Casting Crew','Tunnel Vision','Rot Stars',
+  'Night Crawlers','Squirm Squad','Wormholes','Humus Heroes','The Underminers',
+  'Loam Rangers','Vermi-Best','The Verminators','Dirt First','Compost Mentis',
+  'Wriggle Room','Soil Mates','The Rot Squad','Bed Heads','The Munchers',
+  'Scrap Happy','Peel Appeal','The Turn-Ups','Aeration Nation','Damp Champs',
+  'Wiggle Wranglers','The Castaways','Crumble Crew','Bin Bosses','Earthworm Squad',
+  'The Diggers','Subterraneans','The Recyclers','Worm Wide Web','Poop Troop',
+  'Muck Rakers','The Wormongers','Bin Diesel','Worm and Fuzzy','Soil Patrol',
+  'Decompose Crew','Grime Time','Dirt Devils','Mudslingers','The Composters',
+  'Squiggle Squad','Underground Inc','The Tunnelers',
+  // worm science (real species + taxonomy)
+  'Eisenia Fetida','Team Lumbricus','The Annelids','Annelid Army','The Oligochaetes',
+  'Lumbricus League','The Dendrobaenas',
+  // worm types (common names)
+  'Red Wigglers','Tiger Worms','The Brandlings','Blue Worms','The Angleworms',
+  // puns
+  'Global Worming','Can of Worms','The Early Worms','Worm and Order','Rot and Roll',
+  'Grime and Punishment','Sir Wriggles-a-Lot','Wormbledon','The Wormaids',
+  'The Great Wormdini','Worms of Endearment','Rotten to the Core','Compost Malone',
+  // movie riffs
+  'Dirt Vader','Guardians of the Compost','Silence of the Worms','The Wizard of Ooze',
+  'The Bin Redemption','Sandworms','The Graboids','Jurassic Dirt','Star Worms',
+  'Wormzilla','Lord of the Rinds'
+];
 var ALLSIMS = [];
 var nameIdx = 0;
 for (var cls = 1; cls <= 7; cls++) {
