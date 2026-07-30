@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Electronics Glossary · Maker Lab Kids</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --blue: #2E7DBC; --green: #7CB342; --orange: #E8762C; --yellow: #E8B62C;
+    --navy: #1B3A5C; --ink: #222A35; --light: #F4F7FA; --gray: #6B7280;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink);
+         background: #FFFFFF; margin: 0; line-height: 1.55; }
+  .topbar { height: 8px; background: var(--green); }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px 40px 20px; }
+  header { padding: 30px 0 6px 0; }
+  header h1 { color: var(--navy); font-size: 32px; margin: 0 0 6px 0; }
+  header p { margin: 0; color: var(--gray); }
+  nav { font-size: 14px; margin-top: 8px; }
+  nav a { color: var(--blue); font-weight: bold; text-decoration: none; margin-right: 14px; }
+  nav a:hover { text-decoration: underline; }
+  h2 { color: var(--navy); font-size: 22px; margin: 34px 0 4px 0; }
+  .rule { height: 4px; width: 100%; border: 0; margin: 0 0 14px 0; }
+  .rule.b { background: var(--blue); } .rule.g { background: var(--green); }
+  .rule.o { background: var(--orange); } .rule.y { background: var(--yellow); }
+  dl { margin: 0; }
+  dt { font-weight: bold; color: var(--navy); margin-top: 12px; }
+  dt code { background: #E5EBF1; border-radius: 4px; padding: 1px 6px;
+            font-family: Consolas, Menlo, monospace; font-size: 14px; }
+  dd { margin: 2px 0 0 0; font-size: 15px; }
+  dd em { color: var(--orange); font-style: normal; font-weight: bold; }
+  footer { text-align: center; color: var(--gray); font-size: 12.5px; padding: 26px 10px; }
+</style>
+</head>
+<body>
+<div class="topbar"></div>
+<div class="wrap">
+  <header>
+    <h1>Electronics Glossary</h1>
+    <p>Every term we use in the workshop, in plain language. When someone says a word you
+       don't know, it's on this page.</p>
+    <nav><a href="index.html">&larr; Lab guide</a> <a href="cheatsheet.html">Programming cheat sheet</a>
+         <a href="https://github.com/acklenx/raspberrypi">Code repo</a></nav>
+  </header>
+
+  <h2>Electricity basics</h2>
+  <hr class="rule b">
+  <dl>
+    <dt>Voltage (V, volts)</dt>
+    <dd>Electrical pressure. Our logic runs at <em>3.3&nbsp;V</em>; USB provides 5&nbsp;V.
+        Think water pressure in a pipe.</dd>
+    <dt>Current (A, amps)</dt>
+    <dd>How much electricity is flowing. Small numbers here: an LED sips about 0.01&nbsp;A
+        (10&nbsp;mA); a stalled servo can gulp over 1&nbsp;A.</dd>
+    <dt>Resistance (&Omega;, ohms)</dt>
+    <dd>How hard a part pushes back against current. Ohm's law ties the three together:
+        <em>V = I &times; R</em>.</dd>
+    <dt>Ground (GND)</dt>
+    <dd>The shared zero-volt reference every circuit measures against. Everything on the
+        breadboard connects back to it. Black wire, always.</dd>
+    <dt>Short circuit</dt>
+    <dd>Power connected straight to ground with (almost) nothing in between. Big current,
+        hot parts, sad Pico. The truth light staying dark is often the first clue.</dd>
+    <dt>Open circuit</dt>
+    <dd>The opposite problem: a break somewhere, so no current flows at all. Loose jumper,
+        cold solder joint, probe lead folded over in the breadboard hole.</dd>
+  </dl>
+
+  <h2>Parts</h2>
+  <hr class="rule g">
+  <dl>
+    <dt>Resistor</dt>
+    <dd>Sets or limits current. Value painted on in color bands: our 4.7k pullup reads
+        yellow-violet-red-gold, our 10k divider resistor reads brown-black-orange-gold.</dd>
+    <dt>Pullup resistor</dt>
+    <dd>A resistor from a signal wire up to 3.3&nbsp;V that holds the line HIGH when nobody is
+        talking. The DS18B20 bus needs one (4.7k). A pull<em>down</em> does the same job toward
+        ground. Putting the pullup toward ground instead is the classic silent killer.</dd>
+    <dt>Voltage divider</dt>
+    <dd>Two resistors in series splitting a voltage. Our light sensor is one: photoresistor on
+        top, 10k on the bottom, and the middle point's voltage says how bright it is.</dd>
+    <dt>LED</dt>
+    <dd>Light-emitting diode. Has a polarity: long leg to positive, and always with a
+        current-limiting resistor (330&nbsp;&Omega; is our habit) or it burns out.</dd>
+    <dt>Photoresistor (LDR)</dt>
+    <dd>A resistor that changes with light: more light, less resistance. Cheap and cheerful
+        (GL5528 in our kit).</dd>
+    <dt>Servo</dt>
+    <dd>A motor that goes to the angle you ask for (0&ndash;180&deg;) and holds it. Commanded with
+        PWM pulses. Powered from 5&nbsp;V, never 3V3; big ones (MG995) get their own supply.</dd>
+    <dt>Relay</dt>
+    <dd>An electrically controlled switch: a tiny signal from the Pico safely switches a much
+        bigger circuit on or off. You can hear it click.</dd>
+    <dt>Sensor vs actuator</dt>
+    <dd>A sensor measures the world (temperature, light, sound). An actuator changes it
+        (servo, relay, buzzer). A station usually has some of each.</dd>
+    <dt>Breadboard</dt>
+    <dd>The plug-in prototyping board. Rows of 5 holes are connected; the long rails down the
+        sides carry power and ground. Watch out: on big boards the rails <em>break in the
+        middle</em>.</dd>
+    <dt>Jumper wires (DuPont wires)</dt>
+    <dd>The pluggable wires. Class color convention: <em>red</em> 3V3, <em>black</em> GND,
+        <em>green</em> SDA, <em>white</em> SCL, yellow for signals.</dd>
+    <dt>Multimeter</dt>
+    <dd>The measuring tool: volts, ohms, continuity (the beep mode that tells you two points
+        are connected). When wiring lies, the multimeter tells the truth.</dd>
+  </dl>
+
+  <h2>Buses and signals</h2>
+  <hr class="rule o">
+  <dl>
+    <dt>GPIO</dt>
+    <dd>General Purpose Input/Output: the Pico's programmable pins. Named GP0&hellip;GP28.
+        <em>GP numbers are not physical pin numbers</em>: GP22 lives at physical pin 29. Our
+        wiring diagrams show both.</dd>
+    <dt>Digital vs analog</dt>
+    <dd>Digital signals are on/off (HIGH = 3.3&nbsp;V, LOW = 0&nbsp;V). Analog signals can be any
+        voltage in between, which is how a moisture probe says "53%".</dd>
+    <dt>ADC</dt>
+    <dd>Analog-to-Digital Converter: reads an analog voltage as a number. The Pico has three
+        ADC pins (GP26/27/28); the ADS1115 chip adds four more over I2C, with better precision.</dd>
+    <dt>PWM</dt>
+    <dd>Pulse Width Modulation: switching a pin on and off fast, where the on-fraction encodes
+        the message. Dims LEDs, and (at 50&nbsp;Hz with 1&ndash;2&nbsp;ms pulses) commands servos.</dd>
+    <dt>I2C</dt>
+    <dd>A two-wire bus (SDA = data, SCL = clock) that many devices share, each with its own
+        address: our OLED is <code>0x3C</code>, BME280 <code>0x76/0x77</code>, ADS1115
+        <code>0x48</code>. One bus, four wires total, many devices.</dd>
+    <dt>I2C address</dt>
+    <dd>A device's house number on the bus. Two devices with the same address can't share
+        (VL53L0X and VL53L1X both live at <code>0x29</code>). <code>i2c.scan()</code> lists who
+        is home.</dd>
+    <dt>OneWire</dt>
+    <dd>A one-data-wire bus used by DS18B20 temperature probes. Every probe has a unique
+        factory serial number, so dozens can share the same three wires.</dd>
+    <dt>UART / serial</dt>
+    <dd>The classic two-wire send/receive link. Your USB cable carries a serial conversation
+        between the Pico and Viper's terminal.</dd>
+  </dl>
+
+  <h2>The Pico itself</h2>
+  <hr class="rule y">
+  <dl>
+    <dt>Microcontroller</dt>
+    <dd>A tiny complete computer on one chip that runs exactly one program, instantly, forever.
+        The Pico 2&nbsp;W's chip is the RP2350, plus Wi-Fi.</dd>
+    <dt>3V3 pin</dt>
+    <dd>The Pico's 3.3&nbsp;V power output (physical pin 36). Powers every sensor we use.</dd>
+    <dt>VBUS / VSYS</dt>
+    <dd>VBUS (pin 40) is raw 5&nbsp;V straight from USB: servo food. VSYS (pin 39) is the Pico's
+        own supply input for battery projects.</dd>
+    <dt>BOOTSEL</dt>
+    <dd>The button that, held while plugging in, turns the Pico into a USB flash drive so you
+        can drop a firmware file on it. Software can get there too: <code>machine.bootloader()</code>.</dd>
+    <dt>Firmware</dt>
+    <dd>The base software the board runs: for us, MicroPython v1.28.0 (the exact tested build
+        lives in the repo). Flash once per board, ever.</dd>
+    <dt>Flash memory</dt>
+    <dd>The Pico's onboard storage (4&nbsp;MB) where your files live: <code>main.py</code>,
+        <code>lib/</code>, <code>placements.json</code>. Survives power-off.</dd>
+    <dt>Onboard LED / the truth light</dt>
+    <dd>The little LED on the board, which our programs use honestly: blinking means code is
+        running; POST blink codes (short = OK, long = trouble, one blink per part) say exactly
+        which part is unhappy; dark means nothing is running.</dd>
+  </dl>
+
+  <h2>Code words</h2>
+  <hr class="rule b">
+  <dl>
+    <dt>MicroPython</dt>
+    <dd>Python, shrunk to run on microcontrollers. What every program in this repo is written in.</dd>
+    <dt>REPL</dt>
+    <dd>The <code>&gt;&gt;&gt;</code> prompt: type a line, the board runs it immediately. The
+        fastest wiring detective there is (<code>i2c.scan()</code>).</dd>
+    <dt><code>main.py</code></dt>
+    <dd>The file the board runs automatically at every power-up. Saving your program as
+        main.py is how a project "ships".</dd>
+    <dt>Library / driver</dt>
+    <dd>Ready-made code you import. Our <code>lib/</code> folder holds sensor drivers plus
+        <code>picolab.py</code>, the shared fault-tolerance framework.</dd>
+    <dt>Exception / try-except</dt>
+    <dd>How Python reports "that went wrong" and how code survives it. Our house style: a
+        missing sensor never crashes a program; it goes in the POST blinks instead.</dd>
+    <dt>Calibration</dt>
+    <dd>Teaching a sensor the truth: ice water is 0&deg;, boiling is 100&deg;, and the board
+        stores the correction (<code>cal.json</code>) and applies it forever after.</dd>
+  </dl>
+
+  <h2>Networking words</h2>
+  <hr class="rule g">
+  <dl>
+    <dt>Access point (AP) vs station</dt>
+    <dd>An AP <em>hosts</em> a Wi-Fi network (each Pico can host PicoLabN); a station
+        <em>joins</em> one (our mission-control mode joins WormHole). Same radio, two roles.</dd>
+    <dt>IP address</dt>
+    <dd>A device's number on a network, like 192.168.4.1 (a Pico hosting its own AP) or
+        192.168.8.57 (a station on the classroom router).</dd>
+    <dt>HTTP / webserver</dt>
+    <dd>The language of the web. Our Picos run a tiny webserver: your phone asks for the page,
+        the Pico answers with it.</dd>
+    <dt>JSON</dt>
+    <dd>A simple text format for data that both Python and web pages read natively. Every
+        station serves its readings as JSON at <code>/data</code>.</dd>
+    <dt>SSID</dt>
+    <dd>Just the fancy name for a Wi-Fi network's name.</dd>
+  </dl>
+
+  <h2>At the soldering bench</h2>
+  <hr class="rule o">
+  <dl>
+    <dt>Soldering</dt>
+    <dd>Joining metal to metal with melted solder so electricity (and a little strength) flows
+        through the joint. Heat the parts, feed the solder, count two seconds, done.</dd>
+    <dt>Tinning</dt>
+    <dd>Pre-coating a wire or iron tip with a thin layer of solder so the real joint goes fast
+        and clean.</dd>
+    <dt>Flux</dt>
+    <dd>The chemical helper (inside our solder wire) that cleans the metal as you work so
+        solder flows instead of beading up.</dd>
+    <dt>Wetting</dt>
+    <dd>What good solder does: flows smooth and shiny onto both parts, like water on clean
+        glass. A joint that wetted looks like a tiny volcano.</dd>
+    <dt>Cold joint</dt>
+    <dd>A joint that LOOKS attached but never truly bonded: dull, lumpy, cracked. The #1 cause
+        of "it works when I hold the wire". Reheat it properly and it heals.</dd>
+    <dt>Header pins</dt>
+    <dd>The rows of metal pins soldered to boards so they plug into breadboards. Our Picos and
+        OLEDs come pre-soldered; sensors are where you earn your solder badge.</dd>
+  </dl>
+
+  <h2 id="post">Debugging words</h2>
+  <hr class="rule y">
+  <dl>
+    <dt>POST codes</dt>
+    <dd>Power-On Self-Test, borrowed from big computers: our truth light blinks one slot per
+        part, in order. <code>. . _ .</code> means part 3 is in trouble. Dark = code not running.</dd>
+    <dt>Hot-plug</dt>
+    <dd>Plugging a part in while the program runs. Our demos pick it up within a couple of
+        seconds, no restart.</dd>
+    <dt>Floating pin</dt>
+    <dd>An input connected to nothing, reading random noise. Why an unplugged analog sensor
+        still "reads" something: the pin is guessing.</dd>
+    <dt>Stale library</dt>
+    <dd>An old compiled copy (<code>.mpy</code>) shadowing a newer <code>.py</code> after an
+        update. Symptom: errors right after an install. Cure: delete the old .mpy, reinstall.</dd>
+  </dl>
+</div>
+<footer>&copy; 2026 Maker Lab Kids LLC · MakerLabKids.com · Learn. Make. Share.</footer>
+</body>
+</html>

@@ -39,6 +39,12 @@ from machine import Pin
 
 import picolab
 
+# ===== CONFIG =====
+# The one-wire data pin every DS18B20 probe shares (default GP22,
+# physical pin 29). Remember the 4.7k pullup from this pin to 3V3.
+PROBE_PIN = 22
+# ==================
+
 sensor = None
 
 
@@ -46,7 +52,7 @@ def connect():
   import onewire
   import ds18x20
 
-  ow = onewire.OneWire(Pin(22))
+  ow = onewire.OneWire(Pin(PROBE_PIN))
   ds = ds18x20.DS18X20(ow)
   roms = ds.scan()
   if not roms:

@@ -15,6 +15,12 @@ import time
 from machine import I2C, Pin
 from ads1115 import ADS1115
 
+
+# ===== CONFIG =====
+# Which ADS1115 input the divider middle point uses (default A0 = 0).
+CHANNEL = 0
+# ==================
+
 led = Pin("LED", Pin.OUT)
 i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
 adc = None
@@ -23,7 +29,7 @@ while True:
   try:
     if adc is None:
       adc = ADS1115(i2c)
-    volts = adc.read_volts(0)
+    volts = adc.read_volts(CHANNEL)
     led.on()
     pct = max(0.0, min(100.0, volts / 3.3 * 100))
     print("Light: %5.1f %%   (%.2f V on A0)" % (pct, volts))

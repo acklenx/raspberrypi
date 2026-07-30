@@ -28,11 +28,15 @@ import picolab
 DRY_RAW = 44000
 WET_RAW = 18000
 
+# The analog pin the sensor AOUT uses (default GP26 = ADC0, physical
+# pin 31). Native ADC pins only: GP26, GP27, GP28.
+SENSOR_PIN = 26
+
 sensor = None
 
 
 def connect():
-  return ADC(26)
+  return ADC(SENSOR_PIN)
 
 
 def read(dev):

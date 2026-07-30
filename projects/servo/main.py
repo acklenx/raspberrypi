@@ -28,11 +28,13 @@ import picolab
 MIN_US = 600
 MAX_US = 2400
 STEP = 3  # max degrees moved per motion tick, keeps motion smooth
+SERVO_PIN = 16  # servo signal (orange lead); default GP16, physical pin 21
+LDR_PIN = 28    # optional photoresistor for follow-light mode; default GP28
 
-pwm = PWM(Pin(16))
+pwm = PWM(Pin(SERVO_PIN))
 pwm.freq(50)
 
-ldr = ADC(Pin(28))
+ldr = ADC(Pin(LDR_PIN))
 
 
 def write_angle(angle):

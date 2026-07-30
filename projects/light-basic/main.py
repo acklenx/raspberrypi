@@ -18,12 +18,18 @@ import gc
 
 import picolab
 
+# ===== CONFIG =====
+# The pin reading the divider middle point (default GP28 = ADC2,
+# physical pin 34). Native ADC pins only: GP26, GP27, GP28.
+LDR_PIN = 28
+# ==================
+
 sensor = None
 
 
 def connect():
   from machine import ADC
-  return ADC(28)
+  return ADC(LDR_PIN)
 
 
 def read(dev):

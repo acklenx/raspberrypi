@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MicroPython Cheat Sheet · Maker Lab Kids</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --blue: #2E7DBC; --green: #7CB342; --orange: #E8762C; --yellow: #E8B62C;
+    --navy: #1B3A5C; --ink: #222A35; --light: #F4F7FA; --gray: #6B7280;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink);
+         background: #FFFFFF; margin: 0; line-height: 1.5; }
+  .topbar { height: 8px; background: var(--blue); }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px 40px 20px; }
+  header { padding: 30px 0 6px 0; }
+  header h1 { color: var(--navy); font-size: 32px; margin: 0 0 6px 0; }
+  header p { margin: 0; color: var(--gray); }
+  nav { font-size: 14px; margin-top: 8px; }
+  nav a { color: var(--blue); font-weight: bold; text-decoration: none; margin-right: 14px; }
+  nav a:hover { text-decoration: underline; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 18px; margin-top: 18px; }
+  .card { background: var(--light); border-radius: 10px; padding: 14px 16px;
+          box-shadow: 0 2px 8px rgba(27,58,92,0.15); }
+  .card h2 { color: var(--navy); font-size: 17px; margin: 0 0 8px 0; }
+  pre { background: #1B2733; color: #E6EDF3; border-radius: 8px; padding: 10px 12px;
+        font-family: Consolas, Menlo, monospace; font-size: 12.5px; overflow-x: auto;
+        margin: 8px 0; line-height: 1.5; }
+  pre b { color: #7CB342; font-weight: normal; }   /* comments */
+  .card p { font-size: 13.5px; margin: 6px 0; }
+  code { background: #E5EBF1; border-radius: 4px; padding: 1px 5px;
+         font-family: Consolas, Menlo, monospace; font-size: 13px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th { text-align: left; color: var(--navy); padding: 4px 6px; border-bottom: 2px solid #D5DEE7; }
+  td { padding: 4px 6px; border-bottom: 1px solid #E1E8EF; vertical-align: top; }
+  footer { text-align: center; color: var(--gray); font-size: 12.5px; padding: 26px 10px; }
+</style>
+</head>
+<body>
+<div class="topbar"></div>
+<div class="wrap">
+  <header>
+    <h1>MicroPython Cheat Sheet</h1>
+    <p>Everything you reach for while building a station, on one page. House rules included.</p>
+    <nav><a href="index.html">&larr; Lab guide</a> <a href="glossary.html">Electronics glossary</a>
+         <a href="https://github.com/acklenx/raspberrypi">Code repo</a></nav>
+  </header>
+
+  <div class="cols">
+    <div class="card">
+      <h2>Running code (Viper IDE)</h2>
+      <p><b>Run</b> the open file &middot; <b>Stop</b> = Ctrl+C in the terminal &middot;
+         save as <code>main.py</code> and it runs at every power-up (that's "shipping").</p>
+      <pre>&gt;&gt;&gt; 2 + 2          <b># the REPL runs lines instantly</b>
+&gt;&gt;&gt; import machine
+&gt;&gt;&gt; machine.reset()  <b># full reboot from the keyboard</b></pre>
+    </div>
+
+    <div class="card">
+      <h2>Print, variables, strings</h2>
+      <pre>name = "Ada"
+temp = 23.51
+print("hi", name, temp)
+print("T: %.1f C" % temp)      <b># 1 decimal</b>
+print(f"{name}: {temp:.1f} C") <b># f-string, same idea</b></pre>
+    </div>
+
+    <div class="card">
+      <h2>If / loops / functions</h2>
+      <pre>if temp &gt; 30:
+    print("too hot!")
+elif temp &lt; 15:
+    print("too cold")
+else:
+    print("just right")
+
+for i in range(5):     <b># 0,1,2,3,4</b>
+    print(i)
+
+while True:            <b># forever (Ctrl+C stops)</b>
+    pass
+
+def c_to_f(c):
+    return c * 9 / 5 + 32</pre>
+    </div>
+
+    <div class="card">
+      <h2>Lists and dicts</h2>
+      <pre>temps = [24.1, 25.0, 23.8]
+temps.append(22.9)
+print(len(temps), temps[0], temps[-1])
+
+reading = {"temp_c": 24.1, "ok": True}
+print(reading["temp_c"])
+for t in temps:
+    print(t)</pre>
+    </div>
+
+    <div class="card">
+      <h2>Timing</h2>
+      <pre>import time
+time.sleep(1)        <b># seconds (freezes everything!)</b>
+time.sleep_ms(250)
+
+<b># non-blocking pattern (how our demos wait):</b>
+due = time.ticks_add(time.ticks_ms(), 750)
+if time.ticks_diff(time.ticks_ms(), due) &gt;= 0:
+    print("750 ms passed, do the thing")</pre>
+    </div>
+
+    <div class="card">
+      <h2>Pins: LED, output, input</h2>
+      <pre>from machine import Pin
+led = Pin("LED", Pin.OUT)   <b># the truth light</b>
+led.on(); led.off()
+led.value(1)                <b># same as on()</b>
+
+button = Pin(14, Pin.IN, Pin.PULL_UP)
+print(button.value())       <b># 1 = not pressed</b></pre>
+    </div>
+
+    <div class="card">
+      <h2>Analog in (ADC)</h2>
+      <pre>from machine import ADC
+soil = ADC(26)              <b># GP26/27/28 only</b>
+raw = soil.read_u16()       <b># 0..65535</b>
+volts = raw * 3.3 / 65535
+pct = raw / 65535 * 100</pre>
+      <p>More channels or better precision: the ADS1115 over I2C
+         (<code>from ads1115 import ADS1115</code>).</p>
+    </div>
+
+    <div class="card">
+      <h2>Servo (PWM)</h2>
+      <pre>from machine import PWM, Pin
+pwm = PWM(Pin(16)); pwm.freq(50)
+def angle(a):               <b># 0..180 degrees</b>
+    us = 600 + a / 180 * 1800
+    pwm.duty_u16(int(us * 65535 / 20000))
+angle(90)</pre>
+    </div>
+
+    <div class="card">
+      <h2>I2C: who's on the bus?</h2>
+      <pre>from machine import I2C, Pin
+i2c = I2C(0, sda=Pin(0), scl=Pin(1))
+print(i2c.scan())     <b># [60] = 0x3C = the OLED</b></pre>
+      <p>Empty list = wiring problem, not code. Our addresses: OLED <code>0x3C</code>,
+         BME280 <code>0x76/0x77</code>, BH1750 <code>0x23</code>, ADS1115 <code>0x48</code>,
+         VL53L0X <code>0x29</code>.</p>
+    </div>
+
+    <div class="card">
+      <h2>DS18B20 probes (OneWire)</h2>
+      <pre>import onewire, ds18x20, time
+from machine import Pin
+ds = ds18x20.DS18X20(onewire.OneWire(Pin(22)))
+roms = ds.scan()            <b># one entry per probe</b>
+ds.convert_temp()
+time.sleep_ms(750)          <b># conversion takes 750 ms</b>
+for rom in roms:
+    print(ds.read_temp(rom))</pre>
+    </div>
+
+    <div class="card">
+      <h2>Don't crash: try / except</h2>
+      <pre>try:
+    t = ds.read_temp(rom)
+except Exception as e:
+    t = None                <b># survive, report, retry</b>
+    print("probe unhappy:", e)</pre>
+      <p>House rule: a missing part never crashes a station. It shows up in the POST
+         blinks and the program keeps going.</p>
+    </div>
+
+    <div class="card">
+      <h2>Do two things at once (asyncio)</h2>
+      <pre>import asyncio
+async def heartbeat():
+    while True:
+        led.on();  await asyncio.sleep_ms(100)
+        led.off(); await asyncio.sleep_ms(900)
+async def work():
+    while True:
+        print("reading sensors...")
+        await asyncio.sleep(2)
+async def main():
+    await asyncio.gather(heartbeat(), work())
+asyncio.run(main())</pre>
+    </div>
+
+    <div class="card">
+      <h2>House rules</h2>
+      <p>1. <b>Config at the top.</b> Tunable numbers live at the top of the file in CAPS
+         with a comment. Nobody digs in loop code to change a timing.</p>
+      <p>2. <b>Use the truth light.</b> Simplest programs: LED on = working. Bigger ones:
+         POST blinks, one per part, short = OK, long = trouble, dark = not running.</p>
+      <p>3. <b>Never crash on a missing part.</b> try/except, report, retry.</p>
+      <p>4. <b>Metric units.</b> This is science.</p>
+    </div>
+
+    <div class="card">
+      <h2>When it breaks</h2>
+      <table>
+        <tr><th>You see</th><th>It usually means</th></tr>
+        <tr><td><code>ImportError: no module named X</code></td>
+            <td>Driver missing from <code>lib/</code> on the board (or a folder is shadowing it)</td></tr>
+        <tr><td><code>OSError: [Errno 110] ETIMEDOUT</code> / <code>ENODEV</code></td>
+            <td>Wiring: the device didn't answer. Check with <code>i2c.scan()</code></td></tr>
+        <tr><td><code>IndentationError</code></td>
+            <td>Python cares about the spaces at line starts. Make them match.</td></tr>
+        <tr><td><code>EADDRINUSE</code> / address in use</td>
+            <td>The old run still owns the port; our demos recover on their own</td></tr>
+        <tr><td>weird error right after an update</td>
+            <td>Stale <code>.mpy</code> in <code>lib/</code>: delete it, reinstall</td></tr>
+        <tr><td>board won't show in Viper</td>
+            <td>Charge-only USB cable. Swap it. They look identical; they are not.</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+<footer>&copy; 2026 Maker Lab Kids LLC · MakerLabKids.com · Learn. Make. Share.</footer>
+</body>
+</html>

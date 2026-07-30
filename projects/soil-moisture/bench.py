@@ -26,6 +26,10 @@ import picolab
 DRY_RAW = 44000
 WET_RAW = 18000
 
+# The analog pin the sensor AOUT uses (default GP26 = ADC0, physical
+# pin 31). Native ADC pins only: GP26, GP27, GP28.
+SENSOR_PIN = 26
+
 picolab.banner("Soil Moisture Bench Demo", [
     "Wiring: AOUT=GP26 (ADC0), VCC=3V3, GND",
     "Capacitive sensor v1.2, OLED at 0x3C",
@@ -34,7 +38,7 @@ picolab.banner("Soil Moisture Bench Demo", [
 
 
 def connect():
-  return ADC(26)
+  return ADC(SENSOR_PIN)
 
 
 def read(dev):

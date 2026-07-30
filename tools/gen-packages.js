@@ -100,6 +100,8 @@ toc += `workshop examples (01 hello-world, 03 blink, 04 webserver, 05 display)
   ${INSTALL}/examples/01-hello-world/package.json  (etc.)
 
 Lab guide + wiring diagrams:  https://acklenx.github.io/raspberrypi/
+Electronics glossary:         https://acklenx.github.io/raspberrypi/glossary.html
+Programming cheat sheet:      https://acklenx.github.io/raspberrypi/cheatsheet.html
 Repo + docs:                  https://github.com/acklenx/raspberrypi
 Firmware (.uf2, flash once):  https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2
 `;

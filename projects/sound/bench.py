@@ -20,6 +20,17 @@ import time
 
 import picolab
 
+# ===== CONFIG =====
+# MIC_PIN: the MAX9814 OUT pin; must be a native ADC pin (default GP27).
+# SAMPLE_MS: how long each loudness reading listens flat-out. Longer =
+#   smoother, shorter = snappier (default 25 ms).
+# PEAK_FALL: how fast the peak marker decays each reading, 0..1
+#   (default 0.95; closer to 1 makes the peak linger longer).
+MIC_PIN = 27
+SAMPLE_MS = 25
+PEAK_FALL = 0.95
+# ==================
+
 picolab.banner("MAX9814 Sound Bench Demo", [
     "Wiring: VDD=3V3 GND=GND OUT=GP27",
     "GAIN floating = 60dB (fine)",
@@ -31,14 +42,14 @@ peak = [0.0]
 
 def connect():
   from machine import ADC
-  return ADC(27)
+  return ADC(MIC_PIN)
 
 
 def read(dev):
   lo = 65535
   hi = 0
   start = time.ticks_ms()
-  while time.ticks_diff(time.ticks_ms(), start) < 25:
+  while time.ticks_diff(time.ticks_ms(), start) < SAMPLE_MS:
     v = dev.read_u16()
     if v < lo:
       lo = v
@@ -46,7 +57,7 @@ def read(dev):
       hi = v
   level = hi - lo if hi > lo else 0
   level_pct = round(level / 65535 * 100, 1)
-  peak[0] = max(peak[0] * 0.95, level_pct)
+  peak[0] = max(peak[0] * PEAK_FALL, level_pct)
   return {
       "level_pct": level_pct,
       "peak_pct": round(peak[0], 1),

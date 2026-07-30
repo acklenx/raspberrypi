@@ -31,11 +31,28 @@ from machine import ADC, PWM, Pin
 
 import picolab
 
-# Moisture calibration in VOLTS (ADS1115 reads volts, not Pico counts).
-# Calibrate: watch volts with the probe dry in air (DRY), then in a cup
-# of water up to the marked line (WET), and edit these two numbers.
-MOIST_DRY_V = 2.22
-MOIST_WET_V = 0.91
+# ===== CONFIG: the knobs worth turning ================================
+# Change a value, save, restart. Everything below the line is machinery.
+
+# Soil moisture calibration, in VOLTS (the ADS1115 reads volts, not
+# Pico counts). To calibrate YOURS: watch moist1_v on the dashboard
+# with the probe dry in air (that is DRY), then in a cup of water up to
+# the marked line (that is WET). Defaults suit the capacitive v1.2.
+MOIST_DRY_V = 2.22   # default 2.22 V
+MOIST_WET_V = 0.91   # default 0.91 V
+
+# Where things plug in. These are GP numbers, NOT physical pin numbers
+# (GP22 is physical pin 29; the wiring diagrams show both).
+PROBE_PIN = 22        # DS18B20 one-wire bus + its 4.7k pullup (default GP22)
+MIC_PIN = 27          # MAX9814 mic; must be a native ADC pin (default GP27)
+SERVO_BIG_PIN = 16    # MG995; own 5V supply, grounds joined (default GP16)
+SERVO_SMALL_PIN = 17  # SG90; VBUS power is fine (default GP17)
+RELAY_PIN = 15        # relay module IN (default GP15)
+
+# Timing.
+READ_EVERY_MS = 500   # sensor sweep cadence (default 500 ms)
+PAGE_SECONDS = 3      # OLED page rotation speed (default 3 s per page)
+# ===== end of config ==================================================
 
 
 def bme(name, addr):
@@ -83,7 +100,7 @@ def microphone():
   this slot mostly proves the code is sampling."""
 
   def connect():
-    return ADC(27)
+    return ADC(MIC_PIN)
 
   def read(dev):
     lo, hi = 65535, 0
@@ -120,7 +137,7 @@ def probe_bus():
     import onewire
     import ds18x20
 
-    ds = ds18x20.DS18X20(onewire.OneWire(Pin(22)))
+    ds = ds18x20.DS18X20(onewire.OneWire(Pin(PROBE_PIN)))
     roms = ds.scan()
     if not roms:
       raise OSError("no DS18B20 found on GP22")
@@ -190,9 +207,9 @@ class Servo:
     self.pwm.duty_u16(int(us * 65535 / 20000))
 
 
-servo_big = Servo(16)     # MG995: its own 5V supply, grounds joined!
-servo_small = Servo(17)   # SG90: VBUS is fine
-relay = Pin(15, Pin.OUT)
+servo_big = Servo(SERVO_BIG_PIN)     # MG995: its own 5V supply, grounds joined!
+servo_small = Servo(SERVO_SMALL_PIN)   # SG90: VBUS is fine
+relay = Pin(RELAY_PIN, Pin.OUT)
 relay.value(0)
 
 
@@ -286,7 +303,7 @@ time.sleep_ms(3000)
 
 light = picolab.StatusLight()
 app = picolab.WebApp()
-tick = picolab.Throttle(500)
+tick = picolab.Throttle(READ_EVERY_MS)
 heartbeat = picolab.Throttle(5000)
 
 app.announce("Worm Bin Command Center Active!")
@@ -310,7 +327,7 @@ while True:
   light.set_slots(slots)
 
   d = data_fn()
-  page = (time.ticks_ms() // 3000) % 4
+  page = (time.ticks_ms() // (PAGE_SECONDS * 1000)) % 4
   lines = [app.ssid + " p%d/4" % (page + 1)] + page_lines(page, d)
   display.show(lines[:5])
 
