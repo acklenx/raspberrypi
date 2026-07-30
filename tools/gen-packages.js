@@ -27,6 +27,7 @@ const LIBS = ["picolab.py", "ssd1306.py", "bme280.py", "ads1115.py",
 
 const PROJECTS = [
   { name: "everything", desc: "ALL of the below on the board at once (this install)" },
+  { name: "mission-control", desc: "one wall display for every station: join the WormHole net + aggregator server" },
   { name: "blink", dir: "projects/blink", boardDir: "blink",
     desc: "blink in 4 levels, up to async + morse-code your name",
     files: ["01_blink.py", "02_blink_config.py", "03_blink_async.py",

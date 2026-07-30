@@ -438,13 +438,47 @@ class WebApp:
     # try the given path first and fall back to the root copy.
     self.index = index
     self.ssid = "PicoLab" + str(node_id())
+    self.ip = "192.168.4.1"
+    self.ap = None
+    self.joined = None
 
-    self.ap = network.WLAN(network.AP_IF)
-    self.ap.active(True)
-    self.ap.ifconfig(("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.1"))
-    self.ap.config(essid=self.ssid, security=0)
-    while not self.ap.active():
-      time.sleep(0.1)
+    # Mission-control mode: if wifi.json exists on the board
+    # ({"ssid": "WormHole", "password": "supersecret"}), JOIN that
+    # network so every station lives on one router and an aggregator
+    # can find them all. No file, or the join fails: open our own AP,
+    # exactly as always. Delete wifi.json to go back to AP mode.
+    creds = None
+    try:
+      with open("wifi.json") as f:
+        creds = json.load(f)
+    except Exception:
+      pass
+    if creds and creds.get("ssid"):
+      sta = network.WLAN(network.STA_IF)
+      sta.active(True)
+      try:
+        sta.connect(creds["ssid"], creds.get("password", ""))
+        for _ in range(30):
+          if sta.isconnected():
+            break
+          time.sleep_ms(500)
+      except Exception:
+        pass
+      if sta.isconnected():
+        self.joined = creds["ssid"]
+        self.ip = sta.ifconfig()[0]
+        log("Joined", self.joined, "as", self.ip)
+      else:
+        log("Could not join", creds["ssid"], "- opening own AP instead.")
+        sta.active(False)
+
+    if not self.joined:
+      self.ap = network.WLAN(network.AP_IF)
+      self.ap.active(True)
+      self.ap.ifconfig(("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.1"))
+      self.ap.config(essid=self.ssid, security=0)
+      while not self.ap.active():
+        time.sleep(0.1)
 
     self.server = None
     self._init_server()
@@ -457,11 +491,15 @@ class WebApp:
       self.server.bind(addr)
     except OSError as e:
       if e.errno == 98:
-        log("Port 80 busy! Recycling Wi-Fi stack...")
-        self.ap.active(False)
-        time.sleep(0.5)
-        self.ap.active(True)
-        self.ap.ifconfig(("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.1"))
+        if self.ap:
+          log("Port 80 busy! Recycling Wi-Fi stack...")
+          self.ap.active(False)
+          time.sleep(0.5)
+          self.ap.active(True)
+          self.ap.ifconfig(("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.1"))
+        else:
+          log("Port 80 busy! Waiting for the old socket to let go...")
+          time.sleep(1)
         self.server.close()
         self.server = socket.socket()
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -472,10 +510,17 @@ class WebApp:
     self.server.settimeout(0.05)
 
   def announce(self, title):
-    banner(title, [
-        "SSID:       " + self.ssid,
-        "Dashboard:  http://192.168.4.1",
-    ])
+    if self.joined:
+      banner(title, [
+          "Station:    " + self.ssid,
+          "Joined:     " + self.joined,
+          "Dashboard:  http://" + self.ip,
+      ])
+    else:
+      banner(title, [
+          "SSID:       " + self.ssid,
+          "Dashboard:  http://192.168.4.1",
+      ])
 
   def poll(self, data_fn, routes=None):
     """Serve one pending request, if any. Never raises.

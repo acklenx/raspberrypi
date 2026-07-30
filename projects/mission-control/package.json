@@ -1,0 +1,19 @@
+{
+  "name": "picolab-mission-control-uplink",
+  "version": "0.1.0",
+  "description": "Maker Lab Kids: put this Pico on the WormHole classroom network (installs wifi.json; the station then appears on the Mission Control wall)",
+  "urls": [
+    [
+      "fs:wifi.json",
+      "github:acklenx/raspberrypi/projects/mission-control/wifi.json"
+    ],
+    [
+      "picolab.py",
+      "github:acklenx/raspberrypi/lib/picolab.py"
+    ],
+    [
+      "fs:toc.txt",
+      "github:acklenx/raspberrypi/docs/TOC.txt"
+    ]
+  ]
+}

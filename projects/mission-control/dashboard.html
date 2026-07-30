@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Woodstock Mission Control</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0A0E12; color: #E8EDF2; min-height: 100vh;
+         font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+         padding-bottom: 44px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline;
+          padding: 18px 22px 10px 22px; border-bottom: 1px solid #1C2833;
+          flex-wrap: wrap; gap: 8px; }
+  h1 { margin: 0; font-size: 17px; letter-spacing: 3px; color: #7DFF9E;
+       font-weight: 700; text-shadow: 0 0 12px rgba(51,255,102,.35); }
+  .met { font-size: 14px; color: #38E8FF; letter-spacing: 2px;
+         font-variant-numeric: tabular-nums; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr));
+          gap: 12px; padding: 16px 22px; }
+  .tile { background: #0D1319; border: 1px solid #1C2833; border-radius: 4px;
+          padding: 10px 12px; }
+  .tile.stale { border-color: #FF3B30; opacity: .75; }
+  .cs { display: flex; justify-content: space-between; align-items: center;
+        font-size: 13px; letter-spacing: 2px; color: #A6C4D0; margin-bottom: 2px; }
+  .addr { font-size: 10px; color: #4A5A66; margin-bottom: 6px; letter-spacing: 1px; }
+  .lamp { width: 10px; height: 10px; border-radius: 50%; background: #33FF66;
+          box-shadow: 0 0 8px #33FF66; flex: none; }
+  .stale .lamp { background: #FF3B30; box-shadow: 0 0 10px #FF3B30; }
+  .trows { font-size: 12px; line-height: 1.7; color: #6FA8B8; }
+  .trows b { color: #D9F2E6; float: right; font-weight: 400;
+             font-variant-numeric: tabular-nums; }
+  .tile canvas { width: 100%; height: 34px; margin-top: 6px; display: block; }
+  .empty { padding: 60px 20px; text-align: center; color: #4A5A66; font-size: 14px;
+           letter-spacing: 1px; line-height: 2; }
+  #foot { position: fixed; left: 0; right: 0; bottom: 0; background: #05080B;
+          border-top: 1px solid #1C2833; padding: 8px 22px; font-size: 12px;
+          letter-spacing: 1px; color: #5E90A0; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1>WOODSTOCK MISSION CONTROL</h1>
+    <div class="met">MET <span id="met">00:00:00</span> · STATIONS <span id="stn">0</span></div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty">SCANNING FOR STATIONS ON THE WORMHOLE NETWORK…<br>
+    (a station is any Pico with wifi.json aboard, running any web demo)</div>
+  <div id="foot">uplink: WormHole · aggregator refresh 1 s · a red tile has not answered recently</div>
+<script>
+// which /data fields get shown, in this order, with friendly names
+var FIELDS = [
+  ['temp_c', 'TEMP', 'C'], ['in_temp_c', 'BIN TEMP', 'C'], ['out_temp_c', 'OUT TEMP', 'C'],
+  ['probe_count', 'PROBES OK', ''], ['moist1_pct', 'MOIST A', '%'], ['moist2_pct', 'MOIST B', '%'],
+  ['moisture_pct', 'MOISTURE', '%'], ['hum_pct', 'HUMIDITY', '%'], ['light_pct', 'LIGHT', '%'],
+  ['lux', 'LUX', ''], ['sound_pct', 'SOUND', '%'], ['level_pct', 'LEVEL', '%'],
+  ['dist_mm', 'DISTANCE', 'mm'], ['angle', 'SERVO', 'deg'], ['relay', 'RELAY', ''],
+];
+var t0 = Date.now(), tiles = {}, hist = {};
+function spark(cv, data, color) {
+  var c = cv.getContext('2d'), w = cv.width = cv.offsetWidth * 2, h = cv.height = 68;
+  c.clearRect(0, 0, w, h);
+  if (data.length < 2) return;
+  var lo = Math.min.apply(null, data), hi = Math.max.apply(null, data);
+  if (hi - lo < 1) { var m = (hi + lo) / 2; lo = m - 0.5; hi = m + 0.5; }
+  c.beginPath();
+  data.forEach(function (v, i) {
+    var x = i / (data.length - 1) * w, y = h - 4 - (v - lo) / (hi - lo) * (h - 8);
+    i ? c.lineTo(x, y) : c.moveTo(x, y);
+  });
+  c.strokeStyle = color; c.lineWidth = 2.5; c.stroke();
+}
+function firstMetric(d) {
+  for (var i = 0; i < FIELDS.length; i++) {
+    var v = d[FIELDS[i][0]];
+    if (typeof v === 'number') return v;
+  }
+  return null;
+}
+function render(all) {
+  var g = document.getElementById('grid');
+  document.getElementById('stn').textContent = all.stations.length;
+  document.getElementById('empty').style.display = all.stations.length ? 'none' : '';
+  var seen = {};
+  all.stations.forEach(function (st) {
+    seen[st.addr] = true;
+    var t = tiles[st.addr];
+    if (!t) {
+      t = tiles[st.addr] = document.createElement('div');
+      t.innerHTML = '<div class="cs"><span class="nm"></span><span class="lamp"></span></div>'
+        + '<div class="addr"></div><div class="trows"></div><canvas></canvas>';
+      g.appendChild(t);
+    }
+    var d = st.data || {};
+    var stale = st.age > all.stale_after;
+    t.className = 'tile' + (stale ? ' stale' : '');
+    t.querySelector('.nm').textContent = (d.ssid || 'STATION').toUpperCase();
+    t.querySelector('.addr').textContent = st.addr + (stale ? ' · last seen ' + Math.round(st.age) + 's ago' : '');
+    var rows = '';
+    FIELDS.forEach(function (f) {
+      var v = d[f[0]];
+      if (v === undefined || v === null || typeof v === 'object') return;
+      rows += '<div>' + f[1] + '<b>' + v + (f[2] ? ' ' + f[2] : '') + '</b></div>';
+    });
+    if (Array.isArray(d.temps_c)) {
+      rows += '<div>PROBE TEMPS<b>' + d.temps_c.map(function (x) {
+        return x == null ? '!' : x; }).join(' / ') + '</b></div>';
+    }
+    t.querySelector('.trows').innerHTML = rows || '<div>no readings yet</div>';
+    var v = firstMetric(d);
+    if (v !== null) {
+      var hh = hist[st.addr] = hist[st.addr] || [];
+      hh.push(v); if (hh.length > 90) hh.shift();
+      spark(t.querySelector('canvas'), hh, stale ? '#FF3B30' : '#33FF66');
+    }
+  });
+  Object.keys(tiles).forEach(function (a) {
+    if (!seen[a]) { tiles[a].remove(); delete tiles[a]; delete hist[a]; }
+  });
+}
+function tick() {
+  var s = Math.floor((Date.now() - t0) / 1000);
+  document.getElementById('met').textContent =
+    ('0' + Math.floor(s / 3600)).slice(-2) + ':' + ('0' + Math.floor(s / 60) % 60).slice(-2)
+    + ':' + ('0' + s % 60).slice(-2);
+  fetch('/all.json', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(render)
+    .catch(function () {});
+}
+setInterval(tick, 1000);
+tick();
+</script>
+</body>
+</html>

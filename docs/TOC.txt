@@ -10,6 +10,10 @@ everything
   ALL of the below on the board at once (this install)
   https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/everything/package.json
 
+mission-control
+  one wall display for every station: join the WormHole net + aggregator server
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/mission-control/package.json
+
 blink
   blink in 4 levels, up to async + morse-code your name
   https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/blink/package.json
