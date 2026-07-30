@@ -63,18 +63,28 @@ def scan_once():
         t.join()
 
 
+def poll_one(a):
+    try:
+        d = fetch(a)
+        with lock:
+            stations[a]["data"] = d
+            stations[a]["ts"] = time.time()
+    except Exception:
+        pass
+
+
 def poll_loop():
+    # One thread per station per sweep: 50 bins poll in ~1 s instead of
+    # queueing behind each other's timeouts.
     while True:
         with lock:
             addrs = list(stations)
-        for a in addrs:
-            try:
-                d = fetch(a)
-                with lock:
-                    stations[a]["data"] = d
-                    stations[a]["ts"] = time.time()
-            except Exception:
-                pass
+        threads = [threading.Thread(target=poll_one, args=(a,), daemon=True)
+                   for a in addrs]
+        for th in threads:
+            th.start()
+        for th in threads:
+            th.join(timeout=2)
         time.sleep(POLL_SECONDS)
 
 

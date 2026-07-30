@@ -164,6 +164,97 @@
   #net .ww { color: #00F0FF; filter: drop-shadow(0 0 6px rgba(0,240,255,.7)); }
   #net .mlklogo { filter: grayscale(1) brightness(1.8) sepia(1) saturate(5) hue-rotate(150deg)
                   drop-shadow(0 0 6px rgba(0,240,255,.5)); }
+
+  /* ---------- TAKE 5: THE DAILY WORM ---------- */
+  #paper { background: #EDE6D6; color: #262019; min-height: 100vh;
+           font-family: Georgia, "Times New Roman", serif; padding-bottom: 40px; }
+  #paper .sheet { max-width: 920px; margin: 18px auto; background: #F7F2E5;
+    padding: 26px 34px; box-shadow: 0 6px 24px rgba(38,32,25,.25); }
+  #paper .mast { text-align: center; border-bottom: 3px double #262019; padding-bottom: 10px; }
+  #paper .mast h1 { margin: 0; font-size: clamp(34px, 7vw, 58px); letter-spacing: 2px;
+                    font-weight: 700; }
+  #paper .mast .tag { font-size: 12.5px; font-style: italic; color: #5C5142; }
+  #paper .dateline { display: flex; justify-content: space-between; font-size: 11.5px;
+    border-bottom: 1px solid #262019; padding: 4px 0; letter-spacing: 1px; }
+  #paper .headline { font-size: clamp(22px, 4.5vw, 34px); font-weight: 700; margin: 14px 0 2px 0;
+                     line-height: 1.15; text-wrap: balance; }
+  #paper .subhead { font-style: italic; color: #5C5142; margin-bottom: 12px; }
+  #paper .cols { column-count: 3; column-gap: 22px; column-rule: 1px solid #C9BFA9;
+                 font-size: 13.5px; text-align: justify; }
+  @media (max-width: 720px) { #paper .cols { column-count: 1; } }
+  #paper .cols h3 { font-size: 15px; margin: 0 0 4px 0; break-after: avoid; }
+  #paper .cols p { margin: 0 0 10px 0; }
+  #paper .wx { border: 1px solid #262019; padding: 8px 12px; margin: 12px 0;
+               font-size: 12.5px; break-inside: avoid; }
+  #paper .wx b { display: block; letter-spacing: 2px; font-size: 11px; margin-bottom: 4px; }
+
+  /* ---------- TAKE 6: ORBITAL ---------- */
+  #orbital { background: #05070F; min-height: 100vh; color: #C9D6FF;
+             font-family: system-ui, sans-serif; overflow: hidden; }
+  #orbital .head { text-align: center; padding: 18px 12px 0 12px; }
+  #orbital h1 { margin: 0; font-size: clamp(20px, 4vw, 30px); font-weight: 300;
+    letter-spacing: 10px; color: #E8EEFF; }
+  #orbital .tag { font-size: 11.5px; color: #5B6B99; letter-spacing: 3px; margin-top: 4px; }
+  #orbcanvas { display: block; width: 100%; }
+
+  /* ---------- TAKE 7: WORM RANCH ---------- */
+  #garden { background: #1A0F2E; min-height: 100vh; color: #F8F0FF;
+    font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace; padding-bottom: 40px; }
+  #garden .head { text-align: center; padding: 20px 10px 6px 10px; }
+  #garden h1 { margin: 0; font-size: clamp(20px, 4.6vw, 34px); color: #7CFF6B;
+    letter-spacing: 2px; text-shadow: 3px 3px 0 #3A1D6E; }
+  #garden .tag { font-size: 12px; color: #B49CD8; margin-top: 4px; }
+  #garden .plots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+    gap: 14px; max-width: 1000px; margin: 16px auto; padding: 0 16px; }
+  .plot { background: #241542; border: 3px solid #3A1D6E; border-radius: 4px; padding: 10px;
+          box-shadow: 4px 4px 0 #120A22; }
+  .plot .pnm { font-size: 12px; color: #FFE95C; letter-spacing: 1px; }
+  .plot canvas { width: 100%; height: 84px; image-rendering: pixelated; display: block;
+                 background: #2E1B52; margin: 8px 0; border: 2px solid #120A22; }
+  .plot .stats { font-size: 11px; line-height: 1.8; color: #B49CD8; }
+  .plot .stats b { color: #F8F0FF; float: right; font-variant-numeric: tabular-nums; }
+  .plot .hearts { color: #FF5C8A; letter-spacing: 2px; }
+  .plot .hearts .off { color: #3A1D6E; }
+
+  /* ---------- RAW LOG, themed per skin ---------- */
+  #rawbtn { margin-left: 6px; border-style: dashed; }
+  #clsSel { background: #131A22; color: #C7D1DB; border: 1px solid #26313D;
+            border-radius: 6px; padding: 6px 8px; font-size: 13px; }
+  #rawbtn.on { background: #E8762C; color: #fff; border-color: #E8762C; }
+  #rawlog { position: fixed; left: 0; right: 0; bottom: 0; height: 42vh; z-index: 40;
+    overflow-y: auto; display: none; padding: 10px 16px 16px 16px;
+    font-size: 12px; line-height: 1.55; white-space: pre-wrap; word-break: break-all; }
+  #rawlog.show { display: block; }
+  #rawlog .rlhead { position: sticky; top: 0; padding: 2px 0 6px 0; font-weight: 700;
+    letter-spacing: 2px; font-size: 11px; }
+  /* per-skin looks */
+  #rawlog.rl-deck, #rawlog.rl-net { font-family: ui-monospace, Menlo, Consolas, monospace; }
+  #rawlog.rl-deck { background: rgba(4,8,10,.96); color: #59D98C; border-top: 1px solid #1C2833; }
+  #rawlog.rl-deck .rlhead { background: rgba(4,8,10,.96); color: #7DFF9E; }
+  #rawlog.rl-deck em { color: #FFB000; font-style: normal; }
+  #rawlog.rl-bin { background: #F7F2E5; color: #4A3521; border-top: 3px double #8A6F58;
+    font-family: Georgia, serif; font-style: italic; }
+  #rawlog.rl-bin .rlhead { background: #F7F2E5; color: #6B8F3C; font-style: normal; }
+  #rawlog.rl-bin em { color: #C4703B; font-style: italic; }
+  #rawlog.rl-board { background: #0B1128; color: #C9D3F5; border-top: 3px solid #FFD400;
+    font-family: system-ui, sans-serif; font-weight: 600; }
+  #rawlog.rl-board .rlhead { background: #0B1128; color: #FFD400; }
+  #rawlog.rl-board em { color: #FF3D8A; font-style: normal; }
+  #rawlog.rl-net { background: rgba(1,3,6,.97); color: #2FBCCB; border-top: 1px solid #0A3A44; }
+  #rawlog.rl-net .rlhead { background: rgba(1,3,6,.97); color: #00F0FF; }
+  #rawlog.rl-net em { color: #FF2BD6; font-style: normal; }
+  #rawlog.rl-paper { background: #F7F2E5; color: #262019; border-top: 3px double #262019;
+    font-family: "Courier New", Courier, monospace; }
+  #rawlog.rl-paper .rlhead { background: #F7F2E5; }
+  #rawlog.rl-paper em { font-weight: 700; font-style: normal; }
+  #rawlog.rl-orbital { background: rgba(5,7,15,.96); color: #8FA3E8;
+    border-top: 1px solid #24305C; font-family: system-ui, sans-serif; font-weight: 300; }
+  #rawlog.rl-orbital .rlhead { background: rgba(5,7,15,.96); color: #E8EEFF; letter-spacing: 4px; }
+  #rawlog.rl-orbital em { color: #FFC28A; font-style: normal; }
+  #rawlog.rl-garden { background: #120A22; color: #7CFF6B; border-top: 3px solid #3A1D6E;
+    font-family: ui-monospace, Menlo, monospace; }
+  #rawlog.rl-garden .rlhead { background: #120A22; color: #FFE95C; }
+  #rawlog.rl-garden em { color: #FF5C8A; font-style: normal; }
 </style>
 </head>
 <body>
@@ -177,6 +268,15 @@
   <button data-v="bin">2 · The Living Bin</button>
   <button data-v="board">3 · The Leaderboard</button>
   <button data-v="net">4 · WORM//NET</button>
+  <button data-v="paper">5 · The Daily Worm</button>
+  <button data-v="orbital">6 · Orbital</button>
+  <button data-v="garden">7 · Worm Ranch</button>
+  <select id="clsSel" title="which classroom's bins to show">
+    <option>P1</option><option>P2</option><option selected>P3</option><option>P4</option>
+    <option>P5</option><option>P6</option><option>P7</option>
+    <option value="ALL">ALL 46 BINS</option>
+  </select>
+  <button id="rawbtn" title="raw sensor firehose, styled to match">RAW</button>
   <span class="brand"><span class="mlklogo"></span><span class="whslogo"></span>
     <svg class="ww"><use href="#ww"/></svg>
     <span><b>Woodstock High School</b> · Audra Thomas</span></span>
@@ -186,7 +286,7 @@
 <div class="view on" id="deck">
   <div class="head">
     <h1>WOODSTOCK MISSION CONTROL</h1>
-    <div class="met">MET <span id="met">00:00:00</span> &nbsp;·&nbsp; NET: WormHole &nbsp;·&nbsp; STATIONS <span id="stn">6/6</span></div>
+    <div class="met">MET <span id="met">00:00:00</span> &nbsp;·&nbsp; NET: WormHole &nbsp;·&nbsp; CLASS <span id="stn">P3</span></div>
   </div>
   <div class="brand"><span class="mlklogo"></span><span class="whslogo"></span><svg class="ww"><use href="#ww"/></svg>
     <span>WOODSTOCK HIGH SCHOOL · INSTRUCTOR: AUDRA THOMAS · <a href="https://whs.cherokeek12.net">WHS.CHEROKEEK12.NET</a></span></div>
@@ -236,23 +336,73 @@
   <div id="rows"></div>
 </div>
 
+
+<!-- ================= TAKE 5 ================= -->
+<div class="view" id="paper">
+  <div class="sheet">
+    <div class="mast">
+      <h1>The Daily Worm</h1>
+      <div class="tag">Woodstock High School's journal of record for subterranean affairs · Editor-in-Chief: A. Thomas</div>
+    </div>
+    <div class="dateline"><span>VOL. 1 · WORM MISSION TIME <span id="pmet">00:00</span></span>
+      <span>WOODSTOCK, GEORGIA</span><span>PRICE: ONE HANDFUL OF CASTINGS</span></div>
+    <div class="headline" id="phead">ALL QUIET ON THE VERMICULTURE FRONT</div>
+    <div class="subhead" id="psub">six bins report nominal conditions; worms decline to comment</div>
+    <div class="cols" id="pcols"></div>
+  </div>
+</div>
+
+<!-- ================= TAKE 6 ================= -->
+<div class="view" id="orbital">
+  <div class="head">
+    <h1>W O R M H O L E</h1>
+    <div class="tag">SIX STATIONS IN ORBIT · WOODSTOCK HIGH SCHOOL · FLIGHT DIRECTOR A. THOMAS</div>
+  </div>
+  <canvas id="orbcanvas" width="1100" height="600"></canvas>
+</div>
+
+<!-- ================= TAKE 7 ================= -->
+<div class="view" id="garden">
+  <div class="head">
+    <h1>&#9608; WORM RANCH &#9608;</h1>
+    <div class="tag">feed your bin, grow your worm · WHS &times; MAKER LAB KIDS · ranch boss: MS. THOMAS</div>
+  </div>
+  <div class="plots" id="plots"></div>
+</div>
+
+<div id="rawlog"><div class="rlhead">RAW TELEMETRY · every reading, as it arrives</div><div id="rlbody"></div></div>
+
 <script>
 // ================= shared fake-data engine =================
-var TEAMS = ['Compost Cowboys','Worm Rangers','Dirt Nerds','The Decomposers','Castings Inc','Team Wiggle'];
-var sims = TEAMS.map(function (n, i) {
-  return { name: n, cs: 'WRM-0' + (i + 1),
-    tin: 23 + Math.random() * 3, tout: 20 + Math.random() * 3,
-    hum: 60 + Math.random() * 20, m1: 45 + Math.random() * 25, m2: 45 + Math.random() * 25,
-    light: 5 + Math.random() * 10, sound: 8 + Math.random() * 10,
-    hist: [], score: 0, status: 'NOMINAL', anomaly: 0 };
-});
+var NAMEPOOL = ['Compost Cowboys','Worm Rangers','Dirt Nerds','The Decomposers',
+  'Castings Inc','Team Wiggle','Soil Society','Bin There Done That','The Wrigglers',
+  'Mud Lab','Deep Roots','The Burrowers','Casting Crew','Tunnel Vision'];
+var ALLSIMS = [];
+for (var cls = 1; cls <= 7; cls++) {
+  var groups = cls % 2 ? 7 : 6;              // 7 classes, 6-7 groups: 46 bins
+  for (var gi = 0; gi < groups; gi++) {
+    var nm = NAMEPOOL[(cls * 3 + gi) % NAMEPOOL.length];
+    ALLSIMS.push({ cls: 'P' + cls, name: nm, cs: 'P' + cls + '-' + (gi + 1),
+      tin: 23 + Math.random() * 3, tout: 20 + Math.random() * 3,
+      hum: 60 + Math.random() * 20, m1: 45 + Math.random() * 25, m2: 45 + Math.random() * 25,
+      light: 5 + Math.random() * 10, sound: 8 + Math.random() * 10,
+      hist: [], score: 0, status: 'NOMINAL', anomaly: 0 });
+  }
+}
+var viewClass = 'P3';
+var sims = [];
+function setClass(v) {
+  viewClass = v;
+  sims = v === 'ALL' ? ALLSIMS.slice() : ALLSIMS.filter(function (s) { return s.cls === v; });
+}
+setClass(viewClass);
 function walk(v, step, lo, hi) {
   v += (Math.random() - 0.5) * step;
   return Math.max(lo, Math.min(hi, v));
 }
 var events = [], t0 = Date.now();
 function simTick() {
-  sims.forEach(function (s) {
+  ALLSIMS.forEach(function (s) {
     if (s.anomaly > 0) { s.anomaly--; }
     else if (Math.random() < 0.004) {
       s.anomaly = 40 + Math.random() * 60;
@@ -310,6 +460,7 @@ function buildDeck() {
 }
 function renderDeck() {
   var el = document.getElementById('met'), s = Math.floor((Date.now() - t0) / 1000);
+  document.getElementById('stn').textContent = viewClass + ' · ' + sims.length + ' BINS';
   el.textContent = ('0' + Math.floor(s / 3600)).slice(-2) + ':' +
     ('0' + Math.floor(s / 60) % 60).slice(-2) + ':' + ('0' + s % 60).slice(-2);
   sims.forEach(function (s, i) {
@@ -579,21 +730,192 @@ function renderNetHud() {
     '<span>STATUS <b' + (s.status !== 'NOMINAL' ? ' class="crit"' : '') + '>' + s.status + '</b></span>';
 }
 
+
+// ================= TAKE 5 render =================
+function renderPaper() {
+  var s = Math.floor((Date.now() - t0) / 1000);
+  document.getElementById('pmet').textContent =
+    ('0' + Math.floor(s / 60)).slice(-2) + ':' + ('0' + s % 60).slice(-2);
+  // headline = the most newsworthy thing happening
+  var trouble = sims.filter(function (x) { return x.status !== 'NOMINAL'; })
+    .sort(function (a, b) { return a.score - b.score; })[0];
+  var top = sims.slice().sort(function (a, b) { return b.score - a.score; })[0];
+  var head = document.getElementById('phead'), sub = document.getElementById('psub');
+  if (trouble && trouble.m1 < 20) {
+    head.textContent = 'MOISTURE CRISIS GRIPS ' + trouble.name.toUpperCase();
+    sub.textContent = 'bedding at a parched ' + trouble.m1.toFixed(0) + '%; sources say a watering can has been dispatched';
+  } else if (trouble && trouble.tin > 30) {
+    head.textContent = 'HEAT WAVE REPORTED IN ' + trouble.name.toUpperCase() + ' BIN';
+    sub.textContent = trouble.tin.toFixed(1) + ' degrees and climbing; worms relocate to lower bedding';
+  } else {
+    head.textContent = top.name.toUpperCase() + ' LEADS THE LEAGUE AT BIN SCORE ' + top.score;
+    sub.textContent = 'rivals within striking distance; conditions described as \'suspiciously ideal\'';
+  }
+  var quotes = ['"Conditions are ideal," the team insisted.',
+    '"The worms seem pleased," one researcher noted.',
+    '"We water on a schedule now," sources confirmed.',
+    '"Frankly, the castings speak for themselves."',
+    '"Our probes have never been happier."',
+    '"We credit the daily temperature log."'];
+  var html = '';
+  var roster = sims.slice(0, 8);
+  roster.forEach(function (x, i) {
+    html += '<h3>' + x.name + ': bin holds at ' + x.tin.toFixed(1) + '&deg;</h3>' +
+      '<p>Bedding moisture measured ' + x.m1.toFixed(0) + '% and ' + x.m2.toFixed(0) +
+      '% at the two stations this hour, with relative humidity of ' + x.hum.toFixed(0) +
+      '% over the bedding. Acoustic activity registered ' + x.sound.toFixed(0) +
+      ' units. ' + quotes[(i + Math.floor(Date.now() / 20000)) % quotes.length] + '</p>';
+    if (i === 1) {
+      html += '<div class="wx"><b>THE WEATHER, UNDERGROUND</b>' +
+        'Inside the bins: mild, ' + (sims.reduce(function (a, x2) { return a + x2.tin; }, 0) / sims.length).toFixed(1) +
+        '&deg; average. Outlook: dark, with scattered feeding. Chance of castings: 100%.</div>';
+    }
+  });
+  if (sims.length > 8) {
+    html += '<p><i>...and ' + (sims.length - 8) + ' more bins across the school report ' +
+      'broadly nominal conditions. The full ledger appears in the RAW edition.</i></p>';
+  }
+  document.getElementById('pcols').innerHTML = html;
+}
+
+// ================= TAKE 6 render =================
+var orbAngles = [];
+function resetOrbits() { orbAngles = sims.map(function (s, i) { return i * 2.399; }); }
+resetOrbits();
+var stars = [];
+function renderOrbital() {
+  var cv = document.getElementById('orbcanvas'), c = cv.getContext('2d');
+  var W = cv.width, H = cv.height, cx = W / 2, cy = H / 2 + 10;
+  if (!stars.length) for (var i = 0; i < 120; i++)
+    stars.push([Math.random() * W, Math.random() * H, Math.random()]);
+  c.fillStyle = '#05070F'; c.fillRect(0, 0, W, H);
+  stars.forEach(function (st) {
+    c.fillStyle = 'rgba(200,214,255,' + (0.15 + st[2] * 0.5) + ')';
+    c.fillRect(st[0], st[1], 1.6, 1.6);
+  });
+  // the hub
+  c.beginPath(); c.arc(cx, cy, 26, 0, 7);
+  var g = c.createRadialGradient(cx, cy, 4, cx, cy, 26);
+  g.addColorStop(0, '#FFF'); g.addColorStop(1, '#4A5FB8');
+  c.fillStyle = g; c.fill();
+  c.fillStyle = '#8FA3E8'; c.font = '10px sans-serif'; c.textAlign = 'center';
+  c.fillText('WormHole', cx, cy + 42);
+  // stations by rank: closer orbit = better score
+  var order = sims.map(function (s, i) { return i; })
+    .sort(function (a, b) { return sims[b].score - sims[a].score; });
+  var step = Math.max(7, Math.min(42, 290 / Math.max(1, sims.length - 1)));
+  var labels = sims.length <= 12;
+  order.forEach(function (si, rank) {
+    var s = sims[si], R = 74 + rank * step;
+    c.beginPath(); c.arc(cx, cy, R, 0, 7);
+    c.strokeStyle = 'rgba(90,110,170,0.25)'; c.lineWidth = 1; c.stroke();
+    orbAngles[si] += 0.0035 + s.score / 60000;
+    var x = cx + Math.cos(orbAngles[si]) * R, y = cy + Math.sin(orbAngles[si]) * R * 0.62;
+    c.strokeStyle = 'rgba(140,160,230,0.2)';
+    c.beginPath(); c.moveTo(cx, cy); c.lineTo(x, y); c.stroke();
+    var col = s.status === 'NOMINAL' ? '#7DE39B' : s.status === 'WARN' ? '#FFC28A' : '#FF7A70';
+    c.beginPath(); c.arc(x, y, 9, 0, 7);
+    c.fillStyle = col; c.shadowColor = col; c.shadowBlur = 12; c.fill(); c.shadowBlur = 0;
+    if (labels) {
+      c.fillStyle = '#E8EEFF'; c.font = 'bold 11px sans-serif';
+      c.fillText(s.cs + ' ' + s.name, x, y - 16);
+      c.fillStyle = '#8FA3E8'; c.font = '10px sans-serif';
+      c.fillText(s.tin.toFixed(1) + '\u00B0 \u00B7 ' + ((s.m1 + s.m2) / 2).toFixed(0) + '% \u00B7 ' + s.score, x, y + 22);
+    } else {
+      c.fillStyle = '#8FA3E8'; c.font = '9px sans-serif';
+      c.fillText(s.cs, x, y - 13);
+    }
+  });
+}
+
+// ================= TAKE 7 render =================
+var plotEls = [];
+function buildGarden() {
+  var g = document.getElementById('plots'); g.innerHTML = '';
+  plotEls = sims.map(function (s) {
+    var d = document.createElement('div'); d.className = 'plot';
+    d.innerHTML = '<div class="pnm">' + s.name.toUpperCase() + '</div><canvas width="110" height="42"></canvas>' +
+      '<div class="stats"><div>WORM LVL<b class="lv"></b></div><div>TEMP<b class="tp"></b></div>' +
+      '<div>WATER<b class="wa"></b></div><div class="hearts"></div></div>';
+    g.appendChild(d); return d;
+  });
+}
+function renderGarden() {
+  sims.forEach(function (s, i) {
+    var d = plotEls[i];
+    d.querySelector('.lv').textContent = s.score;
+    d.querySelector('.tp').textContent = s.tin.toFixed(1) + 'C';
+    d.querySelector('.wa').textContent = ((s.m1 + s.m2) / 2).toFixed(0) + '%';
+    var hp = s.status === 'NOMINAL' ? 3 : s.status === 'WARN' ? 2 : 1;
+    d.querySelector('.hearts').innerHTML =
+      '\u2665\u2665\u2665'.split('').map(function (h, j) {
+        return '<span' + (j < hp ? '' : ' class="off"') + '>\u2665</span>'; }).join('');
+    // pixel worm: length grows with score
+    var cv = d.querySelector('canvas'), c = cv.getContext('2d');
+    c.fillStyle = '#2E1B52'; c.fillRect(0, 0, 110, 42);
+    c.fillStyle = '#1E0F3A'; c.fillRect(0, 34, 110, 8);   // soil
+    var segs = Math.max(3, Math.round(s.score / 9));
+    var ph = Date.now() / 250 + i;
+    for (var seg = 0; seg < segs && seg < 22; seg++) {
+      var x = 8 + seg * 4.5;
+      var y = 22 + Math.round(Math.sin(ph + seg * 0.8) * 4);
+      c.fillStyle = seg === 0 ? '#FF9AB8' : (seg % 2 ? '#FF5C8A' : '#D9447A');
+      c.fillRect(x, y, 4, 4);
+    }
+    // eye on the head
+    c.fillStyle = '#1A0F2E'; c.fillRect(9, 21 + Math.round(Math.sin(ph) * 4), 1.5, 1.5);
+  });
+}
+
+// ================= RAW LOG =================
+var rawOn = false, rlLines = [], rlN = 0;
+document.getElementById('rawbtn').onclick = function () {
+  rawOn = !rawOn;
+  this.className = rawOn ? 'on' : '';
+  syncRawlog();
+};
+function syncRawlog() {
+  var rl = document.getElementById('rawlog');
+  rl.className = (rawOn ? 'show ' : '') + 'rl-' + cur;
+}
+function rawTick() {
+  if (!rawOn) return;
+  var s = sims[rlN++ % sims.length];
+  var ts = ((Date.now() - t0) / 1000).toFixed(2);
+  var flag = s.status !== 'NOMINAL' ? '  <em>[' + s.status + ']</em>' : '';
+  rlLines.unshift('T+' + ts + '  <em>' + s.cs + '</em>  temp_in=' + s.tin.toFixed(2) +
+    'C temp_out=' + s.tout.toFixed(2) + 'C rh=' + s.hum.toFixed(1) + '% m1=' + s.m1.toFixed(1) +
+    '% m2=' + s.m2.toFixed(1) + '% light=' + s.light.toFixed(1) + '% snd=' + s.sound.toFixed(1) +
+    ' score=' + s.score + flag);
+  if (rlLines.length > 220) rlLines.pop();
+  document.getElementById('rlbody').innerHTML = rlLines.join('\n');
+}
+setInterval(rawTick, 180);
+
 // ================= boot =================
-buildDeck(); buildShelf(); buildBoard(); buildNet();
+buildDeck(); buildShelf(); buildBoard(); buildNet(); buildGarden();
 var cur = 'deck';
 document.querySelectorAll('#rail button').forEach(function (b) {
+  if (!b.dataset.v) return;   // RAW and other controls keep their own handlers
   b.onclick = function () {
     cur = b.dataset.v;
     document.querySelectorAll('#rail button').forEach(function (x) { x.className = x === b ? 'on' : ''; });
     document.querySelectorAll('.view').forEach(function (v) { v.className = 'view' + (v.id === cur ? ' on' : ''); });
+    syncRawlog();
   };
 });
+document.getElementById('clsSel').onchange = function () {
+  setClass(this.value);
+  buildDeck(); buildShelf(); buildBoard(); buildNet(); buildGarden(); resetOrbits();
+  focusTeam = 0; netTeam = 0; recordHigh = 0; rlLines = [];
+};
 setInterval(simTick, 350);
 setInterval(function () {
   if (cur === 'deck') renderDeck();
   if (cur === 'bin') renderBin();
   if (cur === 'board') { renderBoard(); }
+  if (cur === 'paper') { renderPaper(); }
+  if (cur === 'garden') { renderGarden(); }
 }, 350);
 setInterval(function () { if (cur === 'bin') renderBin(); }, 60);   // worms wiggle smoothly
 setInterval(function () { if (cur === 'board') drawConfetti(); }, 33);
@@ -601,6 +923,7 @@ setInterval(function () {
   if (cur !== 'net') return;
   renderRain(); renderHolo(); renderRadar(); renderNetHud();
 }, 40);
+setInterval(function () { if (cur === 'orbital') renderOrbital(); }, 33);
 </script>
 </body>
 </html>
