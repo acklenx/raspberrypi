@@ -11,10 +11,13 @@
   .session .n { flex: none; width: 44px; height: 44px; border-radius: 10px; color: #FFF;
                 font-weight: bold; font-size: 22px; display: flex; align-items: center;
                 justify-content: center; }
-  .session:nth-child(1) .n { background: var(--blue); }
-  .session:nth-child(2) .n { background: var(--green); }
-  .session:nth-child(3) .n { background: var(--orange); }
-  .session:nth-child(4) .n { background: var(--yellow); color: var(--ink); }
+  /* colour by explicit class, not :nth-child -- the sessions are not the
+     first children of .wrap (the h1 and lead come first), which knocked
+     the boxes off sessions 3 and 4. */
+  .session.s1 .n { background: var(--blue); }
+  .session.s2 .n { background: var(--green); }
+  .session.s3 .n { background: var(--orange); }
+  .session.s4 .n { background: var(--yellow); color: var(--ink); }
   .session h3 { margin: 4px 0 4px 0; }
   .session p { margin: 0 0 6px 0; font-size: 14.5px; }
   .session .prove { color: var(--gray); font-size: 13.5px; }
@@ -39,7 +42,7 @@
      before the next step builds on top of it. So when something goes wrong, you know it's the thing
      you just added &mdash; not a mystery.</p>
 
-  <div class="session"><div class="n">1</div><div>
+  <div class="session s1"><div class="n">1</div><div>
     <h3>Microcontrollers</h3>
     <p>Meet the Pico. Get code onto it, run it, and watch it keep running on nothing but wall power,
        with no computer attached.</p>
@@ -48,7 +51,7 @@
        &nbsp;·&nbsp; <a href="start.html">Start Here walks through this</a></p>
   </div></div>
 
-  <div class="session"><div class="n">2</div><div>
+  <div class="session s2"><div class="n">2</div><div>
     <h3>Electronics &amp; Breadboarding</h3>
     <p>Now wires between parts. Push a little screen onto a breadboard, connect four wires, and light
        it up with code you already know how to run.</p>
@@ -56,7 +59,7 @@
        &nbsp;·&nbsp; <a href="https://docs.google.com/presentation/d/1kIFo55Gud8giLK1EXfJmg93TvXiee9olfJTwIP6mam0/edit" class="ext">Slides</a></p>
   </div></div>
 
-  <div class="session"><div class="n">3</div><div>
+  <div class="session s3"><div class="n">3</div><div>
     <h3>Soldering</h3>
     <p>Make joints that actually last. Solder header pins onto a part, then run the same screen through
        your own soldered connections.</p>
@@ -64,7 +67,7 @@
        &nbsp;·&nbsp; <a href="https://docs.google.com/presentation/d/11ljAAl6ed294Y0mCDvBkVQ-DEHRQteocGM60CHtX8OA/edit" class="ext">Slides</a></p>
   </div></div>
 
-  <div class="session"><div class="n">4</div><div>
+  <div class="session s4"><div class="n">4</div><div>
     <h3>Sensors</h3>
     <p>The payoff. On wiring you now trust, add real sensors and take real measurements &mdash; heat,
        water, light, and more.</p>
