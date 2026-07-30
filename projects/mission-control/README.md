@@ -26,11 +26,44 @@ Installing this project drops `wifi.json` onto the board:
 ```
 
 That is the whole switch. When `picolab.WebApp` starts and finds
-`wifi.json`, it JOINS that network and serves its dashboard on its
-DHCP address (printed in the terminal and shown on the wall). If the
-router is off, or the file is missing, the station opens its own
-PicoLabN hotspot exactly as before, so nothing ever breaks at home.
-Delete `wifi.json` to go back to hotspot mode.
+`wifi.json`, it JOINS a network and serves its dashboard on its DHCP
+address (printed in the terminal, shown on the OLED, and reported in
+`/data`). If nothing joinable is around, the station opens its own
+hotspot, so a board is ALWAYS reachable one way or another. Delete
+`wifi.json` to force hotspot mode.
+
+### Board identity (so you can tell them apart)
+
+Every board has a permanent identity from its hardware serial number
+(it survives a re-flash and a wiped filesystem):
+
+- **`board_uid`** — the full 16-hex serial, globally unique, reported
+  in `/data` as `id`. Trust this when uniqueness must be absolute.
+- **name** — short and friendly, default `PicoLab<n>` where `<n>` is a
+  stable 0-999 number from the uid (e.g. `PicoLab742`). It is the SSID
+  in hotspot mode and the label on the wall. Write a `name.txt` on the
+  board (`Bin-P3-4`) to rename it everywhere.
+
+Every `/data` response carries `id`, `name`, `ip`, `ssid`, and `mode`,
+so the wall labels tiles by name and a kid can read the exact address
+to browse.
+
+### The join ladder (how a teacher intervenes)
+
+When it joins, a station tries these in order and takes the first that
+is actually on the air (it scans first, so dead names cost nothing):
+
+1. **`wormmaster<n>`** — `<n>` is this board's number (e.g.
+   `wormmaster742`, shown on its OLED). Stand up a hotspot with that
+   exact name and ONLY that one board hops onto it. Single-board rescue.
+2. **`wormmaster`** — a plain hotspot (your phone) that EVERY board
+   hops onto. Portable all-hands mode. (Controlled settings only: this
+   is 40+ devices on one phone.)
+3. **`WormHole`** — the real classroom network. Normal operation.
+4. **its own hotspot** — if none of the above answer.
+
+All four use the same password from `wifi.json`. Rename or disable the
+rescue tier with a `"rescue"` key in `wifi.json` (`""` turns it off).
 
 ## Wall side: one command
 

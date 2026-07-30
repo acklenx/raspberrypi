@@ -10,15 +10,15 @@
 #     then a slow heartbeat so the terminal stays readable.
 #   * The onboard LED is a truth light (StatusLight): if code is running
 #     the light is active, and blink codes say which part is unhappy.
-#   * Web demos open an access point named PicoLab<N> (N is picked once
-#     per board and remembered in node_id.txt), serve index.html at
-#     http://192.168.4.1 and JSON at /data.
+#   * Each board has a PERMANENT identity from its hardware serial:
+#     name "PicoLab<4hex>" (or name.txt), reported with its IP at /data.
+#   * Web demos either JOIN a network (wifi.json, with a rescue ladder)
+#     or open their own access point, serving index.html and /data.
 
 import json
-import random
 import socket
 import time
-from machine import I2C, Pin
+from machine import I2C, Pin, unique_id
 
 _i2c = None
 
@@ -351,31 +351,67 @@ class Calibration:
 
 
 # ---------------------------------------------------------------------
-# Web app: access point + tiny webserver (the pattern from the ToF
-# distance station: static-ish SSID per board, minimal collisions).
+# Web app + board identity.
 # ---------------------------------------------------------------------
-NODE_ID_FILE = "node_id.txt"
-BANNED_IDS = set(range(1, 10)).union({67, 158})
+NAME_FILE = "name.txt"
 
 HEADER_HTML = b"HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n"
 HEADER_JSON = b"HTTP/1.0 200 OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n"
 
 
-def node_id():
+def _try_join(sta, ssid, password, attempts=2, wait_s=12):
+  """Try to join one network a couple of times. Returns True on success.
+  Two tries because a single attempt at weak signal is a coin flip."""
+  for _ in range(attempts):
+    try:
+      sta.connect(ssid, password)
+      for _ in range(wait_s * 2):
+        if sta.isconnected():
+          return True
+        time.sleep_ms(500)
+    except Exception:
+      pass
+    if sta.isconnected():
+      return True
+    try:
+      sta.disconnect()
+    except Exception:
+      pass
+    time.sleep(1)
+  return sta.isconnected()
+
+
+def board_uid():
+  """The board's PERMANENT, globally-unique id: the factory-burned flash
+  serial (16 hex chars). Same every boot, survives a re-flash and a
+  wiped filesystem. This is the identity to TRUST when it must be
+  unique. It is long, so it is not what you read off the screen."""
+  return "".join("%02x" % b for b in unique_id())
+
+
+def board_num():
+  """A SHORT, stable number (0-999) derived from the permanent uid: the
+  friendly tag you read off the OLED and type into a rescue-hotspot
+  name. Same forever (survives re-flash). Not guaranteed unique in a
+  big room (a collision or two among 50 boards is possible); when it
+  matters, board_uid() is the unique id and name.txt lets you rename."""
+  return int(board_uid()[-6:], 16) % 1000
+
+
+def station_name():
+  """A short, STABLE, human-friendly name for this board.
+
+  Default: 'PicoLab' + board_num(), e.g. 'PicoLab742'. Same forever, no
+  file needed. To give a board a real name, write it into name.txt on
+  the board (Viper file panel): 'Bin-P3-4' becomes its name everywhere."""
   try:
-    with open(NODE_ID_FILE, "r") as f:
-      val = int(f.read().strip())
-      if val not in BANNED_IDS:
-        return val
+    with open(NAME_FILE) as f:
+      custom = f.read().strip()
+      if custom:
+        return custom
   except Exception:
     pass
-  val = random.choice(list(set(range(10, 254)) - BANNED_IDS))
-  try:
-    with open(NODE_ID_FILE, "w") as f:
-      f.write(str(val))
-  except Exception:
-    pass
-  return val
+  return "PicoLab" + str(board_num())
 
 
 def query_str(req, key, default=None):
@@ -437,16 +473,22 @@ class WebApp:
     # a project is installed alone, its index.html is at the root. We
     # try the given path first and fall back to the root copy.
     self.index = index
-    self.ssid = "PicoLab" + str(node_id())
+    # Identity: uid is the permanent hardware serial, name is the stable
+    # human-friendly handle (both survive re-flashing). ssid = name.
+    self.uid = board_uid()
+    self.name = station_name()
+    self.ssid = self.name
     self.ip = "192.168.4.1"
     self.ap = None
     self.joined = None
+    self.rescue_target = None
 
     # Mission-control mode: if wifi.json exists on the board
     # ({"ssid": "WormHole", "password": "supersecret"}), JOIN that
     # network so every station lives on one router and an aggregator
-    # can find them all. No file, or the join fails: open our own AP,
-    # exactly as always. Delete wifi.json to go back to AP mode.
+    # can find them all. No file, the file is bad, or the join fails
+    # after retries: open our own AP, so a board is ALWAYS reachable
+    # one way or the other. Delete wifi.json to force AP mode.
     creds = None
     try:
       with open("wifi.json") as f:
@@ -454,34 +496,46 @@ class WebApp:
     except Exception:
       pass
     if creds and creds.get("ssid"):
-      sta = network.WLAN(network.STA_IF)
-      sta.active(True)
-      # Weak signal makes single join attempts a coin flip; try three
-      # times before falling back to our own AP.
-      for attempt in range(3):
+      try:
+        sta = network.WLAN(network.STA_IF)
+        sta.active(True)
+        password = creds.get("password", "")
+
+        # The join ladder, highest priority first. rescue nets share the
+        # password and let a teacher intervene: bring up "wormmaster<X>"
+        # (X = this board's 4-hex tag) and ONLY this board hops over;
+        # bring up plain "wormmaster" (a phone hotspot) and EVERY board
+        # hops over. Neither present: join the real classroom network.
+        rescue = creds.get("rescue", "wormmaster")
+        tag = str(board_num())
+        ladder = []
+        if rescue:
+          ladder.append(rescue + tag)   # 1: just me
+          ladder.append(rescue)         # 2: all boards (phone hotspot)
+        ladder.append(creds["ssid"])    # 3: the real network
+        self.rescue_target = (rescue + tag) if rescue else None
+
+        # Scan so we only dial networks that actually exist (blind-
+        # dialing dead SSIDs would waste ~30 s each before the fallback).
+        present = None
         try:
-          sta.connect(creds["ssid"], creds.get("password", ""))
-          for _ in range(30):
-            if sta.isconnected():
-              break
-            time.sleep_ms(500)
+          seen = set(s[0].decode() for s in sta.scan() if s[0])
+          present = [n for n in ladder if n in seen]
         except Exception:
-          pass
-        if sta.isconnected():
-          break
-        log("join attempt", attempt + 1, "failed, retrying...")
-        try:
-          sta.disconnect()
-        except Exception:
-          pass
-        time.sleep(1)
-      if sta.isconnected():
-        self.joined = creds["ssid"]
-        self.ip = sta.ifconfig()[0]
-        log("Joined", self.joined, "as", self.ip)
-      else:
-        log("Could not join", creds["ssid"], "- opening own AP instead.")
-        sta.active(False)
+          present = ladder      # scan failed: just try them all in order
+
+        for name in present:
+          if _try_join(sta, name, password):
+            self.joined = name
+            self.ip = sta.ifconfig()[0]
+            log("Joined", name, "as", self.ip, "- browse http://" + self.ip)
+            break
+          log("could not join", name, "- next in the ladder...")
+        if not self.joined:
+          log("no network joined - opening own AP instead.")
+          sta.active(False)
+      except Exception as e:
+        log("Wi-Fi join errored (" + str(e) + ") - opening own AP instead.")
 
     if not self.joined:
       self.ap = network.WLAN(network.AP_IF)
@@ -490,6 +544,7 @@ class WebApp:
       self.ap.config(essid=self.ssid, security=0)
       while not self.ap.active():
         time.sleep(0.1)
+      self.ip = "192.168.4.1"
 
     self.server = None
     self._init_server()
@@ -520,18 +575,38 @@ class WebApp:
     self.server.listen(2)
     self.server.settimeout(0.05)
 
+  def identity(self):
+    """Who this board is, for the dashboard and the wall to label by."""
+    return {
+        "id": self.uid,                       # permanent hardware serial
+        "name": self.name,                    # stable friendly name
+        "ip": self.ip,                        # where to browse right now
+        "ssid": self.ssid,
+        "mode": "joined" if self.joined else "ap",
+        "net": self.joined or self.ssid,
+    }
+
   def announce(self, title):
     if self.joined:
-      banner(title, [
-          "Station:    " + self.ssid,
-          "Joined:     " + self.joined,
-          "Dashboard:  http://" + self.ip,
-      ])
+      lines = [
+          "Name:   " + self.name,
+          "Board:  " + self.uid,
+          "On:     " + self.joined,
+          "Browse: http://" + self.ip,
+      ]
+      if self.rescue_target:
+        lines.append("Rescue: " + self.rescue_target)
+      banner(title, lines)
     else:
-      banner(title, [
-          "SSID:       " + self.ssid,
-          "Dashboard:  http://192.168.4.1",
-      ])
+      lines = [
+          "Name:   " + self.name,
+          "Board:  " + self.uid,
+          "Wi-Fi:  join '" + self.ssid + "'",
+          "Browse: http://192.168.4.1",
+      ]
+      if self.rescue_target:
+        lines.append("Rescue net: " + self.rescue_target)
+      banner(title, lines)
 
   def poll(self, data_fn, routes=None):
     """Serve one pending request, if any. Never raises.
@@ -566,7 +641,14 @@ class WebApp:
 
       if not handled and b"/data" in req:
         try:
-          payload = json.dumps(data_fn()).encode("utf-8")
+          data = data_fn()
+          # Every station reports its identity for free, so the wall
+          # and any kid can tell boards apart and know where to browse.
+          ident = self.identity()
+          for k in ident:
+            if k not in data:
+              data[k] = ident[k]
+          payload = json.dumps(data).encode("utf-8")
         except Exception as e:
           payload = json.dumps({"error": str(e)}).encode("utf-8")
         cl.sendall(HEADER_JSON + payload)

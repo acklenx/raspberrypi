@@ -112,7 +112,7 @@ while True:
 
   display.show([
       app.ssid,
-      "192.168.4.1",
+      app.ip,
       "mode: " + mode,
       "angle: %3d deg" % int(current),
   ], bar=current / 180.0)

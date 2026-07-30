@@ -84,7 +84,7 @@ while True:
   else:
     display.show([
         app.ssid,
-        "192.168.4.1",
+        app.ip,
         "starting...",
     ])
 

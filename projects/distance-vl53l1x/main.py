@@ -74,14 +74,14 @@ while True:
   elif data:
     display.show([
         app.ssid,
-        "192.168.4.1",
+        app.ip,
         "no target...",
         "(0.04 - 4 m)",
     ])
   else:
     display.show([
         app.ssid,
-        "192.168.4.1",
+        app.ip,
         "no sensor...",
         "hot-plug ready",
     ])

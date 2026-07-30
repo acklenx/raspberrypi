@@ -94,8 +94,11 @@ function render(all) {
     var d = st.data || {};
     var stale = st.age > all.stale_after;
     t.className = 'tile' + (stale ? ' stale' : '');
-    t.querySelector('.nm').textContent = (d.ssid || 'STATION').toUpperCase();
-    t.querySelector('.addr').textContent = st.addr + (stale ? ' · last seen ' + Math.round(st.age) + 's ago' : '');
+    t.querySelector('.nm').textContent = (d.name || d.ssid || 'STATION').toUpperCase();
+    var addr = 'http://' + (d.ip || st.addr.split(':')[0]);
+    if (d.id) addr += ' · board ' + d.id.slice(-6);
+    if (stale) addr += ' · last seen ' + Math.round(st.age) + 's ago';
+    t.querySelector('.addr').textContent = addr;
     var rows = '';
     FIELDS.forEach(function (f) {
       var v = d[f[0]];
