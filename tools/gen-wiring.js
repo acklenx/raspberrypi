@@ -147,13 +147,24 @@ function sig(pinNum, dp, color) {
   }
   return wire(pts, color) + dot(start[0], start[1], color) + dot(dp.x, dp.y, color);
 }
-// shared I2C bus: one Pico pin feeding several device pins from one lane
+// shared bus: one Pico pin feeding several device pins from one lane.
+// Left-side pins route up over the board; right-side pins go straight
+// out to their lane.
 function bus(pinNum, dps, color) {
-  const pp = pin(pinNum), cx = nextCH(), ty = nextTOP();
-  const lx = EXIT_L - (10 + (TOPY - 70));
-  let s = wire([[EXIT_L, pp.y], [lx, pp.y], [lx, ty], [cx, ty]], color) + dot(EXIT_L, pp.y, color);
-  const maxY = Math.max(...dps.map(d => d.y));
-  s += wire([[cx, ty], [cx, maxY]], color);
+  const pp = pin(pinNum), cx = nextCH();
+  let s;
+  if (pp.side === "L") {
+    const ty = nextTOP();
+    const lx = EXIT_L - (10 + (TOPY - 70));
+    s = wire([[EXIT_L, pp.y], [lx, pp.y], [lx, ty], [cx, ty]], color) + dot(EXIT_L, pp.y, color);
+    const maxY = Math.max(...dps.map(d => d.y));
+    s += wire([[cx, ty], [cx, maxY]], color);
+  } else {
+    s = wire([[EXIT_R, pp.y], [cx, pp.y]], color) + dot(EXIT_R, pp.y, color);
+    const minY = Math.min(...dps.map(d => d.y), pp.y);
+    const maxY = Math.max(...dps.map(d => d.y), pp.y);
+    s += wire([[cx, minY], [cx, maxY]], color);
+  }
   for (const d of dps) s += wire([[cx, d.y], [d.x, d.y]], color) + dot(d.x, d.y, color);
   return s;
 }
@@ -354,6 +365,23 @@ projects["light-basic"] = () => diagram(
     { color: W.sda, text: "OLED SDA/SCL on GP0 / GP1 (pins 1, 2)" },
   ]);
 
+// shared: the banded 4.7k pullup from a DATA line up to the 3V3 rail
+function pullup47(ry) {
+  const rx = RAIL_GND + 34;
+  let s = resistorGlyph(rx, ry - 26, 13, 32, 4700, true);
+  s += text(rx + 6, ry - 30, "4.7k", { size: 9, color: C.ink, anchor: "middle", bold: true });
+  s += wire([[RAIL_PWR, ry - 18], [rx + 6, ry - 18], [rx + 6, ry - 26]], W.pwr, 2.5);
+  s += wire([[rx + 6, ry + 6], [rx + 6, ry], [DEV_X - 8, ry]], W.sig, 2.5);
+  return s;
+}
+function ds18b20Box(y, title) {
+  const x = DEV_X, w = DEV_W, h = 66;
+  let s = deviceBox(x, y, w, h, title, "", C.orange);
+  const p = { VCC: { x, y: y + 34 }, GND: { x, y: y + 48 }, DATA: { x, y: y + 62 } };
+  s += devPin(x, p.VCC.y, "red 3V3") + devPin(x, p.GND.y, "blk GND") + devPin(x, p.DATA.y, "yel DATA");
+  return { s, p };
+}
+
 projects["soil-temperature"] = () => diagram(
   "soil-temperature wiring", "DS18B20 waterproof probe(s) + OLED  ·  needs a 4.7k pullup",
   [1, 2, 29, 36, 38], () => {
@@ -364,12 +392,7 @@ projects["soil-temperature"] = () => diagram(
     s += oledI2C();
     s += tap(RAIL_PWR, p.VCC, W.pwr) + tap(RAIL_GND, p.GND, W.gnd);
     s += sig(29, p.DATA, W.sig);
-    // 4.7k pullup from the DATA lane up to the 3V3 rail
-    const ry = y + 78, rx = RAIL_PWR + 40;
-    s += `<rect x="${rx}" y="${ry - 24}" width="13" height="30" rx="2" fill="#FFF" stroke="${C.ink}" stroke-width="1.3"/>`;
-    s += text(rx + 6, ry - 28, "4.7k", { size: 9, color: C.ink, anchor: "middle", bold: true });
-    s += wire([[RAIL_PWR, ry - 16], [rx + 6, ry - 16], [rx + 6, ry - 24]], W.pwr, 2.5);
-    s += wire([[rx + 6, ry + 6], [rx + 6, ry], [DEV_X - 8, ry]], W.sig, 2.5);
+    s += pullup47(y + 78);
     return s;
   },
   [
@@ -377,6 +400,111 @@ projects["soil-temperature"] = () => diagram(
     { color: W.pwr, text: "red -> 3V3 (pin 36);  4.7k: DATA -> 3V3" },
     { color: W.gnd, text: "black -> GND (pin 38)" },
     { color: W.sda, text: "OLED SDA/SCL on GP0 / GP1 (pins 1, 2)" },
+    { text: "4.7k bands: yellow violet red gold" },
+    { text: "  (1% 5-band: yellow violet black brown brown)" },
+  ]);
+
+projects["soil-temperature-multi"] = () => diagram(
+  "many DS18B20 probes, one wire", "three shown, dozens possible  ·  STILL just one 4.7k pullup",
+  [1, 2, 29, 36, 38], () => {
+    let s = oledI2C();
+    const boxes = [ds18b20Box(238, "DS18B20 probe 1"),
+                   ds18b20Box(330, "DS18B20 probe 2"),
+                   ds18b20Box(422, "DS18B20 probe 3")];
+    boxes.forEach(b => { s += b.s; });
+    // power + ground: every probe taps the same rails
+    boxes.forEach(b => { s += tap(RAIL_PWR, b.p.VCC, W.pwr) + tap(RAIL_GND, b.p.GND, W.gnd); });
+    // ONE data lane from GP22 feeds every probe's DATA pin
+    s += bus(29, boxes.map(b => b.p.DATA), W.sig);
+    // and ONE pullup for the whole bus
+    s += pullup47(boxes[0].p.DATA.y);
+    s += text(DEV_X + DEV_W / 2, 520, "probe 4, 5, 6... same three wires. No new resistor.",
+      { size: 11.5, color: C.gray, anchor: "middle", italic: true });
+    return s;
+  },
+  [
+    { color: W.sig, text: "ONE yellow DATA bus -> GP22 (pin 29), all probes" },
+    { color: W.pwr, text: "ONE 4.7k pullup TOTAL: DATA -> 3V3" },
+    { color: W.gnd, text: "all reds to 3V3 rail, all blacks to GND rail" },
+    { text: "each probe has a factory serial number, so the" },
+    { text: "code tells them apart automatically (and you can" },
+    { text: "label + position each one on the dashboard)" },
+    { text: "4.7k bands: yellow violet red gold" },
+  ]);
+
+projects["bme280-multi"] = () => diagram(
+  "two BME280s on one bus", "inside the bin + outside the bin  ·  the SDO pad picks the address",
+  [1, 2, 36, 38], () => {
+    let s = "";
+    const mk = (y, title, addr, note) => {
+      const x = DEV_X, w = DEV_W, h = 96;
+      let d = deviceBox(x, y, w, h, title, addr, C.green);
+      const p = { VCC: { x, y: y + 40 }, GND: { x, y: y + 56 },
+                  SDA: { x, y: y + 72 }, SCL: { x, y: y + 88 } };
+      d += devPin(x, p.VCC.y, "VCC") + devPin(x, p.GND.y, "GND")
+        + devPin(x, p.SDA.y, "SDA") + devPin(x, p.SCL.y, "SCL");
+      d += text(x + w + 8, y + 50, note, { size: 10.5, color: C.orange, bold: true });
+      return { d, p };
+    };
+    const a = mk(250, "BME280  IN", "0x76", "SDO -> GND");
+    const b = mk(392, "BME280  OUT", "0x77", "SDO -> 3V3");
+    s += a.d + b.d;
+    s += tap(RAIL_PWR, OLED_PINS.VCC, W.pwr) + tap(RAIL_GND, OLED_PINS.GND, W.gnd);
+    [a, b].forEach(m => { s += tap(RAIL_PWR, m.p.VCC, W.pwr) + tap(RAIL_GND, m.p.GND, W.gnd); });
+    s += bus(1, [OLED_PINS.SDA, a.p.SDA, b.p.SDA], W.sda);
+    s += bus(2, [OLED_PINS.SCL, a.p.SCL, b.p.SCL], W.scl);
+    return s;
+  },
+  [
+    { color: W.sda, text: "SDA: GP0 (pin 1) -> OLED + both sensors" },
+    { color: W.scl, text: "SCL: GP1 (pin 2) -> OLED + both sensors" },
+    { color: W.pwr, text: "3V3 + GND rails feed everything" },
+    { text: "the SDO pad sets the address: GND = 0x76," },
+    { text: "3V3 = 0x77. Two addresses = max two per bus." },
+  ]);
+
+projects["soil-moisture-multi"] = () => diagram(
+  "many moisture probes via ADS1115", "the I2C chip that adds 4 analog inputs  ·  two probes shown",
+  [1, 2, 36, 38], () => {
+    let s = oledI2C();
+    // ADS1115 on the I2C bus
+    const ax = DEV_X, ay = 236, aw = DEV_W, ah = 118;
+    s += deviceBox(ax, ay, aw, ah, "ADS1115", "0x48 (ADDR->GND)", C.blue);
+    const ap = { VDD: { x: ax, y: ay + 36 }, GND: { x: ax, y: ay + 50 },
+                 SDA: { x: ax, y: ay + 64 }, SCL: { x: ax, y: ay + 78 },
+                 A0: { x: ax, y: ay + 96 }, A1: { x: ax, y: ay + 112 } };
+    s += devPin(ax, ap.VDD.y, "VDD") + devPin(ax, ap.GND.y, "GND")
+      + devPin(ax, ap.SDA.y, "SDA") + devPin(ax, ap.SCL.y, "SCL")
+      + devPin(ax, ap.A0.y, "A0") + devPin(ax, ap.A1.y, "A1");
+    s += tap(RAIL_PWR, ap.VDD, W.pwr) + tap(RAIL_GND, ap.GND, W.gnd);
+    s += bus(1, [OLED_PINS.SDA, ap.SDA], W.sda);
+    s += bus(2, [OLED_PINS.SCL, ap.SCL], W.scl);
+    // two moisture probes feeding A0 / A1
+    const mk = (y, title) => {
+      const h = 64;
+      let d = deviceBox(DEV_X, y, DEV_W, h, title, "", C.orange);
+      const p = { VCC: { x: DEV_X, y: y + 34 }, GND: { x: DEV_X, y: y + 47 },
+                  OUT: { x: DEV_X, y: y + 60 } };
+      d += devPin(DEV_X, p.VCC.y, "VCC") + devPin(DEV_X, p.GND.y, "GND") + devPin(DEV_X, p.OUT.y, "AOUT");
+      return { d, p };
+    };
+    const m1 = mk(384, "moisture probe 1");
+    const m2 = mk(472, "moisture probe 2");
+    s += m1.d + m2.d;
+    [m1, m2].forEach(m => { s += tap(RAIL_PWR, m.p.VCC, W.pwr) + tap(RAIL_GND, m.p.GND, W.gnd); });
+    // AOUT -> A0/A1: short lane just left of the device column
+    const lane = DEV_X - 22;
+    s += wire([[DEV_X - 8, m1.p.OUT.y], [lane, m1.p.OUT.y], [lane, ap.A0.y], [DEV_X - 8, ap.A0.y]], W.sig, 2.5);
+    const lane2 = DEV_X - 34;
+    s += wire([[DEV_X - 8, m2.p.OUT.y], [lane2, m2.p.OUT.y], [lane2, ap.A1.y], [DEV_X - 8, ap.A1.y]], W.sig, 2.5);
+    return s;
+  },
+  [
+    { color: W.sig, text: "probe 1 AOUT -> A0, probe 2 AOUT -> A1" },
+    { color: W.sda, text: "ADS1115 rides the same I2C bus as the OLED" },
+    { color: W.pwr, text: "3V3 + GND rails feed everything" },
+    { text: "A2 and A3 are still free (light divider, more" },
+    { text: "probes); a second ADS1115 at 0x49 adds 4 more" },
   ]);
 
 projects["servo"] = () => diagram(

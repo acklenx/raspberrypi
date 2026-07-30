@@ -150,6 +150,20 @@ fs.writeFileSync(path.join(ROOT, "projects", "everything", "package.json"), JSON
 }, null, 2) + "\n");
 console.log(`wrote projects/everything/package.json (${urls.length} files)`);
 
+// ---- publish demo/ pages to docs/demos/ (the live Pages copies) ----
+const demoSrc = path.join(ROOT, "demo");
+const demoOut = path.join(ROOT, "docs", "demos");
+fs.mkdirSync(demoOut, { recursive: true });
+if (fs.existsSync(demoSrc)) {
+  for (const f of fs.readdirSync(demoSrc)) {
+    if (!f.endsWith(".html")) continue;
+    // demo/mission-control-skins.html -> docs/demos/mission-control.html
+    const out = f.replace(/-skins\.html$/, ".html");
+    fs.copyFileSync(path.join(demoSrc, f), path.join(demoOut, out));
+    console.log(`published demo/${f} -> docs/demos/${out}`);
+  }
+}
+
 // ---- patch toc.txt into every other package.json ------------------
 const pkgs = [];
 for (const base of ["projects", "examples"]) {

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mission Control: four takes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --ink: #0A0E12; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #06090C; color: #E8EDF2;
+         font-family: system-ui, sans-serif; }
+  /* switcher rail */
+  #rail { display: flex; gap: 8px; padding: 10px 14px; background: #06090C;
+          border-bottom: 1px solid #1A222B; position: sticky; top: 0; z-index: 50;
+          flex-wrap: wrap; align-items: center; }
+  #rail span { font-size: 12px; color: #6B7683; letter-spacing: 1px; margin-right: 6px; }
+  #rail button { background: #131A22; color: #C7D1DB; border: 1px solid #26313D;
+                 border-radius: 6px; padding: 7px 14px; font-size: 13px; cursor: pointer; }
+  #rail button.on { background: #C7D1DB; color: #0A0E12; font-weight: 700; }
+  .view { display: none; } .view.on { display: block; }
+
+  /* ---------- TAKE 1: FLIGHT DECK ---------- */
+  #deck { background: #0A0E12; min-height: 100vh; padding: 0 0 30px 0;
+          font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace; }
+  #deck .head { display: flex; justify-content: space-between; align-items: baseline;
+    padding: 18px 22px 10px 22px; border-bottom: 1px solid #1C2833; flex-wrap: wrap; gap: 8px; }
+  #deck h1 { margin: 0; font-size: 17px; letter-spacing: 3px; color: #7DFF9E;
+             font-weight: 700; text-shadow: 0 0 12px rgba(51,255,102,.35); }
+  #deck .met { font-size: 14px; color: #38E8FF; letter-spacing: 2px; }
+  #deck .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px,1fr));
+                gap: 12px; padding: 16px 22px; }
+  .tile { background: #0D1319; border: 1px solid #1C2833; border-radius: 4px;
+          padding: 10px 12px; position: relative; }
+  .tile.warn { border-color: #FFB000; }
+  .tile.alarm { border-color: #FF3B30; animation: alarmflash 1s steps(2) infinite; }
+  @keyframes alarmflash { 50% { background: #2A0D0B; } }
+  @media (prefers-reduced-motion: reduce) { .tile.alarm { animation: none; background: #2A0D0B; } }
+  .tile .cs { display: flex; justify-content: space-between; align-items: center;
+              font-size: 13px; letter-spacing: 2px; color: #A6C4D0; margin-bottom: 6px; }
+  .lamp { width: 10px; height: 10px; border-radius: 50%; background: #33FF66;
+          box-shadow: 0 0 8px #33FF66; }
+  .warn .lamp { background: #FFB000; box-shadow: 0 0 8px #FFB000; }
+  .alarm .lamp { background: #FF3B30; box-shadow: 0 0 10px #FF3B30; }
+  .trows { font-size: 12px; line-height: 1.7; color: #6FA8B8; }
+  .trows b { color: #D9F2E6; float: right; font-weight: 400;
+             font-variant-numeric: tabular-nums; }
+  .trows b.hot { color: #FFB000; } .trows b.bad { color: #FF6B61; }
+  .tile canvas { width: 100%; height: 34px; margin-top: 6px; display: block; }
+  #ticker { position: fixed; left: 0; right: 0; bottom: 0; background: #05080B;
+    border-top: 1px solid #1C2833; padding: 8px 0; white-space: nowrap; overflow: hidden;
+    font-size: 12.5px; letter-spacing: 1px; color: #5E90A0; z-index: 10; }
+  #tickinner { display: inline-block; padding-left: 100%;
+               animation: tick 40s linear infinite; }
+  @media (prefers-reduced-motion: reduce) { #tickinner { animation: none; padding-left: 1em; } }
+  @keyframes tick { to { transform: translateX(-100%); } }
+  #tickinner em { font-style: normal; color: #FFB000; }
+
+  /* ---------- TAKE 2: LIVING BIN ---------- */
+  #bin { background: #F2E9D8; color: #3E2A1B; min-height: 100vh;
+         font-family: Georgia, "Times New Roman", serif; padding-bottom: 40px; }
+  #bin .head { text-align: center; padding: 26px 16px 6px 16px; }
+  #bin h1 { margin: 0; font-size: clamp(26px, 5vw, 40px); font-weight: 400;
+            letter-spacing: 1px; text-wrap: balance; }
+  #bin h1 b { color: #6B8F3C; font-style: italic; }
+  #bin .sub { font-size: 14px; color: #8A6F58; margin-top: 4px; font-style: italic; }
+  #binwrap { max-width: 780px; margin: 18px auto 0 auto; padding: 0 14px; }
+  #binscene { width: 100%; border-radius: 14px; display: block;
+              box-shadow: 0 10px 30px rgba(62,42,27,.25); }
+  .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+           gap: 12px; max-width: 780px; margin: 18px auto; padding: 0 14px; }
+  .minibin { background: #FFF9EE; border: 2px solid #D9C7A8; border-radius: 12px;
+             padding: 10px 12px; cursor: pointer; text-align: center; }
+  .minibin.on { border-color: #6B8F3C; background: #F0F4E3; }
+  .minibin .nm { font-size: 14px; font-weight: 700; }
+  .minibin .mood { font-size: 12.5px; color: #8A6F58; font-style: italic; margin-top: 2px; }
+  .minibin .tt { font-size: 20px; color: #C4703B; margin-top: 4px;
+                 font-variant-numeric: tabular-nums; }
+
+  /* ---------- TAKE 4: WORM//NET ---------- */
+  #net { background: #020408; min-height: 100vh; position: relative; overflow: hidden;
+         font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace; }
+  #rain { position: absolute; inset: 0; opacity: .28; }
+  #net .inner { position: relative; z-index: 2; padding: 18px 20px 30px 20px; }
+  #net h1 { margin: 0; font-size: clamp(22px, 4.5vw, 38px); letter-spacing: 6px;
+    color: #00F0FF; text-shadow: 0 0 18px rgba(0,240,255,.6), 0 0 40px rgba(0,240,255,.25); }
+  #net h1 i { color: #FF2BD6; font-style: normal;
+              text-shadow: 0 0 18px rgba(255,43,214,.6); }
+  #net .tag { color: #3E7A86; font-size: 12px; letter-spacing: 3px; margin-top: 4px; }
+  #netgrid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px;
+             margin-top: 16px; max-width: 1060px; }
+  @media (max-width: 760px) { #netgrid { grid-template-columns: 1fr; } }
+  .holo { border: 1px solid #0A3A44; border-radius: 6px; background: rgba(2,10,14,.72);
+          padding: 10px; position: relative; }
+  .holo::before { content: attr(data-t); position: absolute; top: -9px; left: 12px;
+    background: #020408; padding: 0 8px; font-size: 11px; letter-spacing: 3px; color: #00F0FF; }
+  .holo canvas { width: 100%; display: block; }
+  #netchips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .chip4 { border: 1px solid #0A3A44; color: #6FD8E6; padding: 5px 12px; font-size: 12px;
+           border-radius: 4px; cursor: pointer; letter-spacing: 1px; background: transparent; }
+  .chip4.on { background: #00F0FF; color: #020408; font-weight: 700;
+              box-shadow: 0 0 16px rgba(0,240,255,.5); }
+  #nethud { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 12px;
+            font-size: 12.5px; color: #6FD8E6; letter-spacing: 1px; }
+  #nethud b { color: #E8FDFF; font-variant-numeric: tabular-nums; }
+  #nethud .crit { color: #FF2BD6; }
+
+  /* ---------- TAKE 3: LEADERBOARD ---------- */
+  #board { background: #0E1633; min-height: 100vh; color: #FFF;
+           font-family: system-ui, sans-serif; padding-bottom: 50px; position: relative; }
+  #board .head { text-align: center; padding: 24px 12px 8px 12px; }
+  #board h1 { margin: 0; font-size: clamp(28px, 6vw, 52px); font-weight: 900;
+              font-style: italic; letter-spacing: -1px; color: #FFD400;
+              text-transform: uppercase; }
+  #board h1 span { color: #FF3D8A; }
+  #board .next { font-size: 13px; color: #7C89B8; letter-spacing: 2px; margin-top: 4px; }
+  #record { max-width: 640px; margin: 14px auto 0 auto; background: #FF3D8A;
+    color: #FFF; font-weight: 900; text-align: center; border-radius: 10px;
+    padding: 10px; font-size: 15px; letter-spacing: 1px; visibility: hidden;
+    text-transform: uppercase; }
+  #record.show { visibility: visible; }
+  #rows { max-width: 640px; margin: 16px auto; padding: 0 12px;
+          display: flex; flex-direction: column; gap: 10px; }
+  .rrow { display: flex; align-items: center; gap: 14px; background: #16204A;
+          border-radius: 12px; padding: 12px 16px;
+          transition: transform .6s ease; }
+  .rrow .rank { font-size: 30px; font-weight: 900; font-style: italic;
+                width: 44px; color: #FFD400; font-variant-numeric: tabular-nums; }
+  .rrow:first-child .rank { color: #FF3D8A; }
+  .rrow .tn { flex: 1; }
+  .rrow .tn .nm { font-weight: 800; font-size: 16px; text-transform: uppercase;
+                  letter-spacing: .5px; }
+  .rrow .tn .st { font-size: 12px; color: #7C89B8; margin-top: 2px; }
+  .rrow canvas { width: 110px; height: 30px; }
+  .rrow .score { font-size: 26px; font-weight: 900; font-style: italic;
+                 font-variant-numeric: tabular-nums; width: 74px; text-align: right; }
+  #confetti { position: absolute; inset: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="rail">
+  <span>MISSION CONTROL, 4 WAYS:</span>
+  <button data-v="deck" class="on">1 · Flight Deck</button>
+  <button data-v="bin">2 · The Living Bin</button>
+  <button data-v="board">3 · The Leaderboard</button>
+  <button data-v="net">4 · WORM//NET</button>
+</div>
+
+<!-- ================= TAKE 1 ================= -->
+<div class="view on" id="deck">
+  <div class="head">
+    <h1>WOODSTOCK MISSION CONTROL</h1>
+    <div class="met">MET <span id="met">00:00:00</span> &nbsp;·&nbsp; NET: WormHole &nbsp;·&nbsp; STATIONS <span id="stn">6/6</span></div>
+  </div>
+  <div class="grid" id="deckgrid"></div>
+  <div id="ticker"><div id="tickinner"></div></div>
+</div>
+
+<!-- ================= TAKE 2 ================= -->
+<div class="view" id="bin">
+  <div class="head">
+    <h1>Inside the <b>Worm Bin</b></h1>
+    <div class="sub">a live portrait of team <span id="binteam">…</span>'s ecosystem · Woodstock High School</div>
+  </div>
+  <div id="binwrap"><canvas id="binscene" width="760" height="430"></canvas></div>
+  <div class="shelf" id="shelf"></div>
+</div>
+
+<!-- ================= TAKE 4 ================= -->
+<div class="view" id="net">
+  <canvas id="rain"></canvas>
+  <div class="inner">
+    <h1>WORM<i>//</i>NET</h1>
+    <div class="tag">DISTRIBUTED VERMICULTURE TELEMETRY · WOODSTOCK HS · UPLINK: WormHole</div>
+    <div id="netgrid">
+      <div class="holo" data-t="BIN HOLOGRAM"><canvas id="holo" width="560" height="360"></canvas></div>
+      <div class="holo" data-t="WORM ACTIVITY RADAR"><canvas id="radar" width="380" height="360"></canvas></div>
+    </div>
+    <div id="nethud"></div>
+    <div id="netchips"></div>
+  </div>
+</div>
+
+<!-- ================= TAKE 3 ================= -->
+<div class="view" id="board">
+  <canvas id="confetti"></canvas>
+  <div class="head">
+    <h1>BIN <span>CHAMPIONS</span></h1>
+    <div class="next">NEXT READING IN <span id="cd">0:03</span> · LIVE FROM WORMHOLE</div>
+  </div>
+  <div id="record"></div>
+  <div id="rows"></div>
+</div>
+
+<script>
+// ================= shared fake-data engine =================
+var TEAMS = ['Compost Cowboys','Worm Rangers','Dirt Nerds','The Decomposers','Castings Inc','Team Wiggle'];
+var sims = TEAMS.map(function (n, i) {
+  return { name: n, cs: 'WRM-0' + (i + 1),
+    tin: 23 + Math.random() * 3, tout: 20 + Math.random() * 3,
+    hum: 60 + Math.random() * 20, m1: 45 + Math.random() * 25, m2: 45 + Math.random() * 25,
+    light: 5 + Math.random() * 10, sound: 8 + Math.random() * 10,
+    hist: [], score: 0, status: 'NOMINAL', anomaly: 0 };
+});
+function walk(v, step, lo, hi) {
+  v += (Math.random() - 0.5) * step;
+  return Math.max(lo, Math.min(hi, v));
+}
+var events = [], t0 = Date.now();
+function simTick() {
+  sims.forEach(function (s) {
+    if (s.anomaly > 0) { s.anomaly--; }
+    else if (Math.random() < 0.004) {
+      s.anomaly = 40 + Math.random() * 60;
+      s.anofield = Math.random() < 0.5 ? 'm1' : 'tin';
+      events.unshift(s.cs + ' ' + (s.anofield === 'm1' ? 'MOISTURE FALLING' : 'TEMP RISING'));
+    }
+    s.tin = walk(s.tin, 0.2, 18, 34) + (s.anomaly && s.anofield === 'tin' ? 0.08 : 0);
+    s.tout = walk(s.tout, 0.15, 16, 30);
+    s.hum = walk(s.hum, 0.8, 35, 95);
+    s.m1 = walk(s.m1, 0.7, 5, 95) - (s.anomaly && s.anofield === 'm1' ? 0.5 : 0);
+    s.m2 = walk(s.m2, 0.7, 5, 95);
+    s.light = walk(s.light, 0.6, 0, 60);
+    s.sound = walk(s.sound, 1.4, 2, 70);
+    s.hist.push(s.tin); if (s.hist.length > 60) s.hist.shift();
+    s.status = s.m1 < 20 || s.tin > 30 ? (s.m1 < 12 || s.tin > 32 ? 'ALARM' : 'WARN') : 'NOMINAL';
+    // bin score: closeness to ideal (moist 40-70, temp 20-27, quiet)
+    var ms = 100 - Math.abs(55 - (s.m1 + s.m2) / 2) * 1.6;
+    var ts = 100 - Math.abs(23.5 - s.tin) * 9;
+    var qs = 100 - s.sound;
+    s.score = Math.round(Math.max(0, ms * 0.4 + ts * 0.4 + qs * 0.2));
+  });
+  if (events.length > 8) events.pop();
+}
+function spark(cv, data, color, lo, hi) {
+  var c = cv.getContext('2d'), w = cv.width = cv.offsetWidth * 2, h = cv.height = cv.offsetHeight * 2;
+  c.clearRect(0, 0, w, h);
+  if (data.length < 2) return;
+  lo = lo !== undefined ? lo : Math.min.apply(null, data);
+  hi = hi !== undefined ? hi : Math.max.apply(null, data);
+  if (hi - lo < 1) { var m = (hi + lo) / 2; lo = m - 0.5; hi = m + 0.5; }
+  c.beginPath();
+  data.forEach(function (v, i) {
+    var x = i / (data.length - 1) * w, y = h - 3 - (v - lo) / (hi - lo) * (h - 6);
+    i ? c.lineTo(x, y) : c.moveTo(x, y);
+  });
+  c.strokeStyle = color; c.lineWidth = 2.5; c.stroke();
+  var lx = w, lyv = data[data.length - 1];
+  c.beginPath(); c.arc(w - 3, h - 3 - (lyv - lo) / (hi - lo) * (h - 6), 4, 0, 7);
+  c.fillStyle = color; c.fill();
+}
+
+// ================= TAKE 1 render =================
+var deckTiles = [];
+function buildDeck() {
+  var g = document.getElementById('deckgrid'); g.innerHTML = '';
+  deckTiles = sims.map(function (s) {
+    var d = document.createElement('div'); d.className = 'tile';
+    d.innerHTML = '<div class="cs"><span>' + s.cs + ' · ' + s.name.toUpperCase()
+      + '</span><span class="lamp"></span></div><div class="trows">'
+      + '<div>BIN TEMP<b class="v-tin"></b></div>'
+      + '<div>MOIST A/B<b class="v-m"></b></div>'
+      + '<div>RH / SND<b class="v-hs"></b></div></div><canvas></canvas>';
+    g.appendChild(d); return d;
+  });
+}
+function renderDeck() {
+  var el = document.getElementById('met'), s = Math.floor((Date.now() - t0) / 1000);
+  el.textContent = ('0' + Math.floor(s / 3600)).slice(-2) + ':' +
+    ('0' + Math.floor(s / 60) % 60).slice(-2) + ':' + ('0' + s % 60).slice(-2);
+  sims.forEach(function (s, i) {
+    var d = deckTiles[i];
+    d.className = 'tile' + (s.status === 'WARN' ? ' warn' : s.status === 'ALARM' ? ' alarm' : '');
+    d.querySelector('.v-tin').textContent = s.tin.toFixed(1) + ' C';
+    d.querySelector('.v-tin').className = 'v-tin' + (s.tin > 30 ? ' hot' : '');
+    d.querySelector('.v-m').textContent = s.m1.toFixed(0) + '% / ' + s.m2.toFixed(0) + '%';
+    d.querySelector('.v-m').className = 'v-m' + (s.m1 < 20 ? ' bad' : '');
+    d.querySelector('.v-hs').textContent = s.hum.toFixed(0) + '% / ' + s.sound.toFixed(0);
+    spark(d.querySelector('canvas'), s.hist, s.status === 'NOMINAL' ? '#33FF66' : '#FFB000', 18, 34);
+  });
+  var tk = events.map(function (e) { return '<em>&#9650;</em> ' + e; }).join(' &nbsp;&nbsp;·&nbsp;&nbsp; ')
+    || 'ALL STATIONS NOMINAL · WORM ACTIVITY WITHIN EXPECTED PARAMETERS · NEXT FEEDING WINDOW 4TH PERIOD';
+  document.getElementById('tickinner').innerHTML = tk + ' &nbsp;&nbsp;·&nbsp;&nbsp; ' + tk;
+}
+
+// ================= TAKE 2 render =================
+var focusTeam = 0, worms = [];
+for (var w = 0; w < 6; w++) worms.push({ x: 80 + Math.random() * 600, y: 250 + Math.random() * 140,
+  a: Math.random() * 6.3, spd: 0.15 + Math.random() * 0.25, ph: Math.random() * 6.3 });
+function buildShelf() {
+  var sh = document.getElementById('shelf'); sh.innerHTML = '';
+  sims.forEach(function (s, i) {
+    var d = document.createElement('div');
+    d.className = 'minibin' + (i === focusTeam ? ' on' : '');
+    d.onclick = function () { focusTeam = i; buildShelf(); };
+    d.innerHTML = '<div class="nm">' + s.name + '</div><div class="mood m-' + i +
+      '"></div><div class="tt t-' + i + '"></div>';
+    sh.appendChild(d);
+  });
+}
+function mood(s) {
+  if (s.m1 < 20) return 'thirsty…';
+  if (s.tin > 30) return 'too warm!';
+  if (s.sound > 45) return 'startled by noise';
+  return 'cozy and munching';
+}
+function renderBin() {
+  var s = sims[focusTeam];
+  document.getElementById('binteam').textContent = s.name;
+  sims.forEach(function (t, i) {
+    var m = document.querySelector('.m-' + i), v = document.querySelector('.t-' + i);
+    if (m) m.textContent = mood(t);
+    if (v) v.textContent = t.tin.toFixed(1) + '°';
+  });
+  var cv = document.getElementById('binscene'), c = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  // sky by light level
+  var day = Math.min(1, s.light / 40);
+  c.fillStyle = 'rgb(' + Math.round(150 + 60 * day) + ',' + Math.round(190 + 30 * day) + ',' +
+    Math.round(210 + 20 * day) + ')';
+  c.fillRect(0, 0, W, 200);
+  // sun/moon arc
+  var sx = 80 + day * 600, sy = 150 - Math.sin(day * Math.PI) * 110;
+  c.beginPath(); c.arc(sx, sy, 26, 0, 7);
+  c.fillStyle = day > 0.35 ? '#F2C400' : '#E8EDF2'; c.fill();
+  // bin walls
+  c.fillStyle = '#8A6F58'; c.fillRect(30, 180, W - 60, 230);
+  c.fillStyle = '#5C452F'; c.fillRect(42, 192, W - 84, 206);
+  // bedding layers
+  c.fillStyle = '#6E5138'; c.fillRect(42, 192, W - 84, 60);
+  c.fillStyle = '#4A3521'; c.fillRect(42, 252, W - 84, 90);
+  c.fillStyle = '#39281A'; c.fillRect(42, 342, W - 84, 56);
+  // moisture droplets when wet
+  if ((s.m1 + s.m2) / 2 > 60) {
+    c.fillStyle = 'rgba(120,180,220,0.8)';
+    for (var dnum = 0; dnum < 8; dnum++) {
+      var dx2 = 60 + ((dnum * 97 + Date.now() / 30) % (W - 120));
+      var dy2 = 200 + ((dnum * 61 + Date.now() / 9) % 180);
+      c.beginPath(); c.ellipse(dx2, dy2, 3, 5, 0, 0, 7); c.fill();
+    }
+  }
+  // worms (wiggle speed = happiness)
+  var happy = s.score / 100;
+  worms.forEach(function (wm) {
+    wm.ph += 0.1 + happy * 0.15;
+    wm.x += Math.cos(wm.a) * wm.spd * happy * 2;
+    wm.y += Math.sin(wm.a) * wm.spd * happy;
+    if (wm.x < 70 || wm.x > W - 70) wm.a = Math.PI - wm.a;
+    if (wm.y < 230 || wm.y > H - 40) wm.a = -wm.a;
+    if (Math.random() < 0.01) wm.a += (Math.random() - 0.5);
+    c.strokeStyle = '#C4703B'; c.lineWidth = 7; c.lineCap = 'round';
+    c.beginPath();
+    for (var seg = 0; seg < 7; seg++) {
+      var px = wm.x - seg * 8 * Math.cos(wm.a);
+      var py = wm.y - seg * 8 * Math.sin(wm.a) + Math.sin(wm.ph + seg * 0.9) * 5;
+      seg ? c.lineTo(px, py) : c.moveTo(px, py);
+    }
+    c.stroke();
+  });
+  // probe dots at depths, colored by temp offsets
+  for (var pnum = 0; pnum < 5; pnum++) {
+    var ppx = 100 + pnum * ((W - 200) / 4), ppy = 240 + (pnum % 3) * 55;
+    var pt = s.tin + Math.sin(pnum * 2 + Date.now() / 5000);
+    var n = Math.max(0, Math.min(1, (pt - 18) / 14));
+    c.beginPath(); c.arc(ppx, ppy, 9, 0, 7);
+    c.fillStyle = 'hsl(' + Math.round(220 - n * 200) + ',75%,55%)'; c.fill();
+    c.strokeStyle = '#F2E9D8'; c.lineWidth = 2; c.stroke();
+    c.fillStyle = '#F2E9D8'; c.font = 'bold 11px Georgia';
+    c.textAlign = 'center'; c.fillText(pt.toFixed(1) + '°', ppx, ppy - 14);
+  }
+  // gauges on the rim
+  c.fillStyle = '#F2E9D8'; c.font = 'italic 15px Georgia'; c.textAlign = 'left';
+  c.fillText('bedding moisture ' + ((s.m1 + s.m2) / 2).toFixed(0) + '%', 46, 175);
+  c.textAlign = 'right';
+  c.fillText('air ' + s.tout.toFixed(1) + '° · rh ' + s.hum.toFixed(0) + '%', W - 46, 175);
+}
+
+// ================= TAKE 3 render =================
+var boardRows = [], lastOrder = '', recordHigh = 0, confetti = [];
+function buildBoard() {
+  var r = document.getElementById('rows'); r.innerHTML = '';
+  boardRows = sims.map(function (s) {
+    var d = document.createElement('div'); d.className = 'rrow';
+    d.innerHTML = '<div class="rank"></div><div class="tn"><div class="nm">' + s.name +
+      '</div><div class="st"></div></div><canvas></canvas><div class="score"></div>';
+    r.appendChild(d); return d;
+  });
+}
+function renderBoard() {
+  var order = sims.map(function (s, i) { return i; })
+    .sort(function (a, b) { return sims[b].score - sims[a].score; });
+  order.forEach(function (si, rank) {
+    var d = boardRows[si], s = sims[si];
+    d.style.order = rank;
+    d.querySelector('.rank').textContent = rank + 1;
+    d.querySelector('.st').textContent = s.tin.toFixed(1) + '° · moist ' +
+      ((s.m1 + s.m2) / 2).toFixed(0) + '% · ' + (s.status === 'NOMINAL' ? 'steady' : s.status.toLowerCase());
+    d.querySelector('.score').textContent = s.score;
+    spark(d.querySelector('canvas'), s.hist, rank === 0 ? '#FFD400' : '#7C89B8', 18, 34);
+  });
+  document.getElementById('rows').style.display = 'flex';
+  var top = sims[order[0]];
+  if (top.score > recordHigh) {
+    recordHigh = top.score;
+    var rc = document.getElementById('record');
+    rc.textContent = 'NEW RECORD! ' + top.name + ' hits bin score ' + top.score;
+    rc.className = 'show';
+    burstConfetti();
+    setTimeout(function () { rc.className = ''; }, 4000);
+  }
+  var cd = 3 - Math.floor((Date.now() / 1000)) % 3;
+  document.getElementById('cd').textContent = '0:0' + cd;
+}
+function burstConfetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  for (var i = 0; i < 80; i++) confetti.push({ x: Math.random() * innerWidth,
+    y: -10 - Math.random() * 60, vy: 2 + Math.random() * 3, vx: (Math.random() - .5) * 2,
+    c: ['#FFD400', '#FF3D8A', '#FFFFFF', '#38E8FF'][i % 4], r: 3 + Math.random() * 4, life: 200 });
+}
+function drawConfetti() {
+  var cv = document.getElementById('confetti');
+  cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+  var c = cv.getContext('2d');
+  confetti = confetti.filter(function (p) { return p.life-- > 0 && p.y < cv.height + 20; });
+  confetti.forEach(function (p) {
+    p.x += p.vx; p.y += p.vy;
+    c.fillStyle = p.c; c.fillRect(p.x, p.y, p.r, p.r * 1.6);
+  });
+}
+
+// ================= TAKE 4 render =================
+var netTeam = 0, rot = 0, rainCols = [], blips = [];
+function buildNet() {
+  var ch = document.getElementById('netchips'); ch.innerHTML = '';
+  sims.forEach(function (s, i) {
+    var b = document.createElement('button');
+    b.className = 'chip4' + (i === netTeam ? ' on' : '');
+    b.textContent = s.cs;
+    b.onclick = function () { netTeam = i; buildNet(); };
+    ch.appendChild(b);
+  });
+}
+function renderRain() {
+  var cv = document.getElementById('rain');
+  var w = cv.width = cv.offsetWidth, h = cv.height = cv.offsetHeight;
+  var c = cv.getContext('2d'), s = sims[netTeam];
+  if (!rainCols.length) for (var i = 0; i < 60; i++) rainCols.push({ x: Math.random() * w, y: Math.random() * h, v: 2 + Math.random() * 5 });
+  c.fillStyle = 'rgba(2,4,8,0.25)'; c.fillRect(0, 0, w, h);
+  c.font = '13px monospace';
+  rainCols.forEach(function (r) {
+    r.y += r.v; if (r.y > h) { r.y = -12; r.x = Math.random() * w; }
+    var chs = (s.tin.toFixed(1) + s.m1.toFixed(0) + s.hum.toFixed(0));
+    c.fillStyle = Math.random() < 0.08 ? '#E8FDFF' : '#0A5F55';
+    c.fillText(chs[Math.floor(Math.random() * chs.length)], r.x, r.y);
+  });
+}
+function renderHolo() {
+  var cv = document.getElementById('holo'), c = cv.getContext('2d');
+  var W = cv.width, H = cv.height, s = sims[netTeam];
+  c.clearRect(0, 0, W, H);
+  rot += 0.012;
+  function p3(x, y, z) {   // box in [-1,1], y up
+    var cx = Math.cos(rot), sx = Math.sin(rot);
+    var X = x * cx - z * sx, Z = x * sx + z * cx;
+    var d = 3.2 + Z;
+    return [W / 2 + X * 200 / d * 1.6, H / 2 + 30 - y * 200 / d + Z * 8];
+  }
+  // neon floor grid
+  c.strokeStyle = 'rgba(0,240,255,0.12)'; c.lineWidth = 1;
+  for (var g = -4; g <= 4; g++) {
+    var a = p3(g / 2.5, -1.15, -1.6), b = p3(g / 2.5, -1.15, 1.6);
+    c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
+    a = p3(-1.6, -1.15, g / 2.5); b = p3(1.6, -1.15, g / 2.5);
+    c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
+  }
+  // bin wireframe
+  var V = [[-1.3,-1,-0.8],[1.3,-1,-0.8],[1.3,-1,0.8],[-1.3,-1,0.8],
+           [-1.3,0.6,-0.8],[1.3,0.6,-0.8],[1.3,0.6,0.8],[-1.3,0.6,0.8]];
+  var E = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+  c.strokeStyle = '#00F0FF'; c.lineWidth = 1.6;
+  c.shadowColor = '#00F0FF'; c.shadowBlur = 8;
+  E.forEach(function (e) {
+    var a = p3.apply(null, V[e[0]]), b = p3.apply(null, V[e[1]]);
+    c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
+  });
+  c.shadowBlur = 0;
+  // probe points inside, colored by temp
+  for (var i = 0; i < 5; i++) {
+    var px = -1 + (i % 3), py = -0.7 + Math.floor(i / 3) * 0.7, pz = -0.4 + (i % 2) * 0.8;
+    var pt = s.tin + Math.sin(i * 2 + Date.now() / 4000) * 1.2;
+    var n = Math.max(0, Math.min(1, (pt - 18) / 14));
+    var q = p3(px * 0.9, py, pz * 0.8);
+    c.beginPath(); c.arc(q[0], q[1], 6, 0, 7);
+    c.fillStyle = 'hsl(' + Math.round(190 - n * 190) + ',100%,60%)';
+    c.shadowColor = c.fillStyle; c.shadowBlur = 14; c.fill(); c.shadowBlur = 0;
+    c.fillStyle = '#9AECF5'; c.font = '10px monospace'; c.textAlign = 'center';
+    c.fillText('P' + (i + 1) + ' ' + pt.toFixed(1), q[0], q[1] - 10);
+  }
+}
+function renderRadar() {
+  var cv = document.getElementById('radar'), c = cv.getContext('2d');
+  var W = cv.width, H = cv.height, cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 14;
+  var s = sims[netTeam];
+  c.fillStyle = 'rgba(2,8,12,0.35)'; c.fillRect(0, 0, W, H);
+  c.strokeStyle = 'rgba(0,240,255,0.25)';
+  [0.33, 0.66, 1].forEach(function (f) {
+    c.beginPath(); c.arc(cx, cy, R * f, 0, 7); c.stroke();
+  });
+  var ang = (Date.now() / 700) % (Math.PI * 2);
+  var gr = c.createLinearGradient(cx, cy, cx + Math.cos(ang) * R, cy + Math.sin(ang) * R);
+  gr.addColorStop(0, 'rgba(0,240,255,0)'); gr.addColorStop(1, 'rgba(0,240,255,0.7)');
+  c.strokeStyle = gr; c.lineWidth = 3;
+  c.beginPath(); c.moveTo(cx, cy);
+  c.lineTo(cx + Math.cos(ang) * R, cy + Math.sin(ang) * R); c.stroke();
+  // blips: rate scales with sound + worm happiness
+  if (Math.random() < (s.sound / 70 + s.score / 300)) {
+    blips.push({ a: Math.random() * 6.3, r: Math.random() * R * 0.9, life: 90 });
+  }
+  blips = blips.filter(function (b) { return b.life-- > 0; });
+  blips.forEach(function (b) {
+    c.beginPath(); c.arc(cx + Math.cos(b.a) * b.r, cy + Math.sin(b.a) * b.r,
+      3 + (90 - b.life) / 30, 0, 7);
+    c.strokeStyle = 'rgba(255,43,214,' + (b.life / 90) + ')'; c.lineWidth = 1.6; c.stroke();
+  });
+}
+function renderNetHud() {
+  var s = sims[netTeam];
+  document.getElementById('nethud').innerHTML =
+    '<span>CORE <b>' + s.tin.toFixed(2) + 'C</b></span>' +
+    '<span>SUBSTRATE H2O <b' + (s.m1 < 20 ? ' class="crit"' : '') + '>' +
+      s.m1.toFixed(1) + '% / ' + s.m2.toFixed(1) + '%</b></span>' +
+    '<span>ATMOS <b>' + s.hum.toFixed(0) + '%RH</b></span>' +
+    '<span>ACOUSTIC <b>' + s.sound.toFixed(1) + 'dB*</b></span>' +
+    '<span>BIOMASS INDEX <b>' + s.score + '</b></span>' +
+    '<span>STATUS <b' + (s.status !== 'NOMINAL' ? ' class="crit"' : '') + '>' + s.status + '</b></span>';
+}
+
+// ================= boot =================
+buildDeck(); buildShelf(); buildBoard(); buildNet();
+var cur = 'deck';
+document.querySelectorAll('#rail button').forEach(function (b) {
+  b.onclick = function () {
+    cur = b.dataset.v;
+    document.querySelectorAll('#rail button').forEach(function (x) { x.className = x === b ? 'on' : ''; });
+    document.querySelectorAll('.view').forEach(function (v) { v.className = 'view' + (v.id === cur ? ' on' : ''); });
+  };
+});
+setInterval(simTick, 350);
+setInterval(function () {
+  if (cur === 'deck') renderDeck();
+  if (cur === 'bin') renderBin();
+  if (cur === 'board') { renderBoard(); }
+}, 350);
+setInterval(function () { if (cur === 'bin') renderBin(); }, 60);   // worms wiggle smoothly
+setInterval(function () { if (cur === 'board') drawConfetti(); }, 33);
+setInterval(function () {
+  if (cur !== 'net') return;
+  renderRain(); renderHolo(); renderRadar(); renderNetHud();
+}, 40);
+</script>
+</body>
+</html>

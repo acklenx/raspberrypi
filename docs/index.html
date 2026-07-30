@@ -441,6 +441,22 @@
     <figcaption>SG90 signal on GP16 (pin 21). Power comes from VBUS 5V (orange), not 3V3. Optional GL5528 enables follow-light mode.</figcaption>
   </figure>
 
+  <figure class="wiring" id="wire-soil-temperature-multi">
+    <h3>many DS18B20 probes, one wire</h3>
+    <img src="wiring/soil-temperature-multi.svg" alt="multiple DS18B20 wiring diagram" loading="lazy">
+    <figcaption>Three probes shown, dozens possible: one shared data bus on GP22 and STILL just one 4.7k pullup (yellow-violet-red-gold).</figcaption>
+  </figure>
+  <figure class="wiring" id="wire-bme280-multi">
+    <h3>two BME280s on one bus</h3>
+    <img src="wiring/bme280-multi.svg" alt="two BME280 wiring diagram" loading="lazy">
+    <figcaption>The SDO pad picks the address: GND = 0x76 (in the bin), 3V3 = 0x77 (outside). Two addresses = max two per bus.</figcaption>
+  </figure>
+  <figure class="wiring" id="wire-soil-moisture-multi">
+    <h3>many moisture probes via ADS1115</h3>
+    <img src="wiring/soil-moisture-multi.svg" alt="multiple moisture via ADS1115 wiring diagram" loading="lazy">
+    <figcaption>The ADS1115 rides the I2C bus and adds four analog inputs: probes go to A0/A1, A2/A3 stay free, and a second chip at 0x49 adds four more.</figcaption>
+  </figure>
+
   <h2 id="start-here">Start-here examples</h2>
   <hr class="rule b">
   <p class="lead">Sessions 1 and 2 live here. Work top to bottom: each one is one idea
