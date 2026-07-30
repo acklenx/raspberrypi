@@ -274,6 +274,16 @@ picolab.banner("WORM BIN COMMAND CENTER", [
 ])
 
 display = picolab.Display()
+# The capstone gets a proper opening card (the little demos stay fast).
+display.show([
+    "",
+    "   WOODSTOCK",
+    "  HIGH SCHOOL",
+    "",
+    " Maker Lab Kids",
+])
+time.sleep_ms(3000)
+
 light = picolab.StatusLight()
 app = picolab.WebApp()
 tick = picolab.Throttle(500)

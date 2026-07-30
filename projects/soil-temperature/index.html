@@ -31,9 +31,60 @@
   .count { margin-top: 10px; font-size: 13px; color: #64748b; }
   #status { margin-top: 4px; font-size: 13px; color: #64748b; }
   #status.err { color: #f87171; }
+  #gear { position: fixed; top: 12px; right: 12px; z-index: 5; font-size: 18px;
+          padding: 6px 12px; border-radius: 10px; }
+  #drawer { display: none; text-align: left; }
+  #drawer.open { display: block; }
+  .set { margin: 10px 0; font-size: 13px; }
+  .set b { color: #94a3b8; display: block; margin-bottom: 3px; font-size: 11px;
+           letter-spacing: 1px; }
+  .set label { margin-right: 10px; color: #cbd5e1; }
+  select { background: #0f172a; color: #f8fafc; border: 1px solid #334155;
+           border-radius: 6px; padding: 4px; font-size: 13px; }
+  .calrow { margin: 6px 0; }
+  .caltag { font-size: 9px; color: #34d399; }
+  #calmsg { font-size: 12px; color: #34d399; }
 </style>
 </head>
 <body>
+  <button id="gear">&#9776;</button>
+  <div class="card" id="drawer">
+    <h3>SETTINGS</h3>
+    <div class="set"><b>UNITS</b>
+      <label><input type="radio" name="units" value="C" checked> &deg;C (metric, this is science)</label>
+      <label><input type="radio" name="units" value="F"> &deg;F</label>
+    </div>
+    <div class="set"><b>TIME SCALE (waterfall)</b>
+      <select id="rowsevery">
+        <option value="1">fast: row every reading (~70 s of history)</option>
+        <option value="4">medium: row every 2 s (~4.5 min)</option>
+        <option value="20">slow: row every 10 s (~23 min)</option>
+      </select>
+    </div>
+    <div class="set"><b>AXES</b>
+      <label><input type="checkbox" id="newesttop"> newest at the TOP of the waterfall</label><br>
+      <label><input type="checkbox" id="revstrip"> reverse probe order (last probe on the left)</label>
+    </div>
+    <div class="set"><b>DATA</b>
+      <label><input type="checkbox" id="showraw"> show raw (uncalibrated) readings</label><br>
+      <label><input type="checkbox" id="showlog"> show data log table</label><br>
+      <label><input type="checkbox" id="showids"> show sensor serials in the log</label>
+    </div>
+    <div class="set"><b>CALIBRATE (saved on the board, survives reboot)</b>
+      <div class="calrow">probe <select id="calsel"></select> raw now: <span id="calraw">--</span>&deg;C</div>
+      <div class="calrow">point A true value <input class="pos" id="actA" value="0"> <button id="capA">capture</button> <span id="gotA"></span></div>
+      <div class="calrow">point B true value <input class="pos" id="actB" value="100"> <button id="capB">capture</button> <span id="gotB"></span></div>
+      <div class="calrow">
+        <button id="cal2">apply two-point</button>
+        <button id="cal1">offset only (point A)</button>
+        <button id="calreset">reset cal</button>
+      </div>
+      <div class="calrow hint">ice slurry = 0, rolling boil = 100 (at sea level). Capture A in the
+        ice, capture B in the boil, apply two-point. In a hurry: one known temp + offset only.</div>
+      <div id="calmsg"></div>
+    </div>
+  </div>
+
   <div class="card">
     <h3>HEAT MAP <span style="font-weight:400">(wire order)</span></h3>
     <canvas id="strip" width="380" height="64"></canvas>
@@ -47,6 +98,14 @@
     <h3>BIN VIEW <span style="font-weight:400">(3D)</span></h3>
     <canvas id="bin" width="400" height="250"></canvas>
     <div class="hint" id="binhint">give probes positions below and they appear in the bin</div>
+  </div>
+
+  <div class="card" id="logcard" style="display:none">
+    <h3>DATA LOG</h3>
+    <div class="hint" style="margin-bottom:6px">one row per waterfall step, newest first;
+      old rows roll off (that is what real loggers do when memory fills).
+      <button id="hilo-reset">reset HI/LO</button></div>
+    <div style="overflow-x:auto"><table id="logtable"></table></div>
   </div>
 
   <div class="card">
@@ -66,7 +125,17 @@ var WARM_DELTA = 0.6;     // degC rise over the window that counts as a pinch
 var WARM_WINDOW_MS = 25000;
 var FAULT_COLOR = '#475569';
 
+// ---- view settings (this browser) + cal state -----------------------
+var S = { units: 'C', rowsEvery: 1, newestTop: false, reverseStrip: false, showRaw: false };
+try { var st = JSON.parse(localStorage.getItem('pl_settings') || '{}');
+      for (var k in st) S[k] = st[k]; } catch (e) {}
+function saveS() { localStorage.setItem('pl_settings', JSON.stringify(S)); }
+function dispT(t) { return S.units === 'F' ? t * 9 / 5 + 32 : t; }
+function unitLabel() { return S.units === 'F' ? '°F' : '°C'; }
+
 var misses = 0, tLo = null, tHi = null, hist = {}, tableSig = '';
+var latestInfo = [], pollN = 0, capA = null, capB = null;
+var LOG_MAX = 40, logRows = [], hiLo = {}, pageT0 = Date.now();
 var strip = document.getElementById('strip'), sctx = strip.getContext('2d');
 var fall = document.getElementById('fall'), fctx = fall.getContext('2d');
 var bin = document.getElementById('bin'), bctx = bin.getContext('2d');
@@ -91,8 +160,8 @@ function updateScale(temps) {
     var mid = (tLo + tHi) / 2;
     tLo = mid - MIN_SPAN / 2; tHi = mid + MIN_SPAN / 2;
   }
-  document.getElementById('tmin').textContent = tLo === null ? '--' : tLo.toFixed(1) + '°';
-  document.getElementById('tmax').textContent = tHi === null ? '--' : tHi.toFixed(1) + '°';
+  document.getElementById('tmin').textContent = tLo === null ? '--' : dispT(tLo).toFixed(1) + unitLabel();
+  document.getElementById('tmax').textContent = tHi === null ? '--' : dispT(tHi).toFixed(1) + unitLabel();
 }
 document.getElementById('rescale').onclick = function () { tLo = tHi = null; };
 
@@ -115,14 +184,14 @@ function drawStrip(info) {
     sctx.font = 'bold 11px sans-serif'; sctx.textAlign = 'center';
     sctx.fillStyle = p.t == null ? '#f87171' : '#e2e8f0';
     var lx = Math.max(30, Math.min(w - 30, x));
-    sctx.fillText(p.label + (p.t == null ? ' !' : ' ' + p.t.toFixed(1)), lx, 58);
+    sctx.fillText(p.label + (p.t == null ? ' !' : ' ' + dispT(p.t).toFixed(1)), lx, 58);
   });
 }
 function drawFallRow(temps) {
   if (!temps.length) return;
-  fctx.drawImage(fall, 0, -1);
+  fctx.drawImage(fall, 0, S.newestTop ? 1 : -1);
   gradientFor(fctx, temps, fall.width);
-  fctx.fillRect(0, fall.height - 1, fall.width, 1);
+  fctx.fillRect(0, S.newestTop ? 0 : fall.height - 1, fall.width, 1);
 }
 
 // ---- isometric bin ----
@@ -209,8 +278,11 @@ function updateTable(info) {
     var warming = h.length > 3 && (p.t - h[0].t) >= WARM_DELTA;
     var cell = document.getElementById('t-' + p.id);
     if (!cell) return;
+    var extra = warming ? '<div class="warm">WARMING</div>' : '';
+    if (S.showRaw && p.raw != null) extra += '<div class="hint">raw ' + dispT(p.raw).toFixed(2) + '</div>';
+    if (p.cal) extra += '<div class="caltag">calibrated</div>';
     cell.innerHTML = p.t == null ? '<span class="fault">fault!</span>'
-      : p.t.toFixed(1) + '°' + (warming ? '<div class="warm">WARMING</div>' : '');
+      : dispT(p.t).toFixed(1) + '°' + extra;
   });
 }
 
@@ -221,16 +293,20 @@ function tick() {
       misses = 0;
       var info = j.probes_info || [];
       if (j.ok && info.length > 0) {
+        latestInfo = info;
         document.getElementById('count').textContent =
           (j.probes !== undefined) ? j.count + '/' + j.probes : j.count;
-        var temps = info.map(function (p) { return p.t; });
+        var view = S.reverseStrip ? info.slice().reverse() : info;
+        var temps = view.map(function (p) { return p.t; });
         updateScale(temps);
-        drawStrip(info);
-        drawFallRow(temps);
+        drawStrip(view);
+        pollN++;
+        if (pollN % S.rowsEvery === 0) { drawFallRow(temps); logSweep(info); }
         drawBin(info);
         var sig = info.map(function (p) { return p.id; }).join(',');
-        if (sig !== tableSig) { tableSig = sig; buildTable(info); }
+        if (sig !== tableSig) { tableSig = sig; buildTable(info); buildCalSel(info); }
         updateTable(info);
+        updateCalRaw();
         setStatus('live on ' + j.ssid, false);
       } else {
         document.getElementById('count').textContent = '--';
@@ -242,6 +318,146 @@ function tick() {
       if (misses > 3) setStatus('lost connection... retrying', true);
     });
 }
+// ---- data log -------------------------------------------------------
+function relTime(ms) {
+  var s = Math.floor((ms - pageT0) / 1000);
+  return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+}
+function logSweep(info) {
+  logRows.unshift({ ms: Date.now(), info: info });
+  if (logRows.length > LOG_MAX) logRows.pop();
+  info.forEach(function (p) {
+    if (p.t == null) return;
+    var h = hiLo[p.id] = hiLo[p.id] || { hi: p.t, lo: p.t };
+    if (p.t > h.hi) h.hi = p.t;
+    if (p.t < h.lo) h.lo = p.t;
+  });
+  if (S.showLog) renderLog();
+}
+function renderLog() {
+  var cols = latestInfo;
+  var html = '<tr><td style="text-align:left"><b>time</b></td>';
+  cols.forEach(function (p) {
+    html += '<td><b>' + p.label + '</b>'
+      + (S.showIds ? '<span class="id">' + p.id + '</span>' : '') + '</td>';
+  });
+  html += '</tr><tr><td style="text-align:left" class="warm">HI</td>';
+  cols.forEach(function (p) {
+    var h = hiLo[p.id];
+    html += '<td class="warm">' + (h ? dispT(h.hi).toFixed(1) : '--') + '</td>';
+  });
+  html += '</tr><tr><td style="text-align:left" style="color:#38bdf8">LO</td>';
+  cols.forEach(function (p) {
+    var h = hiLo[p.id];
+    html += '<td style="color:#38bdf8">' + (h ? dispT(h.lo).toFixed(1) : '--') + '</td>';
+  });
+  html += '</tr>';
+  logRows.forEach(function (row) {
+    html += '<tr><td style="text-align:left">' + relTime(row.ms) + '</td>';
+    cols.forEach(function (p) {
+      var e = null;
+      for (var i = 0; i < row.info.length; i++) if (row.info[i].id === p.id) e = row.info[i];
+      html += '<td>' + (e && e.t != null ? dispT(e.t).toFixed(1) : '--') + '</td>';
+    });
+    html += '</tr>';
+  });
+  document.getElementById('logtable').innerHTML = html;
+}
+document.getElementById('hilo-reset').onclick = function () { hiLo = {}; renderLog(); };
+
+// ---- settings drawer ------------------------------------------------
+document.getElementById('gear').onclick = function () {
+  document.getElementById('drawer').classList.toggle('open');
+};
+var radios = document.getElementsByName('units');
+for (var r = 0; r < radios.length; r++) {
+  radios[r].checked = radios[r].value === S.units;
+  radios[r].onchange = function () { S.units = this.value; saveS(); };
+}
+var re = document.getElementById('rowsevery');
+re.value = String(S.rowsEvery);
+re.onchange = function () { S.rowsEvery = parseInt(this.value, 10) || 1; saveS(); };
+var nt = document.getElementById('newesttop');
+nt.checked = S.newestTop;
+nt.onchange = function () { S.newestTop = this.checked; saveS();
+  fctx.fillStyle = '#0b1120'; fctx.fillRect(0, 0, fall.width, fall.height); };
+var rs = document.getElementById('revstrip');
+rs.checked = S.reverseStrip;
+rs.onchange = function () { S.reverseStrip = this.checked; saveS(); };
+var sr = document.getElementById('showraw');
+sr.checked = S.showRaw;
+sr.onchange = function () { S.showRaw = this.checked; saveS(); };
+function syncLogCard() {
+  document.getElementById('logcard').style.display = S.showLog ? '' : 'none';
+  if (S.showLog) renderLog();
+}
+var sl = document.getElementById('showlog');
+sl.checked = S.showLog || false;
+sl.onchange = function () { S.showLog = this.checked; saveS(); syncLogCard(); };
+var si = document.getElementById('showids');
+si.checked = S.showIds || false;
+si.onchange = function () { S.showIds = this.checked; saveS(); if (S.showLog) renderLog(); };
+syncLogCard();
+
+// ---- calibration ----------------------------------------------------
+function calProbe() {
+  var id = document.getElementById('calsel').value;
+  for (var i = 0; i < latestInfo.length; i++) if (latestInfo[i].id === id) return latestInfo[i];
+  return null;
+}
+function buildCalSel(info) {
+  var sel = document.getElementById('calsel'), keep = sel.value, html = '';
+  info.forEach(function (p) {
+    html += '<option value="' + p.id + '">' + p.label + '</option>';
+  });
+  sel.innerHTML = html;
+  if (keep) sel.value = keep;
+}
+function updateCalRaw() {
+  var p = calProbe();
+  document.getElementById('calraw').textContent = p && p.raw != null ? p.raw.toFixed(2) : '--';
+}
+function calMsg(t) { document.getElementById('calmsg').textContent = t; }
+document.getElementById('capA').onclick = function () {
+  var p = calProbe();
+  if (!p || p.raw == null) { calMsg('no raw reading to capture'); return; }
+  capA = { raw: p.raw, act: parseFloat(document.getElementById('actA').value), id: p.id };
+  document.getElementById('gotA').textContent = 'raw ' + capA.raw.toFixed(2) + ' = ' + capA.act;
+};
+document.getElementById('capB').onclick = function () {
+  var p = calProbe();
+  if (!p || p.raw == null) { calMsg('no raw reading to capture'); return; }
+  capB = { raw: p.raw, act: parseFloat(document.getElementById('actB').value), id: p.id };
+  document.getElementById('gotB').textContent = 'raw ' + capB.raw.toFixed(2) + ' = ' + capB.act;
+};
+function sendCal(q, done) {
+  fetch('/cal?' + q, { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (j) { calMsg(j.error ? 'error: ' + j.error : done); })
+    .catch(function () { calMsg('request failed'); });
+}
+document.getElementById('cal2').onclick = function () {
+  var p = calProbe();
+  if (!p || !capA || !capB) { calMsg('capture point A and point B first'); return; }
+  if (capA.id !== p.id || capB.id !== p.id) { calMsg('captures were for a different probe'); return; }
+  sendCal('id=' + p.id + '&raw1=' + capA.raw + '&act1=' + capA.act
+    + '&raw2=' + capB.raw + '&act2=' + capB.act, 'two-point calibration saved to the board');
+};
+document.getElementById('cal1').onclick = function () {
+  var p = calProbe();
+  if (!p || !capA) { calMsg('capture point A first'); return; }
+  if (capA.id !== p.id) { calMsg('capture was for a different probe'); return; }
+  sendCal('id=' + p.id + '&raw1=' + capA.raw + '&act1=' + capA.act, 'offset saved to the board');
+};
+document.getElementById('calreset').onclick = function () {
+  var p = calProbe();
+  if (!p) return;
+  capA = capB = null;
+  document.getElementById('gotA').textContent = '';
+  document.getElementById('gotB').textContent = '';
+  sendCal('id=' + p.id + '&reset=1', 'calibration cleared');
+};
+
 setInterval(tick, POLL_MS);
 tick();
 </script>

@@ -279,6 +279,77 @@ class Placements:
     return {"ok": True, "id": pid, "ent": ent}
 
 
+class Calibration:
+  """Per-sensor linear calibration, persisted on the board (cal.json).
+
+  value = raw * scale + offset, applied AT THE SOURCE so the OLED, the
+  JSON, and every dashboard agree. Keyed by the same permanent ids as
+  Placements. Two-point (ice slurry = 0, boiling = 100) or one-point
+  (offset to a known-true value), and resettable. The file is read at
+  boot; no file = no correction.
+  """
+
+  def __init__(self, path="cal.json"):
+    self.path = path
+    try:
+      with open(path) as f:
+        self.data = json.load(f)
+    except Exception:
+      self.data = {}
+
+  def apply(self, pid, raw, digits=2):
+    if raw is None:
+      return None
+    ent = self.data.get(pid)
+    if not ent:
+      return raw
+    return round(raw * ent.get("scale", 1.0) + ent.get("offset", 0.0), digits)
+
+  def save(self):
+    try:
+      with open(self.path, "w") as f:
+        json.dump(self.data, f)
+    except Exception as e:
+      log("cal save failed:", e)
+
+  def handle(self, req):
+    """Route handler. /cal?id=X&reset=1 clears. Two-point:
+    /cal?id=X&raw1=..&act1=..&raw2=..&act2=..  One-point offset:
+    /cal?id=X&raw1=<reading>&act1=<true value>."""
+    pid = query_str(req, "id")
+    if not pid:
+      return {"error": "no id"}
+    if query_str(req, "reset") is not None:
+      self.data.pop(pid, None)
+      self.save()
+      log("cal reset", pid)
+      return {"ok": True, "id": pid, "cal": None}
+    try:
+      r1 = float(query_str(req, "raw1"))
+      a1 = float(query_str(req, "act1"))
+    except (TypeError, ValueError):
+      return {"error": "need raw1 and act1"}
+    r2s = query_str(req, "raw2")
+    a2s = query_str(req, "act2")
+    if r2s and a2s:
+      try:
+        r2 = float(r2s)
+        a2 = float(a2s)
+      except ValueError:
+        return {"error": "bad raw2/act2"}
+      if r2 == r1:
+        return {"error": "two points need different raw readings"}
+      scale = (a2 - a1) / (r2 - r1)
+      offset = a1 - scale * r1
+    else:
+      scale = 1.0
+      offset = a1 - r1
+    self.data[pid] = {"scale": round(scale, 6), "offset": round(offset, 4)}
+    self.save()
+    log("cal", pid, "->", self.data[pid])
+    return {"ok": True, "id": pid, "cal": self.data[pid]}
+
+
 # ---------------------------------------------------------------------
 # Web app: access point + tiny webserver (the pattern from the ToF
 # distance station: static-ish SSID per board, minimal collisions).

@@ -65,14 +65,17 @@ def read(dev):
   now = time.ticks_ms()
   if time.ticks_diff(now, dev["due"]) >= 0:
     roms_read = dev["roms"]
-    temps = []
+    ids_read = [bytes(r).hex() for r in roms_read]
+    raws = []
     for rom in roms_read:
       try:
-        temps.append(round(dev["ds"].read_temp(rom), 1))
+        raws.append(round(dev["ds"].read_temp(rom), 2))
       except Exception:
-        temps.append(None)
-    if roms_read and all(t is None for t in temps):
+        raws.append(None)
+    if roms_read and all(t is None for t in raws):
       raise OSError("all probes lost")
+    # calibration applied at the source: OLED, JSON, dashboard agree
+    temps = [cal.apply(pid, t) for pid, t in zip(ids_read, raws)]
     # Rescan the wire so probes added mid-run join in (the blink
     # pattern grows by one) and unplugged ones drop off.
     try:
@@ -84,7 +87,8 @@ def read(dev):
     dev["ds"].convert_temp()
     dev["due"] = time.ticks_add(now, 750)
     dev["temps"] = temps
-    dev["ids"] = [bytes(r).hex() for r in roms_read]
+    dev["raws"] = raws
+    dev["ids"] = ids_read
   temps = dev["temps"] or []
   good = [t for t in temps if t is not None]
   return {
@@ -92,6 +96,7 @@ def read(dev):
       "probes": len(temps),
       "ok_flags": [t is not None for t in temps],
       "temps_c": temps,
+      "raw_c": dev.get("raws", []),
       "ids": dev.get("ids", []),
       "temp_c": good[0] if good else None,
   }
@@ -102,14 +107,19 @@ def data_fn():
   if sensor.data:
     d.update(sensor.data)
     info = []
-    for pid, t in zip(sensor.data.get("ids", []), sensor.data.get("temps_c", [])):
+    ids = sensor.data.get("ids", [])
+    raws = sensor.data.get("raw_c", [])
+    for i, (pid, t) in enumerate(zip(ids, sensor.data.get("temps_c", []))):
       label, pos = places.get(pid)
-      info.append({"id": pid, "label": label, "pos": pos, "t": t})
+      info.append({"id": pid, "label": label, "pos": pos, "t": t,
+                   "raw": raws[i] if i < len(raws) else None,
+                   "cal": pid in cal.data})
     d["probes_info"] = info
   return d
 
 
 places = picolab.Placements()
+cal = picolab.Calibration()
 sensor = picolab.Sensor("DS18B20", connect, read)
 display = picolab.Display()
 light = picolab.StatusLight()
@@ -122,7 +132,7 @@ app.announce("Soil Temperature Station Active!")
 
 while True:
   light.poll()
-  app.poll(data_fn, routes=[("/place", places.handle)])
+  app.poll(data_fn, routes=[("/place", places.handle), ("/cal", cal.handle)])
   if not tick.ready():
     continue
 
