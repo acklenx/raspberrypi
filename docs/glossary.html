@@ -41,12 +41,43 @@
 <div class="topbar"></div>
 <div class="wrap">
   <header>
-    <h1>Electronics Glossary</h1>
-    <p>Every term we use in the workshop, in plain language. When someone says a word you
-       don't know, it's on this page.</p>
-    <nav><a href="index.html">&larr; Lab guide</a> <a href="cheatsheet.html">Programming cheat sheet</a>
-         <a href="https://github.com/acklenx/raspberrypi">Code repo</a></nav>
+    <h1>Glossary</h1>
+    <p>Every word we use in the workshop, in plain language. When someone says a term you
+       don't know, it's on this page. Start with the basics below.</p>
+    <nav><a href="index.html">&larr; Home</a> <a href="cheatsheet.html">Code Snippets</a>
+         <a href="start.html">Start Here</a>
+         <a href="https://github.com/acklenx/raspberrypi">Code</a></nav>
   </header>
+
+  <h2>The absolute basics</h2>
+  <hr class="rule b">
+  <dl>
+    <dt>Microcontroller</dt>
+    <dd>A tiny, cheap, complete computer on a single chip. It does one job, instantly, forever. Our
+        one is the <em>Pico 2 W</em> ("Pico" for short) &mdash; about $8, and it has WiFi built in.</dd>
+    <dt>Program / code</dt>
+    <dd>A list of instructions you write for the computer to follow. "Code" is the same thing: the
+        text you type. Writing code is just writing very precise instructions.</dd>
+    <dt>MicroPython</dt>
+    <dd>The <em>language</em> we write our code in &mdash; a version of Python shrunk to run on a tiny
+        computer like the Pico. Friendly, readable, forgiving. You put it on the Pico one time (see
+        <em>firmware</em>, below).</dd>
+    <dt>IDE (we use Viper IDE)</dt>
+    <dd>The place where you write code and press "run." Ours, <a href="https://viper-ide.org">Viper
+        IDE</a>, runs right in a web browser &mdash; nothing to install. (IDE stands for "integrated
+        development environment," a fancy phrase for "code workbench.")</dd>
+    <dt>Run</dt>
+    <dd>Tell the Pico to actually do what your program says, right now. You press Run; things happen.</dd>
+    <dt>File</dt>
+    <dd>A saved piece of code (or text) with a name. Programs live in files, like <code>main.py</code>.</dd>
+    <dt>Upload / install</dt>
+    <dd>Copy a file from your computer onto the Pico. Our one-click "Install" links do this for you.</dd>
+    <dt>Sensor vs. actuator</dt>
+    <dd>A <em>sensor</em> measures the world (heat, light, moisture). An <em>actuator</em> changes it
+        (a servo that moves, a relay that switches something on). A station usually has some of each.</dd>
+    <dt>Dashboard</dt>
+    <dd>The little web page a station serves to show its readings live. You open it on your phone.</dd>
+  </dl>
 
   <h2>Electricity basics</h2>
   <hr class="rule b">
