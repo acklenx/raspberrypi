@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reset &amp; Recover a Board · Maker Lab Kids</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --blue: #2E7DBC; --green: #7CB342; --orange: #E8762C; --yellow: #E8B62C;
+    --navy: #1B3A5C; --ink: #222A35; --light: #F4F7FA; --gray: #6B7280; --red: #C62828;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink);
+         background: #FFFFFF; margin: 0; line-height: 1.55; }
+  .topbar { height: 8px; background: var(--red); }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 20px 50px 20px; }
+  header { padding: 30px 0 6px 0; }
+  header h1 { color: var(--navy); font-size: 32px; margin: 0 0 6px 0; }
+  header p { margin: 0; color: var(--gray); max-width: 72ch; }
+  nav { font-size: 14px; margin-top: 8px; }
+  nav a { color: var(--blue); font-weight: bold; text-decoration: none; margin-right: 14px; }
+  nav a:hover { text-decoration: underline; }
+  h2 { color: var(--navy); font-size: 22px; margin: 30px 0 4px 0; }
+  .rule { height: 4px; width: 100%; border: 0; margin: 0 0 14px 0; background: var(--red); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 6px 0 14px 0; }
+  th { background: var(--navy); color: #FFF; text-align: left; padding: 8px 10px; }
+  td { padding: 8px 10px; border-bottom: 1px solid #E1E8EF; vertical-align: top; }
+  tr td:first-child { font-weight: bold; color: var(--navy); }
+  code { background: #E5EBF1; border-radius: 4px; padding: 1px 6px;
+         font-family: Consolas, Menlo, monospace; font-size: 13px; color: var(--navy); }
+  pre { background: #1B2733; color: #E6EDF3; border-radius: 8px; padding: 10px 12px;
+        font-family: Consolas, Menlo, monospace; font-size: 12.5px; overflow-x: auto; }
+  pre b { color: #7CB342; font-weight: normal; }
+  .step { background: var(--light); border-radius: 10px; padding: 14px 18px; margin: 14px 0;
+          box-shadow: 0 2px 8px rgba(27,58,92,0.12); border-left: 6px solid var(--green); }
+  .step.l2 { border-left-color: var(--blue); }
+  .step.l3 { border-left-color: var(--orange); }
+  .step.l4 { border-left-color: var(--red); }
+  .step h3 { margin: 0 0 4px 0; color: var(--navy); font-size: 18px; }
+  .step .lvl { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+               color: var(--gray); }
+  .step p { margin: 8px 0; font-size: 14.5px; }
+  .paths { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+  @media (max-width: 620px) { .paths { grid-template-columns: 1fr; } }
+  .path { background: #FFF; border: 1px solid #E1E8EF; border-radius: 8px; padding: 10px 12px; }
+  .path h4 { margin: 0 0 6px 0; font-size: 13px; color: var(--navy); letter-spacing: 0.5px; }
+  .path.kid h4::before { content: "🧑‍🎓 "; }
+  .path.pro h4::before { content: "⌨️ "; }
+  ol { margin: 6px 0; padding-left: 20px; } ol li { margin-bottom: 4px; font-size: 13.5px; }
+  .warn { background: #FDECEA; border: 1px solid var(--red); border-radius: 8px;
+          padding: 8px 12px; font-size: 13.5px; margin: 8px 0; }
+  footer { text-align: center; color: var(--gray); font-size: 12.5px; padding: 26px 10px; }
+</style>
+</head>
+<body>
+<div class="topbar"></div>
+<div class="wrap">
+  <header>
+    <h1>Reset &amp; Recover a Board</h1>
+    <p>When a Pico is "stuck" — running old code, ignoring your changes, throwing errors right
+       after an update, or acting haunted on the network — work down this ladder from gentlest
+       to most drastic. Stop at the first rung that fixes it. Every rung shows both the
+       <b>Viper IDE</b> way (what a student does) and the <b>mpremote</b> way (command line).</p>
+    <nav><a href="index.html">&larr; Lab guide</a> <a href="glossary.html">Glossary</a>
+         <a href="cheatsheet.html">Cheat sheet</a>
+         <a href="https://github.com/acklenx/raspberrypi">Code repo</a></nav>
+  </header>
+
+  <h2>Which problem is it?</h2>
+  <hr class="rule">
+  <table>
+    <tr><th>Symptom</th><th>Most likely</th><th>Go to</th></tr>
+    <tr><td>Error the moment you run, right after an update</td><td>Stale <code>.mpy</code> shadowing new <code>.py</code></td><td>Rung 2</td></tr>
+    <tr><td>Your code change seems ignored</td><td>Old code still on the board, or an old <code>main.py</code> auto-running</td><td>Rung 1 &amp; 2</td></tr>
+    <tr><td>Board won't stop / stuck in a loop</td><td>A program is running</td><td>Rung 1</td></tr>
+    <tr><td>Wrong network, weird IP, won't join</td><td>Leftover <code>wifi.json</code> / cached state</td><td>Rung 3</td></tr>
+    <tr><td>Mystery behavior, nothing above helps</td><td>Accumulated junk on the filesystem</td><td>Rung 3</td></tr>
+    <tr><td>Totally unresponsive, or you want factory-fresh</td><td>Time for the nuclear option</td><td>Rung 4</td></tr>
+  </table>
+
+  <div class="step">
+    <div class="lvl">Rung 1 · gentlest</div>
+    <h3>Stop what's running</h3>
+    <p>The board auto-runs <code>main.py</code> at every power-up, and it can't be edited while
+       it runs. Halt it first.</p>
+    <div class="paths">
+      <div class="path kid"><h4>Viper IDE</h4>
+        <ol><li>Click <b>Stop</b> (the square) in the terminal panel.</li>
+        <li>If it won't catch, click into the terminal and press <b>Ctrl+C</b>.</li>
+        <li>You should land at the <code>&gt;&gt;&gt;</code> prompt. Now you can edit and run.</li></ol></div>
+      <div class="path pro"><h4>mpremote</h4>
+        <pre>mpremote connect &lt;port&gt;   <b># Ctrl-C interrupts a running main.py</b>
+mpremote connect &lt;port&gt; soft-reset</pre></div>
+    </div>
+  </div>
+
+  <div class="step l2">
+    <div class="lvl">Rung 2</div>
+    <h3>Delete the stale compiled copy</h3>
+    <p>A compiled <code>.mpy</code> file <b>beats</b> a source <code>.py</code> of the same name
+       on import. So an old <code>lib/picolab.mpy</code> quietly overrides the fresh
+       <code>lib/picolab.py</code> you just installed — that's the classic "TypeError right after
+       an update." Delete the <code>.mpy</code>.</p>
+    <div class="paths">
+      <div class="path kid"><h4>Viper IDE</h4>
+        <ol><li>In the file panel, open the <code>lib/</code> folder on the board.</li>
+        <li>Delete any <code>.mpy</code> whose <code>.py</code> you're using
+            (e.g. <code>picolab.mpy</code>, <code>ssd1306.mpy</code>).</li>
+        <li>Re-run the project's one-click install to refresh the <code>.py</code>.</li></ol></div>
+      <div class="path pro"><h4>mpremote</h4>
+        <pre>mpremote connect &lt;port&gt; fs ls :lib
+mpremote connect &lt;port&gt; fs rm :lib/picolab.mpy</pre></div>
+    </div>
+    <div class="warn"><b>Why this bites us:</b> Viper's GitHub installer compiles <code>.py</code>
+      to <code>.mpy</code> on the way in, so boards accumulate these. When in doubt, wipe them all
+      (Rung 3).</div>
+  </div>
+
+  <div class="step l3">
+    <div class="lvl">Rung 3</div>
+    <h3>Wipe the filesystem (keep the firmware)</h3>
+    <p>Remove <b>every</b> user file — stale <code>.mpy</code>, old <code>main.py</code>, leftover
+       <code>wifi.json</code> / <code>name.txt</code> / <code>cal.json</code> / <code>placements.json</code>,
+       and any junk from past projects — back to bare MicroPython. Then reinstall clean. This is
+       the reliable "make it behave" reset, and it fixes network weirdness by removing the old
+       <code>wifi.json</code> (the board falls back to its own hotspot until you reinstall).</p>
+    <div class="paths">
+      <div class="path kid"><h4>Viper IDE</h4>
+        <ol><li>Open <a href="https://github.com/acklenx/raspberrypi/blob/main/tools/wipe.py"><code>tools/wipe.py</code></a>, paste it into a new file, click <b>Run</b>.</li>
+        <li>It prints what it removed. The board is now empty.</li>
+        <li>Re-install your project with its one-click link. Done, clean.</li></ol></div>
+      <div class="path pro"><h4>mpremote</h4>
+        <pre>mpremote connect &lt;port&gt; run tools/wipe.py
+<b># then reinstall from Viper, or:</b>
+mpremote connect &lt;port&gt; mip install \
+  github:acklenx/raspberrypi</pre></div>
+    </div>
+  </div>
+
+  <div class="step l4">
+    <div class="lvl">Rung 4 · nuclear</div>
+    <h3>Re-flash the firmware (true factory reset)</h3>
+    <p>Wipes <b>everything</b>, the filesystem AND MicroPython itself, and lays down a known-good
+       firmware. Use it when a board is truly unresponsive, or when you want a guaranteed-clean
+       start. This is the one thing a browser can't do — the bootloader is a plain USB drive.</p>
+    <div class="path pro" style="margin-top:8px">
+      <h4>The BOOTSEL dance (about 15 seconds)</h4>
+      <ol>
+        <li>Hold the <b>BOOTSEL</b> button while plugging the Pico into USB.</li>
+        <li>It appears as a flash drive named <code>RP2350</code>.</li>
+        <li>Drag on <a href="https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2">the exact tested firmware (.uf2)</a>.</li>
+        <li>The drive vanishes, the board reboots into fresh MicroPython. Reinstall your project.</li>
+      </ol>
+    </div>
+    <p style="font-size:13.5px;color:var(--gray)">Software shortcut: from a working REPL,
+       <code>import machine; machine.bootloader()</code> drops the board into BOOTSEL mode with
+       no button press, ready for the drag-on.</p>
+  </div>
+
+  <h2>The golden rule</h2>
+  <hr class="rule">
+  <p>Doubt what's on a board? <b>Wipe it (Rung 3) and reinstall.</b> Ten seconds of certainty
+     beats an hour of chasing a ghost <code>.mpy</code>. And remember a finished board needs
+     nothing but power: it runs <code>main.py</code> from flash on every boot and rejoins the
+     network on its own.</p>
+</div>
+<footer>&copy; 2026 Maker Lab Kids LLC · MakerLabKids.com · Learn. Make. Share.</footer>
+</body>
+</html>
