@@ -16,6 +16,8 @@
 #
 # On the board: main.py, index.html, lib/picolab.py, lib/vl53l1x.py,
 # lib/ssd1306.py.
+#
+# Project page (docs, wiring, install link): https://github.com/acklenx/raspberrypi/tree/main/projects/distance-vl53l1x
 
 import gc
 

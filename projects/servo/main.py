@@ -17,6 +17,8 @@
 # Auto mode (optional): GL5528 photoresistor from 3V3 to GP28, plus a
 # 10k resistor from GP28 to GND.
 # On the board: main.py, index.html, lib/picolab.py, lib/ssd1306.py.
+#
+# Project page (docs, wiring, install link): https://github.com/acklenx/raspberrypi/tree/main/projects/servo
 
 import gc
 from machine import ADC, PWM, Pin

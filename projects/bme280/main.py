@@ -13,6 +13,8 @@
 #
 # On the board: main.py, index.html, lib/picolab.py, lib/bme280.py,
 # lib/ssd1306.py.
+#
+# Project page (docs, wiring, install link): https://github.com/acklenx/raspberrypi/tree/main/projects/bme280
 
 import gc
 

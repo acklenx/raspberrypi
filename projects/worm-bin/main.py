@@ -21,6 +21,8 @@
 #
 # On the board: main.py, index.html, and from lib/: picolab.py,
 # ssd1306.py, bme280.py, ads1115.py, vl53l0x.py.
+#
+# Project page (docs, wiring, install link): https://github.com/acklenx/raspberrypi/tree/main/projects/worm-bin
 
 import gc
 import time

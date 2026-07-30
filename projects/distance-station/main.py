@@ -1,3 +1,5 @@
+#
+# Project page (docs, wiring, install link): https://github.com/acklenx/raspberrypi/tree/main/projects/distance-station
 import gc
 import json
 import random

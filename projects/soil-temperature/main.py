@@ -20,6 +20,8 @@
 #
 # On the board: main.py, index.html, lib/picolab.py, lib/ssd1306.py.
 # (onewire and ds18x20 are built into MicroPython.)
+#
+# Project page (docs, wiring, install link): https://github.com/acklenx/raspberrypi/tree/main/projects/soil-temperature
 
 import gc
 import time

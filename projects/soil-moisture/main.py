@@ -12,6 +12,8 @@
 #
 # Wiring: VCC=3V3, GND=GND, AOUT=GP26 (ADC0).
 # On the board: main.py, index.html, lib/picolab.py, lib/ssd1306.py.
+#
+# Project page (docs, wiring, install link): https://github.com/acklenx/raspberrypi/tree/main/projects/soil-moisture
 
 import gc
 
