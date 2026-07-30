@@ -100,6 +100,7 @@ function render(all) {
     FIELDS.forEach(function (f) {
       var v = d[f[0]];
       if (v === undefined || v === null || typeof v === 'object') return;
+      if (typeof v === 'number') v = Math.round(v * 100) / 100;
       rows += '<div>' + f[1] + '<b>' + v + (f[2] ? ' ' + f[2] : '') + '</b></div>';
     });
     if (Array.isArray(d.temps_c)) {
