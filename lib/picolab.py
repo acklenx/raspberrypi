@@ -456,14 +456,25 @@ class WebApp:
     if creds and creds.get("ssid"):
       sta = network.WLAN(network.STA_IF)
       sta.active(True)
-      try:
-        sta.connect(creds["ssid"], creds.get("password", ""))
-        for _ in range(30):
-          if sta.isconnected():
-            break
-          time.sleep_ms(500)
-      except Exception:
-        pass
+      # Weak signal makes single join attempts a coin flip; try three
+      # times before falling back to our own AP.
+      for attempt in range(3):
+        try:
+          sta.connect(creds["ssid"], creds.get("password", ""))
+          for _ in range(30):
+            if sta.isconnected():
+              break
+            time.sleep_ms(500)
+        except Exception:
+          pass
+        if sta.isconnected():
+          break
+        log("join attempt", attempt + 1, "failed, retrying...")
+        try:
+          sta.disconnect()
+        except Exception:
+          pass
+        time.sleep(1)
       if sta.isconnected():
         self.joined = creds["ssid"]
         self.ip = sta.ifconfig()[0]
