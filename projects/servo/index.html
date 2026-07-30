@@ -1,39 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <title>PicoLab Servo</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   body { font-family: -apple-system, Segoe UI, sans-serif; text-align: center;
-         background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-  .card { background: #1e293b; padding: 20px; border-radius: 16px; max-width: 340px;
-          margin: 16px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-  h3 { margin: 0; color: #94a3b8; font-weight: 600; letter-spacing: 1px; }
-  .val { font-size: 52px; font-weight: 800; margin: 6px 0 0 0; color: #38bdf8; }
+         background: #0f172a; color: #f8fafc; margin: 0; padding: 18px; }
+  .card { background: #1e293b; padding: 18px; border-radius: 16px; max-width: 360px;
+          margin: 14px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  h3 { margin: 0; color: #94a3b8; font-weight: 600; letter-spacing: 1px; font-size: 13px; }
+  .val { font-size: 52px; font-weight: 800; margin: 4px 0 0 0; color: #38bdf8; line-height: 1; }
   .unit { font-size: 20px; color: #94a3b8; font-weight: 600; }
-  .gauge { position: relative; width: 220px; height: 110px; margin: 18px auto 8px auto;
+  .tgt { font-size: 13px; color: #64748b; margin-top: 4px; }
+  .gauge { position: relative; width: 220px; height: 110px; margin: 16px auto 6px auto;
            border-radius: 110px 110px 0 0; background: #334155; overflow: hidden; }
   .arm { position: absolute; left: 108px; bottom: 0; width: 4px; height: 96px;
          background: #38bdf8; border-radius: 2px; transform-origin: 50% 100%;
-         transform: rotate(0deg); transition: transform 0.2s linear; }
+         transform: rotate(0deg); transition: transform 0.12s linear; }
   .hub { position: absolute; left: 98px; bottom: -12px; width: 24px; height: 24px;
          border-radius: 50%; background: #94a3b8; }
-  input[type=range] { width: 90%; margin-top: 14px; }
-  .modes { margin-top: 14px; }
+  .row { display: flex; align-items: center; gap: 8px; margin: 12px 0 2px 0; }
+  .row label { font-size: 12px; color: #94a3b8; width: 52px; text-align: left; flex: none; }
+  input[type=range] { flex: 1; }
+  input[type=number] { width: 62px; background: #0f172a; color: #f8fafc; border: 1px solid #334155;
+                       border-radius: 8px; padding: 8px; font-size: 16px; text-align: center; }
+  .num-unit { font-size: 12px; color: #64748b; width: 30px; text-align: left; flex: none; }
+  .modes { margin-top: 16px; }
   button { background: #334155; color: #f8fafc; border: 0; padding: 10px 14px;
-           border-radius: 8px; font-size: 14px; margin: 3px; }
+           border-radius: 8px; font-size: 14px; margin: 3px; cursor: pointer; }
   button.active { background: #38bdf8; color: #0f172a; font-weight: 700; }
-  #light { font-size: 13px; color: #94a3b8; margin-top: 8px; }
-  #status { margin-top: 4px; font-size: 13px; color: #64748b; }
+  #light { font-size: 13px; color: #94a3b8; margin-top: 8px; min-height: 16px; }
+  #status { margin-top: 6px; font-size: 13px; color: #64748b; }
   #status.err { color: #f87171; }
+  .hint { font-size: 11px; color: #475569; margin-top: 2px; }
 </style>
 </head>
 <body>
   <div class="card">
-    <h3>SERVO ANGLE</h3>
+    <h3>SERVO ANGLE (live)</h3>
     <div class="gauge"><div class="arm" id="arm"></div><div class="hub"></div></div>
-    <div class="val"><span id="angle">--</span> <span class="unit">&deg;</span></div>
-    <input type="range" id="slider" min="0" max="180" value="90">
+    <div class="val"><span id="now">--</span> <span class="unit">&deg;</span></div>
+    <div class="tgt">target <span id="tgt">--</span>&deg;</div>
+
+    <div class="row">
+      <label>angle</label>
+      <input type="range" id="slider" min="0" max="180" value="90">
+      <input type="number" id="angleNum" min="0" max="180" value="90">
+      <span class="num-unit">&deg;</span>
+    </div>
+    <div class="hint">drag to move it live, or type an exact angle and press Enter</div>
+
+    <div class="row">
+      <label>speed</label>
+      <input type="range" id="speed" min="30" max="700" step="10" value="400">
+      <input type="number" id="speedNum" min="10" max="2000" value="400">
+      <span class="num-unit">&deg;/s</span>
+    </div>
+
     <div class="modes">
       <button id="btn-manual" onclick="setMode('manual')">Manual</button>
       <button id="btn-sweep" onclick="setMode('sweep')">Sweep</button>
@@ -43,60 +67,96 @@
   </div>
   <div id="status">connecting...</div>
 <script>
-var misses = 0;
-var sendTimer = null;
-var pendingAngle = null;
+var misses = 0, inited = false, dragging = false;
 var slider = document.getElementById('slider');
+var angleNum = document.getElementById('angleNum');
+var speed = document.getElementById('speed');
+var speedNum = document.getElementById('speedNum');
 
-function setStatus(text, bad) {
-  var s = document.getElementById('status');
-  s.textContent = text;
-  s.className = bad ? 'err' : '';
-}
-function sendAngle(a) {
-  pendingAngle = a;
-  if (sendTimer) return;
-  sendTimer = setTimeout(function () {
-    sendTimer = null;
-    var a2 = pendingAngle;
-    pendingAngle = null;
-    fetch('/set?angle=' + a2).catch(function () {});
-  }, 150);
-}
-slider.addEventListener('input', function () { sendAngle(slider.value); });
+function $(id) { return document.getElementById(id); }
+function setStatus(text, bad) { $('status').textContent = text; $('status').className = bad ? 'err' : ''; }
+function clampA(v) { v = parseInt(v, 10); if (isNaN(v)) return null; return Math.max(0, Math.min(180, v)); }
+function send(qs) { fetch('/set?' + qs, { cache: 'no-store' }).catch(function () {}); }
 
-function setMode(m) {
-  fetch('/set?mode=' + m).catch(function () {});
+// throttle a stream of values so live dragging sends often but not madly,
+// and always sends the final value (trailing).
+function throttler(ms, fn) {
+  var last = 0, pend = null, timer = null;
+  return function (v) {
+    var t = Date.now();
+    if (t - last >= ms) { last = t; fn(v); }
+    else { pend = v; if (!timer) timer = setTimeout(function () {
+      timer = null; if (pend !== null) { last = Date.now(); fn(pend); pend = null; } }, ms); }
+  };
 }
+var liveAngle = throttler(60, function (a) { send('angle=' + a); });
+var liveSpeed = throttler(80, function (s) { send('speed=' + s); });
+
+// ---- angle: slider drives the servo live, no need to let go ----
+function showTarget(a) { $('tgt').textContent = a; angleNum.value = a; }
+slider.addEventListener('pointerdown', function () { dragging = true; });
+slider.addEventListener('pointerup', function () { dragging = false; });
+slider.addEventListener('input', function () { showTarget(slider.value); liveAngle(slider.value); });
+slider.addEventListener('change', function () { dragging = false; showTarget(slider.value); send('angle=' + slider.value); });
+
+// ---- angle: type an exact number ----
+function applyNum() {
+  var a = clampA(angleNum.value);
+  if (a === null) return;
+  angleNum.value = a; slider.value = a; $('tgt').textContent = a;
+  send('angle=' + a);
+}
+angleNum.addEventListener('change', applyNum);
+angleNum.addEventListener('keydown', function (e) { if (e.key === 'Enter') { applyNum(); angleNum.blur(); } });
+
+// ---- speed: slider + number, kept in sync ----
+speed.addEventListener('input', function () { speedNum.value = speed.value; liveSpeed(speed.value); });
+speedNum.addEventListener('change', function () {
+  var s = Math.max(10, Math.min(2000, parseInt(speedNum.value, 10) || 400));
+  speedNum.value = s; speed.value = Math.max(30, Math.min(700, s)); send('speed=' + s);
+});
+
+function setMode(m) { send('mode=' + m); }
 function markMode(m) {
-  var names = ['manual', 'sweep', 'auto'];
-  for (var i = 0; i < names.length; i++) {
-    var b = document.getElementById('btn-' + names[i]);
-    b.className = names[i] === m ? 'active' : '';
-  }
+  ['manual', 'sweep', 'auto'].forEach(function (n) {
+    $('btn-' + n).className = n === m ? 'active' : '';
+  });
 }
+
+function editing(el) { return document.activeElement === el; }
+
 function tick() {
   fetch('/data', { cache: 'no-store' })
     .then(function (r) { return r.json(); })
     .then(function (j) {
       misses = 0;
-      document.getElementById('angle').textContent = j.angle;
-      document.getElementById('arm').style.transform =
-          'rotate(' + (j.angle - 90) + 'deg)';
+      // the gauge + big number always show the ACTUAL angle
+      $('now').textContent = j.angle;
+      $('arm').style.transform = 'rotate(' + (j.angle - 90) + 'deg)';
       markMode(j.mode);
-      if (j.mode === 'manual' && document.activeElement !== slider) {
-        slider.value = j.target;
+
+      // first reading: seed the controls
+      if (!inited) {
+        inited = true;
+        slider.value = j.target; showTarget(j.target);
+        speed.value = Math.max(30, Math.min(700, j.speed)); speedNum.value = j.speed;
       }
-      document.getElementById('light').textContent =
-          j.light_pct === undefined ? '' : 'light: ' + j.light_pct + '%';
-      setStatus('live on ' + j.ssid, false);
+      // In auto/sweep the SERVER drives the target, so follow it on the
+      // slider. In manual the slider is yours -- never yank it back (that
+      // was the snap-back bug). Skip while you are actively dragging/typing.
+      if (j.mode !== 'manual' && !dragging && !editing(angleNum) && !editing(slider)) {
+        slider.value = j.target; showTarget(j.target);
+      }
+      // keep the speed control synced unless you're touching it
+      if (!editing(speed) && !editing(speedNum)) {
+        speed.value = Math.max(30, Math.min(700, j.speed)); speedNum.value = j.speed;
+      }
+      $('light').textContent = j.light_pct === undefined ? '' : 'light: ' + j.light_pct + '%';
+      setStatus('live on ' + j.ssid + ' · ' + j.speed + '°/s', false);
     })
-    .catch(function () {
-      misses++;
-      if (misses > 3) setStatus('lost connection... retrying', true);
-    });
+    .catch(function () { misses++; if (misses > 3) setStatus('lost connection... retrying', true); });
 }
-setInterval(tick, 250);
+setInterval(tick, 120);
 tick();
 </script>
 </body>

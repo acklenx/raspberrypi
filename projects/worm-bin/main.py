@@ -51,6 +51,13 @@ SERVO_BIG_PIN = 16    # MG995; own 5V supply, grounds joined (default GP16)
 SERVO_SMALL_PIN = 17  # SG90; VBUS power is fine (default GP17)
 RELAY_PIN = 15        # relay module IN (default GP15)
 
+# How fast the servos slew to a commanded angle, in degrees per second.
+# Motion is ramped and TIME-BASED (not an instant snap) so it looks smooth
+# and does not yank current, and the number is the real speed regardless
+# of loop load. Raise for snappier, lower for slow-motion. (Matches the
+# standalone servo demo.)
+SERVO_DPS = 400
+
 # Timing.
 READ_EVERY_MS = 500   # sensor sweep cadence (default 500 ms)
 PAGE_SECONDS = 3      # OLED page rotation speed (default 3 s per page)
@@ -217,15 +224,35 @@ class Servo:
   def __init__(self, pin_num, min_us=600, max_us=2400):
     self.pwm = PWM(Pin(pin_num))
     self.pwm.freq(50)
-    self.angle = 90.0
+    self.angle = 90.0     # where it is now
+    self.target = 90.0    # where it is headed
     self.min_us = min_us
     self.max_us = max_us
-    self.write(self.angle)
+    self._last = time.ticks_ms()
+    self._write(self.angle)
 
-  def write(self, angle):
-    self.angle = max(0.0, min(180.0, float(angle)))
-    us = self.min_us + (self.angle / 180.0) * (self.max_us - self.min_us)
+  def _write(self, angle):
+    us = self.min_us + (angle / 180.0) * (self.max_us - self.min_us)
     self.pwm.duty_u16(int(us * 65535 / 20000))
+
+  def set(self, angle):
+    # Aim for a new angle; step() ramps toward it (no instant snap).
+    self.target = max(0.0, min(180.0, float(angle)))
+
+  def step(self):
+    # Move toward the target at SERVO_DPS. Time-based, so it is smooth
+    # no matter how often the loop calls it. Call this every loop pass.
+    now = time.ticks_ms()
+    dt = time.ticks_diff(now, self._last) / 1000.0
+    self._last = now
+    if self.angle == self.target:
+      return
+    move = SERVO_DPS * dt
+    if self.angle < self.target:
+      self.angle = min(self.target, self.angle + move)
+    else:
+      self.angle = max(self.target, self.angle - move)
+    self._write(self.angle)
 
 
 servo_big = Servo(SERVO_BIG_PIN)     # MG995: its own 5V supply, grounds joined!
@@ -237,12 +264,12 @@ relay.value(0)
 def set_handler(req):
   a = picolab.query_int(req, "big")
   if a is not None:
-    servo_big.write(a)
-    picolab.log("Web: big servo ->", int(servo_big.angle))
+    servo_big.set(a)
+    picolab.log("Web: big servo ->", int(servo_big.target))
   a = picolab.query_int(req, "small")
   if a is not None:
-    servo_small.write(a)
-    picolab.log("Web: small servo ->", int(servo_small.angle))
+    servo_small.set(a)
+    picolab.log("Web: small servo ->", int(servo_small.target))
   a = picolab.query_int(req, "relay")
   if a is not None:
     relay.value(1 if a else 0)
@@ -333,6 +360,8 @@ app.announce("Worm Bin Command Center Active!")
 while True:
   light.poll()
   app.poll(data_fn, routes=[("/set", set_handler), ("/cal", cal.handle)])
+  servo_big.step()      # ramp the servos toward their targets every pass
+  servo_small.step()
   if not tick.ready():
     continue
 

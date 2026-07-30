@@ -35,14 +35,13 @@ import picolab
 
 MIN_US = 600
 MAX_US = 2400
-# How fast the servo slews to a new angle, in DEGREES PER SECOND. The
-# motion is ramped (stepped toward the target) so it looks smooth instead
-# of snapping. An SG90 tops out near 500 deg/s, so 300 is brisk but still
-# smooth. Want it faster? Raise this. Slow-motion? Lower it. For basically
-# instant, set it to 2000. (Old default was a sluggish 60.)
-SPEED_DPS = 300
-MOTION_MS = 20                        # step toward the target 50x/second
-STEP = SPEED_DPS * MOTION_MS / 1000.0  # degrees per step (derived)
+# How fast the servo slews to a new angle, in DEGREES PER SECOND. Motion
+# is ramped and TIME-BASED, so the number here is the ACTUAL speed no
+# matter how busy the web loop gets (a fixed step-per-tick would crawl
+# when the loop is busy -- that was the old bug). An SG90 tops out near
+# 500 deg/s; 400 is fast and snappy. Lower for slow-motion; set very high
+# (e.g. 2000) for a near-instant snap. (Old default was a poky 60.)
+SPEED_DPS = 400
 SERVO_PIN = 16  # servo signal (orange lead); default GP16, physical pin 21
 LDR_PIN = 28    # optional photoresistor for follow-light mode; default GP28
 
@@ -76,12 +75,15 @@ for _a in (75, 105, 90):
 
 
 def set_handler(req):
-  global mode, target
+  global mode, target, SPEED_DPS
   angle = picolab.query_int(req, "angle")
   if angle is not None:
     mode = "manual"
     target = float(max(0, min(180, angle)))
-    picolab.log("Web set angle:", int(target))
+  speed = picolab.query_int(req, "speed")
+  if speed is not None:
+    SPEED_DPS = max(10, min(2000, speed))
+    picolab.log("Web set speed:", SPEED_DPS, "deg/s")
   if b"mode=manual" in req:
     mode = "manual"
     picolab.log("Mode: manual")
@@ -91,7 +93,7 @@ def set_handler(req):
   elif b"mode=auto" in req:
     mode = "auto"
     picolab.log("Mode: auto (follow light on GP28)")
-  return {"angle": int(target), "mode": mode}
+  return {"angle": int(target), "mode": mode, "speed": int(SPEED_DPS)}
 
 
 def data_fn():
@@ -101,6 +103,7 @@ def data_fn():
       "angle": int(current),
       "target": int(target),
       "mode": mode,
+      "speed": int(SPEED_DPS),
   }
   if mode == "auto":
     d["light_pct"] = round(light_pct, 1)
@@ -113,10 +116,10 @@ light.set_slots([True])
 app = picolab.WebApp()
 app.index = "servo/index.html"  # dashboard path under the everything layout
 heartbeat = picolab.Throttle(5000)
-motion = picolab.Throttle(MOTION_MS)
 
 app.announce("Servo Station Active!")
 picolab.log("Servo ready at 90 degrees, mode:", mode)
+last_motion = time.ticks_ms()
 
 while True:
   light.poll()
@@ -127,12 +130,16 @@ while True:
   elif mode == "sweep" and current == target:
     target = 0.0 if target >= 180.0 else 180.0
 
-  if motion.ready():
-    if current < target:
-      current = min(target, current + STEP)
-    elif current > target:
-      current = max(target, current - STEP)
-    write_angle(current)
+  # Time-based ramp: move by SPEED_DPS * (seconds since last pass), so the
+  # real speed matches SPEED_DPS even when the web loop is busy.
+  now = time.ticks_ms()
+  dt = time.ticks_diff(now, last_motion) / 1000.0
+  last_motion = now
+  if current < target:
+    current = min(target, current + SPEED_DPS * dt)
+  elif current > target:
+    current = max(target, current - SPEED_DPS * dt)
+  write_angle(current)
 
   # If port 80 never bound (busy after a soft re-run), say so plainly so
   # you know to power-cycle rather than wondering why the page won't load.

@@ -1,6 +1,6 @@
-# Servo bench demo: an SG90 hobby servo sweeps slowly from 0 to 180
-# degrees and back, forever. No Wi-Fi. The OLED and terminal show the
-# current angle.
+# Servo bench demo: an SG90 hobby servo sweeps from 0 to 180 degrees and
+# back, forever (speed set by SPEED_DPS). No Wi-Fi. The OLED and terminal
+# show the current angle.
 #
 # A servo gives no feedback, so this demo cannot tell if the servo is
 # actually plugged in. It just keeps commanding angles; plug the servo
@@ -20,7 +20,9 @@ import picolab
 
 MIN_US = 600
 MAX_US = 2400
-STEP = 3  # max degrees moved per loop, keeps motion smooth
+# Sweep speed in degrees per second. Time-based, so this is the real speed
+# regardless of loop timing. An SG90 tops out near 500 deg/s; 400 is fast.
+SPEED_DPS = 400
 SERVO_PIN = 16  # servo signal (orange lead); default GP16, physical pin 21
 
 picolab.banner("Servo Bench Demo", [
@@ -50,12 +52,16 @@ light = picolab.StatusLight()
 light.set_slots([True])
 heartbeat = picolab.Throttle(5000)
 
+last = time.ticks_ms()
 while True:
   light.poll()
+  now = time.ticks_ms()
+  dt = time.ticks_diff(now, last) / 1000.0
+  last = now
   if current < target:
-    current = min(target, current + STEP)
+    current = min(target, current + SPEED_DPS * dt)
   elif current > target:
-    current = max(target, current - STEP)
+    current = max(target, current - SPEED_DPS * dt)
   else:
     target = 0.0 if target == 180.0 else 180.0
 
