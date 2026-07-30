@@ -30,19 +30,87 @@
   button.on { background: #14532d; color: #86efac; }
   #status { margin-top: 10px; font-size: 13px; color: #64748b; }
   #status.err { color: #f87171; }
+  #gear { position: fixed; top: 10px; right: 12px; z-index: 6; font-size: 20px;
+          padding: 6px 12px; background: #334155; }
+  #drawer { display: none; text-align: left; max-width: 720px; margin: 0 auto 12px auto; }
+  #drawer.open { display: block; }
+  #drawer .card { margin-bottom: 10px; }
+  #drawer h3 { margin-bottom: 8px; }
+  #drawer label { color: #cbd5e1; font-size: 14px; margin-right: 12px; }
+  #drawer .calrow { font-size: 13px; margin: 6px 0; display: flex; align-items: center;
+                    gap: 8px; flex-wrap: wrap; }
+  #drawer button.sm { padding: 5px 10px; font-size: 12px; }
+  #calmsg { font-size: 12px; color: #86efac; min-height: 14px; }
+  table.pins { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.pins th { color: #94a3b8; text-align: left; padding: 4px 4px; border-bottom: 1px solid #334155; }
+  table.pins td { padding: 4px 4px; border-bottom: 1px solid #1e293b; vertical-align: top; }
+  table.pins .pin { color: #a3e635; font-weight: 700; }
+  .wirenote { font-size: 12px; color: #94a3b8; margin: 4px 0 10px 0; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 3px;
+         vertical-align: middle; }
 </style>
 </head>
 <body>
+  <button id="gear">&#9776;</button>
   <h1>WORM BIN COMMAND CENTER</h1>
+
+  <div id="drawer">
+    <div class="card"><h3>UNITS</h3>
+      <label><input type="radio" name="u" value="C" checked> &deg;C (metric)</label>
+      <label><input type="radio" name="u" value="F"> &deg;F</label>
+    </div>
+
+    <div class="card"><h3>CALIBRATE MOISTURE</h3>
+      <div class="wirenote">Hold a probe in the AIR and tap "set dry"; put it in WATER to the line and
+        tap "set wet". Saved on the board.</div>
+      <div class="calrow"><b>Probe 1</b> now: <span id="c1v">--</span> V &nbsp;
+        <button class="sm" data-k="m1dry">set dry</button>
+        <button class="sm" data-k="m1wet">set wet</button>
+        <span>dry <span id="c1d">--</span> / wet <span id="c1w">--</span></span></div>
+      <div class="calrow"><b>Probe 2</b> now: <span id="c2v">--</span> V &nbsp;
+        <button class="sm" data-k="m2dry">set dry</button>
+        <button class="sm" data-k="m2wet">set wet</button>
+        <span>dry <span id="c2d">--</span> / wet <span id="c2w">--</span></span></div>
+      <div class="calrow"><button class="sm" id="calreset">reset to defaults</button>
+        <span id="calmsg"></span></div>
+    </div>
+
+    <div class="card"><h3>WIRING &amp; PINS</h3>
+      <div class="wirenote">Hold the board with the <b>USB at the top</b>. Pins are numbered 1&ndash;40:
+        <b>1</b> is the top-LEFT corner, counting down the left side; <b>40</b> is the top-RIGHT corner,
+        counting down the right side. Colors:
+        <span class="dot" style="background:#dc2626"></span>red 3V3
+        <span class="dot" style="background:#0f172a;border:1px solid #64748b"></span>black GND
+        <span class="dot" style="background:#22c55e"></span>green SDA
+        <span class="dot" style="background:#e2e8f0"></span>white SCL
+        <span class="dot" style="background:#eab308"></span>yellow signal.</div>
+      <div style="overflow-x:auto"><table class="pins">
+        <tr><th>Part &amp; wire</th><th>GPIO</th><th class="pin">Pin</th><th>Find it (USB up)</th></tr>
+        <tr><td>Screen/air/moisture/compaction share these 4:</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;data (SDA, green)</td><td>GP0</td><td class="pin">1</td><td>left side, 1st down (top-left corner)</td></tr>
+        <tr><td>&nbsp;&nbsp;clock (SCL, white)</td><td>GP1</td><td class="pin">2</td><td>left side, 2nd down</td></tr>
+        <tr><td>&nbsp;&nbsp;power (red)</td><td>3V3</td><td class="pin">36</td><td>right side, 5th down</td></tr>
+        <tr><td>&nbsp;&nbsp;ground (black)</td><td>GND</td><td class="pin">38</td><td>right side, 3rd down</td></tr>
+        <tr><td>Temp probes (data, yellow)</td><td>GP22</td><td class="pin">29</td><td>right side, 12th down</td></tr>
+        <tr><td>Microphone (out)</td><td>GP27</td><td class="pin">32</td><td>right side, 9th down</td></tr>
+        <tr><td>Big servo (signal, orange)</td><td>GP16</td><td class="pin">21</td><td>right side, bottom corner</td></tr>
+        <tr><td>Small servo (signal)</td><td>GP17</td><td class="pin">22</td><td>right side, 2nd from bottom</td></tr>
+        <tr><td>Relay (IN)</td><td>GP15</td><td class="pin">20</td><td>left side, bottom corner</td></tr>
+        <tr><td>Servo power (+5V, red)</td><td>VBUS</td><td class="pin">40</td><td>right side, 1st down (top-right corner)</td></tr>
+      </table></div>
+      <div class="wirenote">Full picture diagrams for each part are on the
+        <b>Stations</b> page of the guide (when you have internet).</div>
+    </div>
+  </div>
 
   <div class="grid">
     <div class="card wide chips" id="parts"></div>
 
     <div class="card"><h3>BIN AIR</h3>
-      <div class="val t"><span id="tin">--</span><span class="unit"> &deg;C</span></div>
+      <div class="val t"><span id="tin">--</span><span class="unit tu"> &deg;C</span></div>
       <div class="sub"><span id="hin">--</span>% RH inside</div></div>
     <div class="card"><h3>OUTSIDE AIR</h3>
-      <div class="val t"><span id="tout">--</span><span class="unit"> &deg;C</span></div>
+      <div class="val t"><span id="tout">--</span><span class="unit tu"> &deg;C</span></div>
       <div class="sub"><span id="hout">--</span>% RH outside</div></div>
 
     <div class="card"><h3>MOISTURE 1</h3>
@@ -73,8 +141,15 @@
   <div id="status">connecting...</div>
 <script>
 var misses = 0, relayOn = 0, holdoff = 0;
+var units = 'C', m1vLive = null, m2vLive = null;
+try { units = localStorage.getItem('wb_units') || 'C'; } catch (e) {}
 function $(id) { return document.getElementById(id); }
 function put(id, v) { $(id).textContent = (v === null || v === undefined) ? '--' : v; }
+function dispT(c) { return c == null ? null : (units === 'F' ? Math.round((c * 9 / 5 + 32) * 10) / 10 : c); }
+function paintUnits() {
+  var els = document.getElementsByClassName('tu');
+  for (var i = 0; i < els.length; i++) els[i].innerHTML = units === 'F' ? ' &deg;F' : ' &deg;C';
+}
 function setStatus(text, bad) {
   $('status').textContent = text;
   $('status').className = bad ? 'err' : '';
@@ -97,11 +172,17 @@ function tick() {
     .then(function (r) { return r.json(); })
     .then(function (j) {
       misses = 0;
-      put('tin', j.in_temp_c); put('hin', j.in_hum_pct);
-      put('tout', j.out_temp_c); put('hout', j.out_hum_pct);
+      put('tin', dispT(j.in_temp_c)); put('hin', j.in_hum_pct);
+      put('tout', dispT(j.out_temp_c)); put('hout', j.out_hum_pct);
       put('m1', j.moist1_pct); put('m1v', j.moist1_v);
       put('m2', j.moist2_pct); put('m2v', j.moist2_v);
       put('lt', j.light_pct); put('snd', j.sound_pct); put('dist', j.surface_mm);
+      m1vLive = j.moist1_v; m2vLive = j.moist2_v;
+      if (j.cfg) {
+        put('c1v', j.moist1_v); put('c2v', j.moist2_v);
+        put('c1d', j.cfg.m1dry); put('c1w', j.cfg.m1wet);
+        put('c2d', j.cfg.m2dry); put('c2w', j.cfg.m2wet);
+      }
 
       var chips = '';
       (j.parts || []).forEach(function (p) {
@@ -111,11 +192,11 @@ function tick() {
 
       var temps = j.probe_temps_c || [];
       $('pcount').textContent = temps.length ? (j.probe_count + '/' + j.probes) : '';
-      var html = '';
+      var html = '', usym = units === 'F' ? ' &deg;F' : ' &deg;C';
       for (var i = 0; i < temps.length; i++) {
         html += temps[i] == null
           ? '<div class="fault">probe ' + (i + 1) + ': fault! (check wiring)</div>'
-          : '<div>probe ' + (i + 1) + ': ' + temps[i] + ' &deg;C</div>';
+          : '<div>probe ' + (i + 1) + ': ' + dispT(temps[i]) + usym + '</div>';
       }
       $('probes').innerHTML = html || 'no probes on the wire';
 
@@ -131,6 +212,33 @@ function tick() {
       if (misses > 3) setStatus('lost connection... retrying', true);
     });
 }
+// ---- settings drawer ----
+$('gear').onclick = function () { $('drawer').classList.toggle('open'); };
+var ur = document.getElementsByName('u');
+for (var k = 0; k < ur.length; k++) {
+  ur[k].checked = ur[k].value === units;
+  ur[k].onchange = function () {
+    units = this.value;
+    try { localStorage.setItem('wb_units', units); } catch (e) {}
+    paintUnits();
+  };
+}
+function sendCfg(q, msg) {
+  fetch('/cfg?' + q, { cache: 'no-store' })
+    .then(function () { $('calmsg').textContent = msg; })
+    .catch(function () { $('calmsg').textContent = 'failed'; });
+}
+var cbtns = document.querySelectorAll('#drawer button[data-k]');
+for (var b = 0; b < cbtns.length; b++) {
+  cbtns[b].onclick = function () {
+    var key = this.dataset.k, live = key[1] === '1' ? m1vLive : m2vLive;
+    if (live == null) { $('calmsg').textContent = 'no reading yet'; return; }
+    sendCfg('key=' + key + '&val=' + live, 'saved ' + key + ' = ' + live + ' V');
+  };
+}
+$('calreset').onclick = function () { sendCfg('reset=1', 'reset to defaults'); };
+paintUnits();
+
 setInterval(tick, 1000);
 tick();
 </script>

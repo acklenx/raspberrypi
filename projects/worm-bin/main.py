@@ -27,6 +27,7 @@
 # Project page (docs, wiring, install link): https://github.com/acklenx/raspberrypi/tree/main/projects/worm-bin
 
 import gc
+import json
 import time
 
 from machine import ADC, PWM, Pin
@@ -73,6 +74,60 @@ def bme(name, addr):
   return picolab.Sensor("BME280 %s (0x%02x)" % (name, addr), connect, read)
 
 
+# Moisture calibration lives in wormcfg.json on the board so it survives
+# reboots and can be set from the dashboard (dip a probe in air = dry,
+# in water = wet, tap the buttons). Defaults come from the CONFIG block.
+CFG_FILE = "wormcfg.json"
+
+
+def load_cfg():
+  c = {"m1dry": MOIST_DRY_V, "m1wet": MOIST_WET_V,
+       "m2dry": MOIST_DRY_V, "m2wet": MOIST_WET_V}
+  try:
+    with open(CFG_FILE) as f:
+      c.update(json.load(f))
+  except Exception:
+    pass
+  return c
+
+
+cfg = load_cfg()
+
+
+def save_cfg():
+  try:
+    with open(CFG_FILE, "w") as f:
+      json.dump(cfg, f)
+  except Exception as e:
+    picolab.log("cfg save failed:", e)
+
+
+def cfg_handler(req):
+  """/cfg?key=m1dry&val=2.2 sets one calibration point; /cfg?reset=1
+  restores the defaults. Keys: m1dry m1wet m2dry m2wet."""
+  if picolab.query_str(req, "reset") is not None:
+    cfg.update({"m1dry": MOIST_DRY_V, "m1wet": MOIST_WET_V,
+                "m2dry": MOIST_DRY_V, "m2wet": MOIST_WET_V})
+    save_cfg()
+    return {"ok": True, "cfg": cfg}
+  key = picolab.query_str(req, "key")
+  val = picolab.query_str(req, "val")
+  if key in cfg and val is not None:
+    try:
+      cfg[key] = round(float(val), 3)
+      save_cfg()
+      picolab.log("cal", key, "=", cfg[key])
+    except ValueError:
+      return {"error": "bad value"}
+  return {"ok": True, "cfg": cfg}
+
+
+def _moist_pct(v, dry, wet):
+  if dry == wet:
+    return 0.0
+  return round(max(0.0, min(100.0, (dry - v) * 100.0 / (dry - wet))), 1)
+
+
 def analog_bank():
   """ADS1115: two moisture probes and the light divider, one part."""
 
@@ -80,17 +135,13 @@ def analog_bank():
     from ads1115 import ADS1115
     return ADS1115(picolab.i2c())
 
-  def moisture_pct(v):
-    pct = (MOIST_DRY_V - v) * 100.0 / (MOIST_DRY_V - MOIST_WET_V)
-    return round(max(0.0, min(100.0, pct)), 1)
-
   def read(dev):
     m1 = dev.read_volts(0)
     m2 = dev.read_volts(1)
     lv = dev.read_volts(2)
     return {
-        "moist1_pct": moisture_pct(m1), "moist1_v": round(m1, 2),
-        "moist2_pct": moisture_pct(m2), "moist2_v": round(m2, 2),
+        "moist1_pct": _moist_pct(m1, cfg["m1dry"], cfg["m1wet"]), "moist1_v": round(m1, 2),
+        "moist2_pct": _moist_pct(m2, cfg["m2dry"], cfg["m2wet"]), "moist2_v": round(m2, 2),
         "light_pct": round(max(0.0, min(100.0, lv / 3.3 * 100)), 1),
     }
 
@@ -249,6 +300,7 @@ def data_fn():
   d["big"] = int(servo_big.angle)
   d["small"] = int(servo_small.angle)
   d["relay"] = relay.value()
+  d["cfg"] = cfg
   return d
 
 
@@ -315,7 +367,7 @@ app.announce("Worm Bin Command Center Active!")
 
 while True:
   light.poll()
-  app.poll(data_fn, routes=[("/set", set_handler)])
+  app.poll(data_fn, routes=[("/set", set_handler), ("/cfg", cfg_handler)])
   if not tick.ready():
     continue
 
