@@ -16,7 +16,16 @@
 #
 # Wiring: red=3V3, black=GND, yellow (data)=GP22, and a REQUIRED 4.7k
 # ohm resistor from GP22 to 3V3 (the pullup). Several probes can share
-# the same three wires; the demo reads them all.
+# the same three wires; the demo reads them all. Bus capacity: 10-15
+# probes are easy on 4.7k; a 27-probe 3x3x3 bin wants a 2.2k-3.3k
+# pullup and daisy-chain wiring; past ~50, split onto a second GPIO.
+#
+# Probes can be LABELED and POSITIONED (x,y,z in the bin; linear works
+# too, just use x). The mapping is keyed by each probe's factory-burned
+# ROM serial, so it survives rewiring: put a sticky label on the wire,
+# pinch the probe, and the dashboard shows which serial warms up. Saved
+# in placements.json on the board (dashboard edits it, or edit it by
+# hand in Viper to match the tape).
 #
 # On the board: main.py, index.html, lib/picolab.py, lib/ssd1306.py.
 # (onewire and ds18x20 are built into MicroPython.)
@@ -55,13 +64,14 @@ def read(dev):
   # rest: its temp goes None and its truth-light slot goes long-blink.
   now = time.ticks_ms()
   if time.ticks_diff(now, dev["due"]) >= 0:
+    roms_read = dev["roms"]
     temps = []
-    for rom in dev["roms"]:
+    for rom in roms_read:
       try:
         temps.append(round(dev["ds"].read_temp(rom), 1))
       except Exception:
         temps.append(None)
-    if dev["roms"] and all(t is None for t in temps):
+    if roms_read and all(t is None for t in temps):
       raise OSError("all probes lost")
     # Rescan the wire so probes added mid-run join in (the blink
     # pattern grows by one) and unplugged ones drop off.
@@ -74,6 +84,7 @@ def read(dev):
     dev["ds"].convert_temp()
     dev["due"] = time.ticks_add(now, 750)
     dev["temps"] = temps
+    dev["ids"] = [bytes(r).hex() for r in roms_read]
   temps = dev["temps"] or []
   good = [t for t in temps if t is not None]
   return {
@@ -81,6 +92,7 @@ def read(dev):
       "probes": len(temps),
       "ok_flags": [t is not None for t in temps],
       "temps_c": temps,
+      "ids": dev.get("ids", []),
       "temp_c": good[0] if good else None,
   }
 
@@ -89,9 +101,15 @@ def data_fn():
   d = {"ok": sensor.ok, "ssid": app.ssid}
   if sensor.data:
     d.update(sensor.data)
+    info = []
+    for pid, t in zip(sensor.data.get("ids", []), sensor.data.get("temps_c", [])):
+      label, pos = places.get(pid)
+      info.append({"id": pid, "label": label, "pos": pos, "t": t})
+    d["probes_info"] = info
   return d
 
 
+places = picolab.Placements()
 sensor = picolab.Sensor("DS18B20", connect, read)
 display = picolab.Display()
 light = picolab.StatusLight()
@@ -104,7 +122,7 @@ app.announce("Soil Temperature Station Active!")
 
 while True:
   light.poll()
-  app.poll(data_fn)
+  app.poll(data_fn, routes=[("/place", places.handle)])
   if not tick.ready():
     continue
 

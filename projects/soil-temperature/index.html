@@ -7,64 +7,78 @@
 <style>
   body { font-family: -apple-system, Segoe UI, sans-serif; text-align: center;
          background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-  .card { background: #1e293b; padding: 20px; border-radius: 16px; max-width: 420px;
+  .card { background: #1e293b; padding: 20px; border-radius: 16px; max-width: 440px;
           margin: 16px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
   h3 { margin: 0 0 8px 0; color: #94a3b8; font-weight: 600; letter-spacing: 1px; }
-  .val { font-size: 54px; font-weight: 800; margin: 6px 0 0 0; color: #fb923c; }
-  .unit { font-size: 22px; color: #94a3b8; font-weight: 600; }
-  #probes { margin-top: 14px; font-size: 17px; }
-  #probes div { padding: 3px 0; }
-  #probes span { color: #94a3b8; }
-  #probes .fault { color: #f87171; font-weight: 700; }
-  .count { margin-top: 10px; font-size: 13px; color: #64748b; }
+  .val { font-size: 48px; font-weight: 800; margin: 6px 0 0 0; color: #fb923c; }
+  .unit { font-size: 20px; color: #94a3b8; font-weight: 600; }
   canvas { width: 100%; border-radius: 8px; display: block; }
   .scale { display: flex; justify-content: space-between; font-size: 12px;
            color: #94a3b8; margin: 4px 2px 10px 2px; }
   .scale b.cold { color: #38bdf8; } .scale b.hot { color: #fb7185; }
   .hint { font-size: 11.5px; color: #64748b; margin-top: 6px; }
-  button { background: #334155; color: #94a3b8; border: 0; border-radius: 8px;
-           padding: 4px 12px; font-size: 12px; margin-top: 8px; }
+  button { background: #334155; color: #cbd5e1; border: 0; border-radius: 8px;
+           padding: 4px 12px; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td { padding: 4px 2px; border-top: 1px solid #334155; }
+  input { background: #0f172a; color: #f8fafc; border: 1px solid #334155;
+          border-radius: 6px; padding: 4px; font-size: 13px; }
+  input.lab { width: 72px; } input.pos { width: 34px; }
+  .id { font-size: 10px; color: #64748b; display: block; }
+  .temp { font-weight: 700; }
+  .warm { color: #fb923c; font-weight: 700; font-size: 11px; }
+  .fault { color: #f87171; font-weight: 700; }
+  .count { margin-top: 10px; font-size: 13px; color: #64748b; }
   #status { margin-top: 4px; font-size: 13px; color: #64748b; }
   #status.err { color: #f87171; }
 </style>
 </head>
 <body>
   <div class="card">
-    <h3>HEAT MAP</h3>
+    <h3>HEAT MAP <span style="font-weight:400">(wire order)</span></h3>
     <canvas id="strip" width="380" height="64"></canvas>
     <div class="scale"><b class="cold" id="tmin">--</b><span>probe position along the wire</span><b class="hot" id="tmax">--</b></div>
-    <canvas id="fall" width="380" height="160"></canvas>
-    <div class="hint">time flows down: newest at the bottom. Touch a probe and watch its column warm up.</div>
+    <canvas id="fall" width="380" height="140"></canvas>
+    <div class="hint">time flows down: newest at the bottom.</div>
     <button id="rescale">reset color scale</button>
   </div>
 
   <div class="card">
-    <h3>SOIL TEMPERATURE</h3>
-    <div class="val"><span id="temp">--</span> <span class="unit">&deg;C</span></div>
-    <div id="probes"></div>
+    <h3>BIN VIEW <span style="font-weight:400">(3D)</span></h3>
+    <canvas id="bin" width="400" height="250"></canvas>
+    <div class="hint" id="binhint">give probes positions below and they appear in the bin</div>
+  </div>
+
+  <div class="card">
+    <h3>PROBES</h3>
+    <div class="hint" style="margin-bottom:8px">pinch a probe: it gets a WARMING badge.
+      Type its sticky-label and x,y,z (any units, your bin, your rules), Save.
+      Stored on the board in placements.json, keyed to the probe's serial forever.</div>
+    <table id="ptable"></table>
     <div class="count">probes on the wire: <span id="count">--</span></div>
   </div>
   <div id="status">connecting...</div>
 <script>
 // ---- config at the top, house rule ----
-var POLL_MS = 500;       // how often to ask the Pico for temps
-var MIN_SPAN = 4;        // color scale never narrower than this many degC
+var POLL_MS = 500;        // how often to ask the Pico for readings
+var MIN_SPAN = 4;         // color scale never narrower than this many degC
+var WARM_DELTA = 0.6;     // degC rise over the window that counts as a pinch
+var WARM_WINDOW_MS = 25000;
 var FAULT_COLOR = '#475569';
 
-var misses = 0, tLo = null, tHi = null;
+var misses = 0, tLo = null, tHi = null, hist = {}, tableSig = '';
 var strip = document.getElementById('strip'), sctx = strip.getContext('2d');
 var fall = document.getElementById('fall'), fctx = fall.getContext('2d');
+var bin = document.getElementById('bin'), bctx = bin.getContext('2d');
 fctx.fillStyle = '#0b1120'; fctx.fillRect(0, 0, fall.width, fall.height);
 
 function setStatus(text, bad) {
   var s = document.getElementById('status');
-  s.textContent = text;
-  s.className = bad ? 'err' : '';
+  s.textContent = text; s.className = bad ? 'err' : '';
 }
 function colorFor(t) {
   if (t == null) return FAULT_COLOR;
-  var n = (t - tLo) / (tHi - tLo);
-  n = Math.max(0, Math.min(1, n));
+  var n = Math.max(0, Math.min(1, (t - tLo) / (tHi - tLo)));
   return 'hsl(' + Math.round(240 * (1 - n)) + ', 90%, 55%)';
 }
 function updateScale(temps) {
@@ -85,35 +99,119 @@ document.getElementById('rescale').onclick = function () { tLo = tHi = null; };
 function gradientFor(ctx, temps, w) {
   if (temps.length === 1) { ctx.fillStyle = colorFor(temps[0]); return; }
   var g = ctx.createLinearGradient(0, 0, w, 0);
-  temps.forEach(function (t, i) {
-    g.addColorStop(i / (temps.length - 1), colorFor(t));
-  });
+  temps.forEach(function (t, i) { g.addColorStop(i / (temps.length - 1), colorFor(t)); });
   ctx.fillStyle = g;
 }
-function drawStrip(temps) {
-  var w = strip.width, h = strip.height;
-  sctx.clearRect(0, 0, w, h);
+function drawStrip(info) {
+  var temps = info.map(function (p) { return p.t; });
+  var w = strip.width;
+  sctx.clearRect(0, 0, w, strip.height);
   if (!temps.length) return;
   gradientFor(sctx, temps, w);
   sctx.fillRect(0, 0, w, 42);
-  // probe markers + labels
-  temps.forEach(function (t, i) {
+  info.forEach(function (p, i) {
     var x = temps.length === 1 ? w / 2 : (i / (temps.length - 1)) * (w - 20) + 10;
-    sctx.fillStyle = '#f8fafc';
-    sctx.fillRect(x - 1, 34, 2, 8);
-    sctx.font = 'bold 11px sans-serif';
-    sctx.textAlign = 'center';
-    sctx.fillStyle = t == null ? '#f87171' : '#e2e8f0';
-    var lx = Math.max(26, Math.min(w - 26, x));   // keep edge labels on-canvas
-    sctx.fillText((i + 1) + (t == null ? ' !' : ': ' + t.toFixed(1)), lx, 58);
+    sctx.fillStyle = '#f8fafc'; sctx.fillRect(x - 1, 34, 2, 8);
+    sctx.font = 'bold 11px sans-serif'; sctx.textAlign = 'center';
+    sctx.fillStyle = p.t == null ? '#f87171' : '#e2e8f0';
+    var lx = Math.max(30, Math.min(w - 30, x));
+    sctx.fillText(p.label + (p.t == null ? ' !' : ' ' + p.t.toFixed(1)), lx, 58);
   });
 }
 function drawFallRow(temps) {
   if (!temps.length) return;
-  // scroll history up one row, paint the newest row at the bottom
   fctx.drawImage(fall, 0, -1);
   gradientFor(fctx, temps, fall.width);
   fctx.fillRect(0, fall.height - 1, fall.width, 1);
+}
+
+// ---- isometric bin ----
+function drawBin(info) {
+  var placed = info.filter(function (p) { return p.pos; });
+  bctx.clearRect(0, 0, bin.width, bin.height);
+  document.getElementById('binhint').textContent = placed.length
+    ? 'x,y across the bin, z is height. Color = temperature.'
+    : 'give probes positions below and they appear in the bin';
+  if (!placed.length) return;
+  var mins = [0, 0, 0], maxs = [1, 1, 1];
+  placed.forEach(function (p) {
+    for (var a = 0; a < 3; a++) {
+      mins[a] = Math.min(mins[a], p.pos[a]);
+      maxs[a] = Math.max(maxs[a], p.pos[a]);
+    }
+  });
+  function iso(x, y, z) {
+    var nx = (x - mins[0]) / (maxs[0] - mins[0] || 1);
+    var ny = (y - mins[1]) / (maxs[1] - mins[1] || 1);
+    var nz = (z - mins[2]) / (maxs[2] - mins[2] || 1);
+    // slightly asymmetric axes so probes on the x=y diagonal don't stack
+    return [200 + nx * 145 - ny * 105, 98 + nx * 46 + ny * 64 - nz * 76];
+  }
+  // bin wireframe
+  bctx.strokeStyle = '#475569'; bctx.lineWidth = 1.2;
+  var C = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]]
+    .map(function (c) { return iso(mins[0] + c[0] * (maxs[0] - mins[0]),
+                                   mins[1] + c[1] * (maxs[1] - mins[1]),
+                                   mins[2] + c[2] * (maxs[2] - mins[2])); });
+  [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]]
+    .forEach(function (e) {
+      bctx.beginPath(); bctx.moveTo(C[e[0]][0], C[e[0]][1]);
+      bctx.lineTo(C[e[1]][0], C[e[1]][1]); bctx.stroke();
+    });
+  // probes, far to near
+  placed.sort(function (a, b) { return (a.pos[0] + a.pos[1]) - (b.pos[0] + b.pos[1]); });
+  placed.forEach(function (p) {
+    var s = iso(p.pos[0], p.pos[1], p.pos[2]);
+    bctx.beginPath(); bctx.arc(s[0], s[1], 9, 0, 7);
+    bctx.fillStyle = colorFor(p.t); bctx.fill();
+    bctx.strokeStyle = '#0f172a'; bctx.lineWidth = 2; bctx.stroke();
+    bctx.font = 'bold 11px sans-serif'; bctx.textAlign = 'center';
+    bctx.fillStyle = '#e2e8f0';
+    bctx.fillText(p.label, s[0], s[1] - 13);
+  });
+}
+
+// ---- probe table (rebuilt only when the probe set changes) ----
+function urlenc(s) { return encodeURIComponent(s); }
+function saveProbe(id) {
+  var lab = document.getElementById('lab-' + id).value;
+  var q = 'id=' + id + '&label=' + urlenc(lab);
+  var x = document.getElementById('x-' + id).value;
+  var y = document.getElementById('y-' + id).value;
+  var z = document.getElementById('z-' + id).value;
+  q += '&x=' + urlenc(x) + '&y=' + urlenc(y) + '&z=' + urlenc(z);
+  fetch('/place?' + q, { cache: 'no-store' })
+    .then(function () { document.getElementById('sv-' + id).textContent = 'saved!'; })
+    .catch(function () { document.getElementById('sv-' + id).textContent = 'failed'; });
+}
+function buildTable(info) {
+  var html = '';
+  info.forEach(function (p) {
+    var pos = p.pos || ['', '', ''];
+    html += '<tr><td style="text-align:left"><input class="lab" id="lab-' + p.id + '" value="' + p.label + '">'
+      + '<span class="id">' + p.id + '</span></td>'
+      + '<td><input class="pos" id="x-' + p.id + '" value="' + pos[0] + '" placeholder="x">'
+      + '<input class="pos" id="y-' + p.id + '" value="' + pos[1] + '" placeholder="y">'
+      + '<input class="pos" id="z-' + p.id + '" value="' + pos[2] + '" placeholder="z"></td>'
+      + '<td class="temp" id="t-' + p.id + '">--</td>'
+      + '<td><button id="sv-' + p.id + '">save</button></td></tr>';
+  });
+  document.getElementById('ptable').innerHTML = html;
+  info.forEach(function (p) {
+    document.getElementById('sv-' + p.id).onclick = function () { saveProbe(p.id); };
+  });
+}
+function updateTable(info) {
+  var now = Date.now();
+  info.forEach(function (p) {
+    var h = hist[p.id] = (hist[p.id] || []).filter(function (e) { return now - e.ms < WARM_WINDOW_MS; });
+    if (p.t != null) h.push({ ms: now, t: p.t });
+    var warming = h.length > 3 && (p.t - h[0].t) >= WARM_DELTA;
+    var cell = document.getElementById('t-' + p.id);
+    if (!cell) return;
+    cell.innerHTML = p.t == null ? '<span class="fault">fault!</span>'
+      : p.t.toFixed(1) + '°' + (warming ? '<div class="warm">WARMING</div>' : '');
+  });
 }
 
 function tick() {
@@ -121,27 +219,21 @@ function tick() {
     .then(function (r) { return r.json(); })
     .then(function (j) {
       misses = 0;
-      var temps = j.temps_c || [];
-      if (j.ok && temps.length > 0) {
-        document.getElementById('temp').textContent = j.temp_c;
+      var info = j.probes_info || [];
+      if (j.ok && info.length > 0) {
         document.getElementById('count').textContent =
           (j.probes !== undefined) ? j.count + '/' + j.probes : j.count;
-        var html = '';
-        for (var i = 0; i < temps.length; i++) {
-          var val = temps[i] == null
-            ? '<span class="fault">fault! (check probe)</span>'
-            : temps[i] + ' &deg;C';
-          html += '<div><span>probe ' + (i + 1) + ':</span> ' + val + '</div>';
-        }
-        document.getElementById('probes').innerHTML = html;
+        var temps = info.map(function (p) { return p.t; });
         updateScale(temps);
-        drawStrip(temps);
+        drawStrip(info);
         drawFallRow(temps);
+        drawBin(info);
+        var sig = info.map(function (p) { return p.id; }).join(',');
+        if (sig !== tableSig) { tableSig = sig; buildTable(info); }
+        updateTable(info);
         setStatus('live on ' + j.ssid, false);
       } else {
-        document.getElementById('temp').textContent = '--';
         document.getElementById('count').textContent = '--';
-        document.getElementById('probes').innerHTML = '';
         setStatus('sensor unplugged... waiting (hot-plug ready)', true);
       }
     })

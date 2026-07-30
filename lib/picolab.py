@@ -225,6 +225,60 @@ class Sensor:
     return self.data
 
 
+class Placements:
+  """Labels + positions for probes, persisted on the board.
+
+  Any probe with a stable id can be placed: a DS18B20's ROM serial
+  (burned in at the factory, survives rewiring), an ADS1115 channel
+  ("A0"), whatever. The file (default placements.json) maps
+  id -> {"label": str, "pos": [x, y, z] or None} and can be edited
+  from a dashboard (see handle()) or by hand in the Viper file panel,
+  so a sticky label on the wire stays in sync either way.
+  """
+
+  def __init__(self, path="placements.json"):
+    self.path = path
+    try:
+      with open(path) as f:
+        self.data = json.load(f)
+    except Exception:
+      self.data = {}
+
+  def get(self, pid):
+    ent = self.data.get(pid, {})
+    return ent.get("label") or pid[-4:], ent.get("pos")
+
+  def save(self):
+    try:
+      with open(self.path, "w") as f:
+        json.dump(self.data, f)
+    except Exception as e:
+      log("placements save failed:", e)
+
+  def handle(self, req):
+    """Route handler for /place?id=X&label=Y&x=0&y=1&z=2 (label and
+    position each optional; empty x clears the position)."""
+    pid = query_str(req, "id")
+    if not pid:
+      return {"error": "no id"}
+    ent = self.data.get(pid, {})
+    label = query_str(req, "label")
+    if label is not None:
+      ent["label"] = label
+    xs = query_str(req, "x")
+    if xs is not None:
+      try:
+        ent["pos"] = [float(query_str(req, a, "0") or 0) for a in "xyz"]
+      except ValueError:
+        ent["pos"] = None
+      if xs == "":
+        ent["pos"] = None
+    self.data[pid] = ent
+    self.save()
+    log("placed", pid, "->", ent)
+    return {"ok": True, "id": pid, "ent": ent}
+
+
 # ---------------------------------------------------------------------
 # Web app: access point + tiny webserver (the pattern from the ToF
 # distance station: static-ish SSID per board, minimal collisions).
@@ -251,6 +305,42 @@ def node_id():
   except Exception:
     pass
   return val
+
+
+def query_str(req, key, default=None):
+  """Pull ?key=some%20text out of a raw request, urldecoded. Matches the
+  whole key only (?key= or &key=), so 'label' never matches 'xlabel'."""
+  try:
+    text = req.decode() if isinstance(req, bytes) else req
+    idx = -1
+    for lead in ("?", "&"):
+      try:
+        idx = text.index(lead + key + "=")
+        break
+      except ValueError:
+        pass
+    if idx < 0:
+      return default
+    start = idx + len(key) + 2
+    end = start
+    while end < len(text) and text[end] not in "& \r\n":
+      end += 1
+    raw = text[start:end].replace("+", " ")
+    out = ""
+    i = 0
+    while i < len(raw):
+      if raw[i] == "%" and i + 2 < len(raw) + 1:
+        try:
+          out += chr(int(raw[i + 1:i + 3], 16))
+          i += 3
+          continue
+        except ValueError:
+          pass
+      out += raw[i]
+      i += 1
+    return out
+  except Exception:
+    return default
 
 
 def query_int(req, key, default=None):
