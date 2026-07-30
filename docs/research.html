@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Research Projects · Maker Lab Kids</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --blue: #2E7DBC; --green: #7CB342; --orange: #E8762C; --yellow: #E8B62C;
+    --navy: #1B3A5C; --ink: #222A35; --light: #F4F7FA; --gray: #6B7280;
+    --mack: #B4237A; --meta: #5A6B7B;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink);
+         background: #FFFFFF; margin: 0; line-height: 1.5; }
+  .topbar { height: 8px; background: var(--orange); }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px 50px 20px; }
+  header { padding: 30px 0 6px 0; }
+  header h1 { color: var(--navy); font-size: 32px; margin: 0 0 6px 0; }
+  header p { margin: 0; color: var(--gray); max-width: 70ch; }
+  nav { font-size: 14px; margin-top: 8px; }
+  nav a { color: var(--blue); font-weight: bold; text-decoration: none; margin-right: 14px; }
+  nav a:hover { text-decoration: underline; }
+
+  .panel { background: var(--light); border-radius: 10px; padding: 14px 18px; margin: 18px 0;
+           box-shadow: 0 2px 8px rgba(27,58,92,0.12); font-size: 13.5px; }
+  .panel h2 { color: var(--navy); font-size: 16px; margin: 0 0 8px 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 4px 0; position: sticky;
+             top: 0; background: #FFFFFFEE; padding: 10px 0; z-index: 10; backdrop-filter: blur(4px); }
+  .chip { border: 1.5px solid #CBD5E1; background: #FFF; color: var(--ink); border-radius: 20px;
+          padding: 5px 13px; font-size: 13px; cursor: pointer; font-weight: 600; }
+  .chip:hover { border-color: var(--navy); }
+  .chip.on { background: var(--navy); color: #FFF; border-color: var(--navy); }
+  .count { color: var(--gray); font-size: 13px; align-self: center; margin-left: auto; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+  .card { border: 1px solid #E1E8EF; border-radius: 10px; padding: 14px 16px 14px 18px;
+          position: relative; box-shadow: 0 2px 6px rgba(27,58,92,0.08); background: #FFF;
+          display: flex; flex-direction: column; }
+  .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+                  border-radius: 10px 0 0 10px; background: var(--gray); }
+  .card.d-starter::before { background: var(--green); }
+  .card.d-solid::before { background: var(--blue); }
+  .card.d-stretch::before { background: var(--orange); }
+  .card.d-mack::before { background: var(--mack); }
+  .card.d-meta::before { background: var(--meta); }
+  .card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .card .num { color: var(--gray); font-size: 12px; font-weight: 700; }
+  .badge { font-size: 10.5px; font-weight: 800; letter-spacing: 0.5px; padding: 2px 8px;
+           border-radius: 20px; color: #FFF; white-space: nowrap; text-transform: uppercase; }
+  .b-starter { background: var(--green); } .b-solid { background: var(--blue); }
+  .b-stretch { background: var(--orange); } .b-mack { background: var(--mack); }
+  .b-meta { background: var(--meta); }
+  .card h3 { color: var(--navy); font-size: 16.5px; margin: 6px 0 4px 0; line-height: 1.2; }
+  .card .q { font-size: 13.5px; margin: 0 0 10px 0; }
+  .card .gear { font-size: 12px; color: var(--gray); margin-top: auto; }
+  .card .gear b { color: var(--ink); }
+  .trade { background: #FDF3E7; border: 1px solid var(--orange); border-radius: 7px;
+           padding: 6px 9px; font-size: 12px; margin-top: 8px; }
+  .trade b { color: var(--orange); }
+  footer { text-align: center; color: var(--gray); font-size: 12.5px; padding: 26px 10px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="topbar"></div>
+<div class="wrap">
+  <header>
+    <h1>Research Projects</h1>
+    <p>Real questions you can answer with the gear in the kit. Most are a good fit for a
+       high-school freshman working over a few class periods; a handful are marquee builds
+       for a team that wants to go big. Every card says what it needs and flags when you'll
+       have to trade gear with another group to pull it off.</p>
+    <nav><a href="index.html">&larr; Lab guide</a> <a href="glossary.html">Glossary</a>
+         <a href="cheatsheet.html">Cheat sheet</a>
+         <a href="https://github.com/acklenx/raspberrypi">Code repo</a></nav>
+  </header>
+
+  <div class="panel">
+    <h2>How to read a card</h2>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--green)"></span><b>Starter</b> — one sensor, one session, clear result</span>
+      <span><span class="dot" style="background:var(--blue)"></span><b>Solid</b> — a real experiment with a control</span>
+      <span><span class="dot" style="background:var(--orange)"></span><b>Stretch</b> — multi-day or multi-sensor, more moving parts</span>
+      <span><span class="dot" style="background:var(--mack)"></span><b>Mack Daddy</b> — marquee build, show it off (only 5 of these)</span>
+      <span><span class="dot" style="background:var(--meta)"></span><b>Meta</b> — improve our own setup</span>
+    </div>
+    <p style="margin:10px 0 0 0"><b style="color:var(--orange)">Horse-trade flag</b>: the orange
+       box means the project needs more of something than one bin normally gets (extra temp
+       probes, the shared geophones, a spare Pico), so you'll be borrowing or swapping with
+       another group. Plan it with them and your teacher.</p>
+  </div>
+
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"></div>
+</div>
+<footer>&copy; 2026 Maker Lab Kids LLC · MakerLabKids.com · Learn. Make. Share.</footer>
+
+<script>
+// Add a project by adding a row. diff: starter|solid|stretch|mack|meta.
+// cat: env|behavior|compare|build|physics|meta.
+var P = [
+  // ---- environment: read the bin ----
+  { t: "Bin vs room temperature", d: "starter", c: "env",
+    q: "Does a worm bin hold a steadier temperature than the room around it?",
+    g: "2x BME280 (one inside, one outside)" },
+  { t: "The bin's daily rhythm", d: "solid", c: "env",
+    q: "Do bins have a day/night temperature and humidity cycle like the outdoors?",
+    g: "BME280, logging over several days" },
+  { t: "How fast does a bin dry out?", d: "starter", c: "env",
+    q: "Left alone, how many days until the bedding goes from damp to too-dry?",
+    g: "1-2 soil moisture probes, daily readings" },
+  { t: "Wet deep or wet shallow?", d: "solid", c: "env",
+    q: "Is a bin wetter near the bottom than the top? Map the moisture gradient.",
+    g: "2-3 moisture probes at different depths, ADS1115" },
+  { t: "How dark is dark?", d: "starter", c: "env",
+    q: "With the lid on, how much light actually reaches the worms?",
+    g: "GL5528 photoresistor on an ADC pin" },
+  { t: "Baseline bin acoustics", d: "starter", c: "env",
+    q: "How much sound does a worm bin make, and how much leaks in from the room?",
+    g: "MAX9814 microphone" },
+  { t: "Pressure as a weather clue", d: "solid", c: "env",
+    q: "Can the bin's barometric pressure trend predict a change in the weather outside?",
+    g: "BME280 (uses its pressure channel), multi-day log" },
+  { t: "Feeding spike", d: "solid", c: "env",
+    q: "Does bin temperature or humidity rise in the hours after you add food scraps?",
+    g: "BME280, a feeding log with timestamps" },
+  { t: "Evaporative cooling", d: "solid", c: "env",
+    q: "Does a freshly watered bin actually run cooler than a dry one?",
+    g: "BME280 + moisture probe, a wet bin and a dry bin" },
+
+  // ---- worm behavior ----
+  { t: "Light avoidance, measured", d: "solid", c: "behavior",
+    q: "Shine a light on one end: how fast do the worms retreat, and how far?",
+    g: "GL5528 + a lamp, timed observation" },
+  { t: "Do worms pick a side?", d: "starter", c: "behavior",
+    q: "Given a light half and a dark half, where do the worms end up?",
+    g: "GL5528 to confirm the gradient, careful counting" },
+  { t: "Music for worms", d: "solid", c: "behavior",
+    q: "Play tones or music through a speaker: do worms react to any frequency?",
+    g: "Speaker + LM386 amp, mic to confirm the sound reached them" },
+  { t: "Tap-and-flee", d: "solid", c: "behavior",
+    q: "Do worms move away from a repeated tapping vibration?",
+    g: "Vibrating motor as the tapper, timed observation" },
+  { t: "Crowding effect", d: "stretch", c: "behavior",
+    q: "Do more worms in the same bedding make it measurably warmer or wetter?",
+    g: "BME280 + moisture, bins with counted worm populations",
+    trade: "Needs several bins run in parallel; coordinate identical bedding with other groups." },
+
+  // ---- comparative experiments ----
+  { t: "Bedding showdown", d: "solid", c: "compare",
+    q: "Newspaper vs cardboard vs coconut coir: which holds moisture longest?",
+    g: "Moisture probes, three bins with different bedding" },
+  { t: "Feeding schedule study", d: "stretch", c: "compare",
+    q: "Daily little meals vs one big weekly feeding: which bin stays healthier?",
+    g: "BME280 + moisture, two bins, a strict feeding log",
+    trade: "Two matched bins for weeks; pair up with a group running the opposite schedule." },
+  { t: "Lid on vs lid off", d: "starter", c: "compare",
+    q: "How much humidity does the lid actually keep in?",
+    g: "BME280 humidity, same bin lid-on then lid-off" },
+  { t: "Carbon-to-nitrogen ratio", d: "stretch", c: "compare",
+    q: "Do 'browns vs greens' ratios change how warm the bin runs?",
+    g: "BME280, bins fed measured brown:green mixes" },
+  { t: "Bin size and stability", d: "solid", c: "compare",
+    q: "Does a bigger bin hold a steadier temperature than a small one?",
+    g: "2x BME280, a large bin and a small bin side by side" },
+
+  // ---- compaction & structure ----
+  { t: "Bedding settles", d: "solid", c: "env",
+    q: "Over a week, does the bedding surface drop in a steady, predictable way?",
+    g: "VL53L0X time-of-flight in the lid (soil-compaction probe)" },
+  { t: "Does wet bedding compact faster?", d: "stretch", c: "compare",
+    q: "Compare compaction rate in a damp bin vs a drier one.",
+    g: "VL53L0X compaction + moisture probe, two bins" },
+
+  // ---- build / automation ----
+  { t: "Auto-mister", d: "stretch", c: "build",
+    q: "Build a trigger that waters the bin when moisture drops below a set point.",
+    g: "Moisture probe + relay (or servo) driving a small pump/valve" },
+  { t: "Auto-cooling fan", d: "stretch", c: "build",
+    q: "Switch a fan on automatically when the bin gets too warm.",
+    g: "BME280 + relay + a 5V fan" },
+  { t: "Scheduled airflow lid", d: "solid", c: "build",
+    q: "A servo cracks the lid on a timer to let the bin breathe.",
+    g: "SG90 servo, a timing loop" },
+  { t: "Harvest-ready alarm", d: "solid", c: "build",
+    q: "Beep when the castings level (compaction reading) crosses a harvest threshold.",
+    g: "VL53L0X compaction + speaker/buzzer" },
+  { t: "Worm-cam trigger", d: "stretch", c: "build",
+    q: "Fire an alert (or a photo) only when the bin surface changes suddenly.",
+    g: "VL53L0X compaction, a Pi Zero to catch the event" },
+
+  // ---- the marquee builds (Mack Daddy, max 5) ----
+  { t: "Thermal diffusion trough", d: "mack", c: "physics",
+    q: "Line probes down a water trough, pour hot water in one end, and watch heat spread. Fit the curve.",
+    g: "5+ DS18B20 probes on one wire, a trough, the live heat-map dashboard",
+    trade: "You need most of a class's temp probes on one bus. Borrow probes; the moisture teams won't need theirs that day." },
+  { t: "Worm migration map", d: "mack", c: "behavior",
+    q: "Warm one corner and chill another: can you track which way the worms move by the temperature they leave behind?",
+    g: "A grid of DS18B20 probes + the 3D bin view",
+    trade: "Wants 8-16 probes in one bin. Pool the class's DS18B20s into one super-bin for the study." },
+  { t: "Seismic worm census", d: "mack", c: "behavior",
+    q: "Can a lab-grade geophone hear worms moving, and can you estimate the population from the activity?",
+    g: "SM-24 geophone + TL072 preamp, quiet bin",
+    trade: "Only 2 geophones exist for the whole school (teacher setup). Book time on the shared rig." },
+  { t: "Vibration triangulation", d: "mack", c: "behavior",
+    q: "With several vibration sensors around a bin, can you pinpoint WHERE a tap happened, and which way worms drift?",
+    g: "5x geophones/vibration sensors, a preamp per channel",
+    trade: "The big teacher build: all the geophones plus differential amps. One team per term, with staff." },
+  { t: "The bin observatory", d: "mack", c: "physics",
+    q: "Run the full worm-bin command center for a month and mine the data for a story nobody predicted.",
+    g: "The complete worm-bin build: 2 BME280, probe array, moisture, light, mic, compaction, on the wall",
+    trade: "This is the maxed-out bin. Claim the ADS1115s and a full probe set for the whole run." },
+
+  // ---- meta: improve our setup ----
+  { t: "Calibrate every probe", d: "meta", c: "meta",
+    q: "Ice water is 0, boiling is 100: how far off is each temp probe before you fix it?",
+    g: "DS18B20 probes + the dashboard's two-point calibration" },
+  { t: "Sensor drift watch", d: "meta", c: "meta",
+    q: "Left untouched for a week, whose readings wander? Rank the sensors by stability.",
+    g: "Any station logging one steady spot over days" },
+  { t: "Wi-Fi coverage map", d: "meta", c: "meta",
+    q: "Where in the room do stations lose the WormHole network? Map the dead zones.",
+    g: "A Pico reporting signal strength (RSSI) as you carry it around" },
+  { t: "Runtime on a battery", d: "meta", c: "meta",
+    q: "How many hours does a sensor station last on a USB power bank?",
+    g: "A station + a power bank + a clock" }
+];
+
+var CATS = [
+  { k: "all", label: "All" },
+  { k: "env", label: "Read the bin" },
+  { k: "behavior", label: "Worm behavior" },
+  { k: "compare", label: "Compare & control" },
+  { k: "build", label: "Build & automate" },
+  { k: "physics", label: "Big physics" },
+  { k: "meta", label: "Improve the setup" },
+  { k: "starter", label: "Starter", diff: true },
+  { k: "mack", label: "Mack Daddy", diff: true }
+];
+var DIFFLABEL = { starter: "Starter", solid: "Solid", stretch: "Stretch", mack: "Mack Daddy", meta: "Meta" };
+var active = "all";
+
+function render() {
+  var grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  var shown = 0;
+  P.forEach(function (p, i) {
+    var match = active === "all" || p.c === active || p.d === active;
+    if (!match) return;
+    shown++;
+    var el = document.createElement("div");
+    el.className = "card d-" + p.d;
+    el.innerHTML =
+      '<div class="top"><span class="num">#' + (i + 1) + '</span>' +
+      '<span class="badge b-' + p.d + '">' + DIFFLABEL[p.d] + '</span></div>' +
+      '<h3>' + p.t + '</h3>' +
+      '<p class="q">' + p.q + '</p>' +
+      (p.trade ? '<div class="trade"><b>Horse trade:</b> ' + p.trade + '</div>' : '') +
+      '<div class="gear"><b>Gear:</b> ' + p.g + '</div>';
+    grid.appendChild(el);
+  });
+  document.getElementById("cnt").textContent = shown + " project" + (shown === 1 ? "" : "s");
+}
+
+var f = document.getElementById("filters");
+CATS.forEach(function (c) {
+  var b = document.createElement("button");
+  b.className = "chip" + (c.k === "all" ? " on" : "");
+  b.textContent = c.label;
+  b.dataset.k = c.k;
+  b.onclick = function () {
+    active = c.k;
+    document.querySelectorAll(".chip").forEach(function (x) { x.className = "chip"; });
+    b.className = "chip on";
+    render();
+  };
+  f.appendChild(b);
+});
+var cnt = document.createElement("span");
+cnt.className = "count"; cnt.id = "cnt";
+f.appendChild(cnt);
+render();
+</script>
+</body>
+</html>

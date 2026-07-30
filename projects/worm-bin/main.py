@@ -5,7 +5,9 @@
 #   DS18B20 waterproof probes on GP22 (as many as you own, one wire)
 #   ADS1115 analog bank at 0x48: A0 + A1 soil moisture, A2 light divider
 #   MAX9814 mic on GP27 (native ADC: it needs the fast sampling)
-#   VL53L0X distance at 0x29 (lid-open / harvest-level detector)
+#   VL53L0X time-of-flight at 0x29 (SOIL COMPACTION: distance from the
+#     lid down to the bedding surface. As worms process and the bedding
+#     settles, that gap grows; a sudden change flags a disturbance)
 #   Big servo GP16, small servo GP17, relay GP15
 #   OLED 0x3C, rotating status pages
 #
@@ -116,7 +118,10 @@ def microphone():
   return picolab.Sensor("MAX9814 mic (GP27)", connect, read)
 
 
-def distance():
+def compaction():
+  # Time-of-flight aimed down from the lid at the bedding surface. The
+  # reading is the gap to the surface in mm; watch it grow as bedding
+  # settles and compacts, or jump when someone digs in the bin.
   def connect():
     from vl53l0x import VL53L0X
     tof = VL53L0X(picolab.i2c())
@@ -124,9 +129,9 @@ def distance():
     return tof
 
   def read(dev):
-    return {"dist_mm": dev.ping()}
+    return {"surface_mm": dev.ping()}
 
-  return picolab.Sensor("VL53L0X (0x29)", connect, read)
+  return picolab.Sensor("VL53L0X compaction (0x29)", connect, read)
 
 
 def probe_bus():
@@ -186,7 +191,7 @@ PARTS = [
     bme("out", 0x77),
     analog_bank(),
     microphone(),
-    distance(),
+    compaction(),
 ]
 DS = probe_bus()   # dynamic slots, always last
 
@@ -278,7 +283,7 @@ def page_lines(page, d):
     ]
   return [
       "ACT + DIST",
-      "dist %s" % fmt(d.get("dist_mm"), "%d mm"),
+      "surf %s" % fmt(d.get("surface_mm"), "%d mm"),
       "servo %d / %d" % (int(servo_big.angle), int(servo_small.angle)),
       "relay %s" % ("ON" if relay.value() else "off"),
   ]

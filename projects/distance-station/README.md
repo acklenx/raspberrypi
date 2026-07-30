@@ -6,6 +6,13 @@ The full class build: a Pico 2 W reads a VL53L0X time-of-flight laser
 distance sensor, shows the distance on an SSD1306 OLED, and broadcasts its
 own Wi-Fi network with a live web dashboard.
 
+**In the worm bins, this is the soil-compaction probe.** Mount it in the
+lid aimed straight down: the reading is the gap from the lid to the
+bedding surface, in millimeters. As worms process the bedding and it
+settles, that gap grows, so a rising trend is compaction and a sudden
+jump is a disturbance (someone dug in, added scraps, harvested). Same
+sensor, same code, pointed at dirt instead of down a hallway.
+
 ## Hardware
 
 | Part | Connection |

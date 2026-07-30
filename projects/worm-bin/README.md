@@ -22,7 +22,7 @@ All I2C devices share the standard bus (SDA=GP0, SCL=GP1, 3V3, GND).
 | GL5528 light divider | ADS1115 A2 | LDR to 3V3, 10k to GND, junction to A2 |
 | MAX9814 mic | GP27 (pin 32, ADC1) | native ADC: needs the fast 25 ms sampling |
 | DS18B20 probes | GP22 (pin 29) | one wire, many probes, 4.7k pullup to 3V3 |
-| VL53L0X distance | I2C `0x29` | lid-open / harvest-level detector |
+| VL53L0X compaction | I2C `0x29` | lid-mounted, aimed down: gap to the bedding surface (settling/compaction) |
 | Big servo (MG995) | GP16 (pin 21) | own 5V supply, grounds joined, NOT VBUS |
 | Small servo (SG90) | GP17 (pin 22) | power from VBUS (pin 40) |
 | Relay module | GP15 (pin 20) | module VCC per its spec (most take VBUS 5V) |
@@ -38,13 +38,13 @@ probe grows the tail of the pattern without renumbering anything).
 Short blink = OK, long blink = trouble, dark = code not running.
 
 Default slot order: 1 BME in, 2 BME out, 3 ADS1115 bank, 4 mic,
-5 distance, then the probes. Comment a part out of `PARTS` and its slot
+5 compaction, then the probes. Comment a part out of `PARTS` and its slot
 disappears; the pattern only ever shows what you claim to have wired.
 
 ## Dashboard
 
 Join the PicoLabN network, browse to http://192.168.4.1: live cards
-for both airs, both moistures, light, sound, distance, and every probe,
+for both airs, both moistures, light, sound, compaction, and every probe,
 plus sliders for both servos and a relay button. JSON at `/data`,
 actuator control at `/set?big=90`, `/set?small=45`, `/set?relay=1`.
 

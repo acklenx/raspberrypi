@@ -56,8 +56,8 @@
       <div class="val l"><span id="lt">--</span><span class="unit"> %</span></div></div>
     <div class="card"><h3>SOUND</h3>
       <div class="val s"><span id="snd">--</span><span class="unit"> %</span></div></div>
-    <div class="card"><h3>DISTANCE</h3>
-      <div class="val d"><span id="dist">--</span><span class="unit"> mm</span></div></div>
+    <div class="card"><h3>COMPACTION</h3>
+      <div class="val d"><span id="dist">--</span><span class="unit"> mm to surface</span></div></div>
 
     <div class="card wide probes"><h3>SOIL PROBES <span id="pcount"></span></h3>
       <div id="probes">--</div></div>
@@ -101,7 +101,7 @@ function tick() {
       put('tout', j.out_temp_c); put('hout', j.out_hum_pct);
       put('m1', j.moist1_pct); put('m1v', j.moist1_v);
       put('m2', j.moist2_pct); put('m2v', j.moist2_v);
-      put('lt', j.light_pct); put('snd', j.sound_pct); put('dist', j.dist_mm);
+      put('lt', j.light_pct); put('snd', j.sound_pct); put('dist', j.surface_mm);
 
       var chips = '';
       (j.parts || []).forEach(function (p) {
