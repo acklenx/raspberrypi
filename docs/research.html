@@ -289,7 +289,7 @@ var active = "all";
 // Turn sensor names in the Gear line into deep links to their section on
 // the Sensors page. One combined regex, single pass, so an inserted
 // href never gets re-matched.
-var GEAR_RE = /\b(BME280|DS18B20|VL53L0X|VL53L1X|GL5528|BH1750|MAX9814|SG90|servos?|moisture)\b/gi;
+var GEAR_RE = /\b(BME280|DS18B20|VL53L0X|VL53L1X|GL5528|BH1750|MAX9814|SG90|servos?|moisture|speakers?|vibrating)\b/gi;
 function gearAnchor(w) {
   w = w.toLowerCase();
   if (w === "bme280") return "bme280";
@@ -301,6 +301,8 @@ function gearAnchor(w) {
   if (w === "max9814") return "microphone";
   if (w === "sg90" || w === "servo" || w === "servos") return "servo";
   if (w === "moisture") return "moisture";
+  if (w === "speaker" || w === "speakers") return "speaker";
+  if (w === "vibrating") return "vibration";
   return null;
 }
 function linkifyGear(s) {

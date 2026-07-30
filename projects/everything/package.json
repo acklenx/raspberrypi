@@ -124,6 +124,22 @@
       "github:acklenx/raspberrypi/projects/servo/index.html"
     ],
     [
+      "fs:speaker/main.py",
+      "github:acklenx/raspberrypi/projects/speaker/main.py"
+    ],
+    [
+      "fs:speaker/index.html",
+      "github:acklenx/raspberrypi/projects/speaker/index.html"
+    ],
+    [
+      "fs:vibration/main.py",
+      "github:acklenx/raspberrypi/projects/vibration/main.py"
+    ],
+    [
+      "fs:vibration/index.html",
+      "github:acklenx/raspberrypi/projects/vibration/index.html"
+    ],
+    [
       "fs:distance-vl53l1x/bench.py",
       "github:acklenx/raspberrypi/projects/distance-vl53l1x/bench.py"
     ],

@@ -50,6 +50,14 @@ servo
   SG90 servo: web slider, sweep, follow-light
   https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json
 
+speaker
+  play tones + RTTTL melodies through an LM386 amp (the 'tunes')
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/speaker/package.json
+
+vibration
+  buzz + tap the bin (transistor-driven motor) for behavior tests
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/vibration/package.json
+
 distance-vl53l1x
   long-range laser distance, 4 m
   https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-vl53l1x/package.json

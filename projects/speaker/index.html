@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>PicoLab Speaker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: -apple-system, Segoe UI, sans-serif; text-align: center;
+         background: #0f172a; color: #f8fafc; margin: 0; padding: 16px; }
+  .card { background: #1e293b; padding: 16px; border-radius: 16px; max-width: 400px;
+          margin: 12px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  h3 { margin: 0 0 8px 0; color: #94a3b8; font-weight: 600; letter-spacing: 1px; font-size: 13px; }
+  .now { font-size: 26px; font-weight: 800; color: #a78bfa; min-height: 32px; }
+  .keys { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+  .keys button { flex: 1; min-width: 34px; padding: 16px 0; font-size: 15px; font-weight: 700; }
+  .row { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px 0; }
+  .row label { font-size: 12px; color: #94a3b8; width: 40px; text-align: left; flex: none; }
+  input[type=range] { flex: 1; }
+  button { background: #334155; color: #f8fafc; border: 0; padding: 10px 14px; border-radius: 10px;
+           font-size: 14px; margin: 3px; cursor: pointer; font-weight: 600; }
+  button.on { background: #a78bfa; color: #0f172a; }
+  button.stop { background: #7f1d1d; color: #fca5a5; }
+  .songs button { background: #14532d; color: #86efac; }
+  textarea { width: 100%; box-sizing: border-box; background: #0f172a; color: #f8fafc;
+             border: 1px solid #334155; border-radius: 8px; padding: 8px; font-size: 12px;
+             font-family: Consolas, Menlo, monospace; min-height: 54px; resize: vertical; }
+  .hint { font-size: 11px; color: #64748b; margin: 4px 0; }
+  #status { margin-top: 6px; font-size: 13px; color: #64748b; }
+  #status.err { color: #f87171; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h3>SPEAKER</h3>
+    <div class="now" id="now">quiet</div>
+    <div class="keys" id="keys"></div>
+    <div class="hint">tap a note, or slide for any pitch</div>
+    <div class="row">
+      <label>pitch</label>
+      <input type="range" id="freq" min="80" max="2000" value="440">
+      <span id="freqv" style="width:64px;font-size:13px">440 Hz</span>
+    </div>
+    <div style="margin-top:6px">
+      <button id="sweep">Sweep</button>
+      <button id="stop" class="stop">Stop</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>SONGS</h3>
+    <div class="songs" id="songs"></div>
+  </div>
+
+  <div class="card">
+    <h3>PASTE YOUR OWN (RTTTL)</h3>
+    <textarea id="rtttl" placeholder="Mine:d=4,o=5,b=125:c,e,g,c6"></textarea>
+    <div class="hint">RTTTL ringtone format. Thousands are online. Keep it short so it fits.</div>
+    <button id="playmine" class="songs" style="background:#14532d;color:#86efac">Play mine</button>
+  </div>
+  <div id="status">connecting...</div>
+<script>
+var NOTES = [['C',523],['D',587],['E',659],['F',698],['G',784],['A',880],['B',988],['C↑',1047]];
+function $(id){ return document.getElementById(id); }
+function send(qs){ fetch('/set?'+qs,{cache:'no-store'}).catch(function(){}); }
+function setStatus(t,bad){ $('status').textContent=t; $('status').className=bad?'err':''; }
+
+// note pads
+NOTES.forEach(function(n){
+  var b=document.createElement('button');
+  b.textContent=n[0];
+  b.onclick=function(){ $('freq').value=n[1]; $('freqv').textContent=n[1]+' Hz'; send('freq='+n[1]); };
+  $('keys').appendChild(b);
+});
+
+var freq=$('freq');
+freq.addEventListener('input',function(){ $('freqv').textContent=freq.value+' Hz'; send('freq='+freq.value); });
+$('sweep').onclick=function(){ send('sweep=1'); };
+$('stop').onclick=function(){ send('stop=1'); };
+$('playmine').onclick=function(){
+  var t=$('rtttl').value.trim();
+  if(!t){ setStatus('paste an RTTTL tune first',true); return; }
+  send('rtttl='+encodeURIComponent(t));
+};
+
+var songsBuilt=false;
+function buildSongs(list){
+  songsBuilt=true;
+  $('songs').innerHTML='';
+  list.forEach(function(name){
+    var b=document.createElement('button');
+    b.textContent=name;
+    b.onclick=function(){ send('song='+encodeURIComponent(name)); };
+    $('songs').appendChild(b);
+  });
+}
+
+function tick(){
+  fetch('/data',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
+    if(!songsBuilt && j.songs) buildSongs(j.songs);
+    var now='quiet';
+    if(j.mode==='song' && j.playing) now='♪ '+j.playing;
+    else if(j.mode==='sweep') now='sweeping...';
+    else if(j.mode==='tone') now=j.freq+' Hz';
+    $('now').textContent=now;
+    $('sweep').className = j.mode==='sweep' ? 'on' : '';
+    setStatus('live on '+j.ssid,false);
+  }).catch(function(){ setStatus('lost connection... retrying',true); });
+}
+setInterval(tick,400);
+tick();
+</script>
+</body>
+</html>

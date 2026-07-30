@@ -220,6 +220,27 @@
     </div>
   </section>
 
+  <section class="sensor sound" id="speaker">
+    <figure><img src="wiring/speaker.svg" alt="Speaker + LM386 amp wiring" loading="lazy">
+      <figcaption>A PWM tone from GP18 into an LM386 amp, then the speaker.</figcaption></figure>
+    <div>
+      <h3>Speaker <span class="part">LM386 amp</span></h3>
+      <p class="what">plays tones and full melodies (sound out)</p>
+      <p>Tap a note, sweep the pitch, pick a built-in tune, or paste your own RTTTL ringtone. Pair it
+         with the microphone above to ask the real question: do the worms react to sound?</p>
+      <p class="multi" style="border-left:4px solid var(--red)"><b>Wiring:</b> the tone goes from
+         <b>GP18 (physical pin 24)</b> to the amp's IN; power the amp from <b>VBUS = pin 40</b> (5V),
+         share the ground. Amps gulp current, so if the Pico resets when it plays, give the amp its own
+         5V supply or add a <a class="term" href="glossary.html#brown-out">capacitor</a>. Boot plays a
+         short arpeggio; silence means power or wiring.</p>
+      <p class="multi"><b>More than one?</b> One PWM-capable GPIO per speaker. The square-wave tone is
+         loud and a little buzzy: turn the amp's volume pot down, or add a 10k+1k divider on the input
+         for cleaner tones.</p>
+      <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/speaker/package.json">Install</a>
+        <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/speaker">Project README</a></p>
+    </div>
+  </section>
+
   <h2>Make something move</h2>
   <hr class="rule g">
 
@@ -249,6 +270,27 @@
          soak up the spikes.</p>
       <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json">Install</a>
         <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/servo">Project README</a></p>
+    </div>
+  </section>
+
+  <section class="sensor move" id="vibration">
+    <figure><img src="wiring/vibration.svg" alt="Vibration motor + transistor wiring" loading="lazy">
+      <figcaption>A transistor switches the motor; GP19 controls it.</figcaption></figure>
+    <div>
+      <h3>Vibration <span class="part">motor + transistor</span></h3>
+      <p class="what">buzzes and taps the bin (a stimulus you control)</p>
+      <p>Buzz at any strength, or fire a burst of sharp taps. This is the stimulus half of the behavior
+         lab: tap, then watch (or log with a sensor) how the worms respond.</p>
+      <p class="multi" style="border-left:4px solid var(--orange)"><b>Wiring:</b> a GPIO can't drive a
+         motor directly. Motor + to <b>3V3</b>, motor - to a <b>2N2222 transistor</b> collector, emitter
+         to <b>GND</b>, base through a <b>1k resistor to GP19 (pin 25)</b>, and a <b>flyback diode across
+         the motor</b> (band toward +3V3). Skipping the diode risks the transistor and a
+         <a class="term" href="glossary.html#brown-out">brown-out</a>. The 37-in-1 kit's vibration
+         module has this driver built in, wire its S pin to GP19 and skip the transistor.</p>
+      <p class="multi"><b>More than one?</b> One driver and GPIO per motor. For a bigger thump, the MG995
+         "thumper" servo works too (see the servo above).</p>
+      <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/vibration/package.json">Install</a>
+        <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/vibration">Project README</a></p>
     </div>
   </section>
 

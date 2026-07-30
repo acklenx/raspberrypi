@@ -538,6 +538,62 @@ projects["servo"] = () => diagram(
     { color: W.sig, text: "optional LDR junction -> GP28 (pin 34)" },
   ]);
 
+projects["speaker"] = () => diagram(
+  "speaker wiring", "LM386 amp + speaker, PWM tone from the Pico + OLED",
+  [1, 2, 24, 36, 38, 40], () => {
+    const x = DEV_X, y = 250, w = DEV_W, h = 92;
+    let s = deviceBox(x, y, w, h, "LM386 amp", "power from VBUS 5V", C.blue);
+    const p = { IN: { x, y: y + 42 }, VCC: { x, y: y + 60 }, GND: { x, y: y + 78 } };
+    s += devPin(x, p.IN.y, "yel IN") + devPin(x, p.VCC.y, "red +5V") + devPin(x, p.GND.y, "blk GND");
+    s += oledI2C();
+    s += sig(24, p.IN, W.sig);       // GP18 = pin 24: the PWM tone (a signal)
+    s += sig(40, p.VCC, W.vbus);     // VBUS 5V, deliberately not 3V3
+    s += tap(RAIL_GND, p.GND, W.gnd);
+    // speaker to the right of the amp
+    const sx = x + w + 66, sy = y + 26;
+    s += `<rect x="${sx}" y="${sy}" width="42" height="42" rx="6" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>`;
+    s += `<circle cx="${sx + 21}" cy="${sy + 21}" r="13" fill="#0f172a" stroke="#64748b"/>`;
+    s += text(sx + 21, sy + 60, "speaker", { size: 10, color: C.gray, anchor: "middle" });
+    s += wire([[x + w, y + 50], [sx, sy + 14]], C.ink, 2);
+    s += wire([[x + w, y + 66], [sx, sy + 30]], W.gnd, 2);
+    return s;
+  },
+  [
+    { color: W.sig, text: "IN <- GP18 (pin 24): the PWM tone" },
+    { color: W.vbus, text: "+5V (amp VCC) -> VBUS (pin 40), NOT 3V3" },
+    { color: W.gnd, text: "GND (amp) -> GND (pin 38), shared" },
+    { text: "amp OUT+ / OUT- -> the speaker terminals" },
+    { text: "turn the amp's volume pot DOWN to start" },
+  ]);
+
+projects["vibration"] = () => diagram(
+  "vibration wiring", "vibrating motor via a transistor switch + OLED",
+  [1, 2, 25, 36, 38], () => {
+    const x = DEV_X, y = 250, w = DEV_W, h = 96;
+    let s = deviceBox(x, y, w, h, "motor driver", "2N2222 + diode, or kit module", C.orange);
+    const p = { SIG: { x, y: y + 44 }, PWR: { x, y: y + 64 }, GND: { x, y: y + 84 } };
+    s += devPin(x, p.SIG.y, "yel S") + devPin(x, p.PWR.y, "red +3V3") + devPin(x, p.GND.y, "blk GND");
+    s += oledI2C();
+    s += sig(25, p.SIG, W.sig);       // GP19 = pin 25 -> base via 1k
+    s += tap(RAIL_PWR, p.PWR, W.pwr);
+    s += tap(RAIL_GND, p.GND, W.gnd);
+    // motor glyph to the right
+    const mx = x + w + 70, my = y + 34;
+    s += `<circle cx="${mx + 18}" cy="${my + 18}" r="18" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>`;
+    s += text(mx + 18, my + 24, "M", { size: 17, color: "#e2e8f0", anchor: "middle", bold: true });
+    s += text(mx + 18, my + 54, "motor", { size: 10, color: C.gray, anchor: "middle" });
+    s += wire([[x + w, y + 58], [mx, my + 10]], W.pwr, 2);
+    s += wire([[x + w, y + 74], [mx, my + 26]], C.ink, 2);
+    return s;
+  },
+  [
+    { color: W.sig, text: "S (base via 1k) <- GP19 (pin 25)" },
+    { color: W.pwr, text: "motor + -> 3V3 (pin 36)" },
+    { color: W.gnd, text: "transistor emitter -> GND (pin 38)" },
+    { text: "flyback diode ACROSS the motor (band to +3V3)" },
+    { text: "no diode = dead transistor; or use a kit module" },
+  ]);
+
 const names = Object.keys(projects);
 for (const name of names) {
   const svg = projects[name]();
