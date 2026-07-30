@@ -35,7 +35,14 @@ import picolab
 
 MIN_US = 600
 MAX_US = 2400
-STEP = 3  # max degrees moved per motion tick, keeps motion smooth
+# How fast the servo slews to a new angle, in DEGREES PER SECOND. The
+# motion is ramped (stepped toward the target) so it looks smooth instead
+# of snapping. An SG90 tops out near 500 deg/s, so 300 is brisk but still
+# smooth. Want it faster? Raise this. Slow-motion? Lower it. For basically
+# instant, set it to 2000. (Old default was a sluggish 60.)
+SPEED_DPS = 300
+MOTION_MS = 20                        # step toward the target 50x/second
+STEP = SPEED_DPS * MOTION_MS / 1000.0  # degrees per step (derived)
 SERVO_PIN = 16  # servo signal (orange lead); default GP16, physical pin 21
 LDR_PIN = 28    # optional photoresistor for follow-light mode; default GP28
 
@@ -106,7 +113,7 @@ light.set_slots([True])
 app = picolab.WebApp()
 app.index = "servo/index.html"  # dashboard path under the everything layout
 heartbeat = picolab.Throttle(5000)
-motion = picolab.Throttle(50)
+motion = picolab.Throttle(MOTION_MS)
 
 app.announce("Servo Station Active!")
 picolab.log("Servo ready at 90 degrees, mode:", mode)
