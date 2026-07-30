@@ -6,21 +6,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="guide.css">
 <style>
-  .st { background: var(--light); border-radius: 10px; padding: 14px 16px 12px 18px;
-        box-shadow: 0 2px 8px rgba(27,58,92,0.12); border-left: 5px solid var(--blue); }
-  .st.heat { border-left-color: var(--orange); } .st.water { border-left-color: var(--blue); }
-  .st.light { border-left-color: var(--yellow); } .st.move { border-left-color: var(--green); }
-  .st.dist { border-left-color: #7E2AA8; } .st.sound { border-left-color: #C0387E; }
-  .st h3 { margin: 0 0 2px 0; } .st .what { color: var(--gray); font-size: 13.5px; margin: 0 0 8px 0; }
-  .st p { font-size: 14px; margin: 0 0 8px 0; }
-  .st .links a { font-weight: bold; font-size: 13.5px; }
-  .big { background: var(--navy); color: #FFF; border-radius: 12px; padding: 18px 22px; margin: 6px 0 18px 0; }
+  .big { background: var(--navy); color: #FFF; border-radius: 12px; padding: 18px 22px; margin: 6px 0 18px 0;
+         scroll-margin-top: 60px; }
   .big h3 { color: #FFF; } .big p { color: #D6E3EE; margin: 6px 0; }
   .big a { color: #9FD0F0; }
-  figure { margin: 0; }
-  figure img { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #FFF; }
-  figure figcaption { color: var(--gray); font-size: 13px; margin: 6px 0 0 0; }
-  .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px; }
+  .big .ext::after { color: #9FD0F0; }
+
+  /* one section per sensor: wiring picture on the left, the story on the right */
+  .sensor { display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: start;
+            background: var(--light); border-radius: 12px; padding: 16px 18px; margin: 12px 0;
+            box-shadow: 0 2px 8px rgba(27,58,92,0.10); border-left: 6px solid var(--blue);
+            scroll-margin-top: 60px; }
+  .sensor.heat { border-left-color: var(--orange); } .sensor.water { border-left-color: var(--blue); }
+  .sensor.light { border-left-color: var(--yellow); } .sensor.move { border-left-color: var(--green); }
+  .sensor.dist { border-left-color: #7E2AA8; } .sensor.sound { border-left-color: #C0387E; }
+  .sensor figure { margin: 0; }
+  .sensor figure img { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #FFF; }
+  .sensor figcaption { color: var(--gray); font-size: 12.5px; margin-top: 6px; }
+  .sensor h3 { margin: 0 0 3px 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .sensor .part { font-size: 12px; font-weight: 700; background: var(--navy); color: #FFF;
+                  border-radius: 20px; padding: 2px 10px; letter-spacing: 0.3px; }
+  .sensor .what { color: var(--gray); font-size: 13.5px; margin: 0 0 8px 0; }
+  .sensor p { font-size: 14px; margin: 0 0 8px 0; }
+  .sensor .multi { background: #FFF; border: 1px solid var(--line); border-radius: 8px;
+                   padding: 8px 11px; font-size: 13px; color: var(--ink); }
+  .sensor .multi b { color: var(--navy); }
+  .sensor .links { margin-top: 12px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .sensor .links .rd { font-weight: bold; font-size: 13.5px; }
+  @media (max-width: 640px) { .sensor { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -29,108 +42,200 @@
   <div class="links">
     <a class="nl" href="index.html">Home</a><a class="nl" href="start.html">Start Here</a>
     <a class="nl" href="sessions.html">Sessions</a><a class="nl on" href="stations.html">Stations</a>
-    <a class="nl" href="research.html">Ideas</a><a class="nl" href="glossary.html">Glossary</a>
-    <a class="nl" href="cheatsheet.html">Code</a><a class="nl" href="reset.html">Fix a Board</a>
+    <a class="nl" href="research.html">Ideas</a><a class="nl" href="demos/mission-control.html">Demos</a>
+    <a class="nl" href="glossary.html">Glossary</a><a class="nl" href="cheatsheet.html">Code</a>
+    <a class="nl" href="reset.html">Fix a Board</a>
   </div>
 </div></nav>
 
 <div class="wrap">
   <h1>Build a Station</h1>
   <p class="lead">Pick what you want to measure. Each one is a sensor you wire to your Pico, with a
-     picture of exactly how, and a one-click link that loads the code. Every station shows its reading
-     on the little screen and on your phone.</p>
+     picture of exactly how, notes for wiring more than one, and a one-click link that loads the code.
+     Every station shows its reading on the little screen and on your phone.</p>
+  <p class="lead" style="font-size:14px">Wire colors, everywhere in this guide:
+     <b style="color:#C62828">red</b> = power (3V3),
+     <b>black</b> = ground,
+     <b style="color:#7CB342">green</b>/<b>white</b> = the two shared "talking" wires (SDA/SCL),
+     <b style="color:#E8B62C">yellow</b> = a sensor's own signal. Numbers outside the board are the
+     physical pins you count to.</p>
 
-  <div class="big">
+  <div class="big" id="everything">
     <h3>The easy button: load everything at once</h3>
     <p>Not sure where to start, or want it all on one board? This single install puts every project
        below onto the Pico, each in its own folder. Stop one, open another, run it &mdash; no reloading.</p>
-    <p><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/everything/package.json"><b>Install everything &rarr;</b></a>
-       &nbsp;·&nbsp; <a href="https://github.com/acklenx/raspberrypi/tree/main/projects/everything">what's inside</a></p>
+    <p><a class="ext" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/everything/package.json"><b>Install everything</b></a>
+       &nbsp;·&nbsp; <a class="ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/everything">what's inside</a></p>
   </div>
 
   <h2>Heat &amp; air</h2>
   <hr class="rule o">
-  <div class="cards">
-    <div class="st heat"><h3>Air conditions</h3><p class="what">measures temperature, humidity &amp; pressure &mdash; sensor: BME280</p>
-      <p>One small part reads all three at once. Great for "inside the bin vs. outside" comparisons.</p>
-      <p class="links"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json">Install</a> &middot; <a href="#w-bme280">Wiring</a></p></div>
-    <div class="st heat"><h3>Waterproof temperature probes</h3><p class="what">measures temperature in soil or water &mdash; sensor: DS18B20</p>
-      <p>Rugged probes on a wire. Many can share one wire, so you can map temperature across a whole bin.</p>
-      <p class="links"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-temperature/package.json">Install</a> &middot; <a href="#w-soil-temperature">Wiring</a></p></div>
-  </div>
+
+  <section class="sensor heat" id="bme280">
+    <figure><img src="wiring/bme280.svg" alt="BME280 wiring" loading="lazy">
+      <figcaption>Shares the two green/white talking wires with the screen.</figcaption></figure>
+    <div>
+      <h3>Air conditions <span class="part">BME280</span></h3>
+      <p class="what">measures temperature, humidity &amp; pressure, all at once</p>
+      <p>One small part reads all three. Great for "inside the bin vs. outside" comparisons, and its
+         pressure channel doubles as a weather clue.</p>
+      <p class="multi"><b>More than one?</b> Both share the same green/white I2C wires, but two identical
+         BME280s can't sit on one bus unless they have different addresses. Bridge one sensor's SDO pad
+         to move it from <code>0x76</code> to <code>0x77</code> &mdash; so at most two per bus (one inside,
+         one outside is the classic pair).</p>
+      <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json">Install</a>
+        <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/bme280">Project README</a></p>
+    </div>
+  </section>
+
+  <section class="sensor heat" id="ds18b20">
+    <figure><img src="wiring/soil-temperature.svg" alt="DS18B20 wiring" loading="lazy">
+      <figcaption>Needs one 4.7k pullup resistor from the data line to 3V3.</figcaption></figure>
+    <div>
+      <h3>Waterproof temperature probes <span class="part">DS18B20</span></h3>
+      <p class="what">measures temperature in soil or water</p>
+      <p>Rugged probes on a wire. This is the sensor behind the heat-map and worm-migration builds.</p>
+      <p class="multi"><b>More than one?</b> This bus is built for it &mdash; every probe has a unique
+         factory serial, so many share the <em>same three wires</em>. About 10&ndash;15 are easy on the
+         4.7k pullup; for a dense bin drop to a 2.2k&ndash;3.3k pullup and daisy-chain the probes; past
+         ~50, split onto a second GPIO. <a href="wiring/soil-temperature-multi.svg">See the many-on-one-wire diagram.</a></p>
+      <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-temperature/package.json">Install</a>
+        <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/soil-temperature">Project README</a></p>
+    </div>
+  </section>
 
   <h2>Water</h2>
   <hr class="rule">
-  <div class="cards">
-    <div class="st water"><h3>Soil moisture</h3><p class="what">measures how wet the bedding is &mdash; sensor: capacitive moisture probe</p>
-      <p>Stick it in the soil; it reads dry-to-soaked as a percent. Calibrate in two minutes (dry in air, dip in water).</p>
-      <p class="links"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-moisture/package.json">Install</a> &middot; <a href="#w-soil-moisture">Wiring</a></p></div>
-  </div>
+
+  <section class="sensor water" id="moisture">
+    <figure><img src="wiring/soil-moisture.svg" alt="Soil moisture wiring" loading="lazy">
+      <figcaption>An analog signal into one ADC pin.</figcaption></figure>
+    <div>
+      <h3>Soil moisture <span class="part">capacitive probe</span></h3>
+      <p class="what">measures how wet the bedding is, dry-to-soaked as a percent</p>
+      <p>Stick it in the soil; calibrate in two minutes (dry in air = 0%, dip in water = 100%) right
+         from the dashboard.</p>
+      <p class="multi"><b>More than one?</b> Each probe needs its own analog pin, and the Pico has only
+         three (GP26/27/28). Want a moisture gradient at several depths? Add an <b>ADS1115</b> over the
+         green/white I2C wires for four more analog inputs. <a href="wiring/soil-moisture-multi.svg">See the several-at-once diagram.</a></p>
+      <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-moisture/package.json">Install</a>
+        <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/soil-moisture">Project README</a></p>
+    </div>
+  </section>
 
   <h2>Light</h2>
   <hr class="rule y">
-  <div class="cards">
-    <div class="st light"><h3>Light, the simple way</h3><p class="what">measures brighter/darker &mdash; sensor: GL5528 photoresistor</p>
+
+  <section class="sensor light" id="photoresistor">
+    <figure><img src="wiring/light-basic.svg" alt="GL5528 photoresistor wiring" loading="lazy">
+      <figcaption>A photoresistor and one 10k resistor make a voltage divider.</figcaption></figure>
+    <div>
+      <h3>Light, the simple way <span class="part">GL5528</span></h3>
+      <p class="what">measures brighter / darker</p>
       <p>A cheap classic. Perfect for "how dark is it inside the worm bin with the lid on?"</p>
-      <p class="links"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-basic/package.json">Install</a> &middot; <a href="#w-light-basic">Wiring</a></p></div>
-    <div class="st light"><h3>Light, the precise way</h3><p class="what">measures real light levels (lux) &mdash; sensor: BH1750</p>
+      <p class="multi"><b>More than one?</b> Like moisture, each one uses an analog pin (three on the
+         Pico: GP26/27/28). Beyond three, add an <b>ADS1115</b> for four more.</p>
+      <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-basic/package.json">Install</a>
+        <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/light-basic">Project README</a></p>
+    </div>
+  </section>
+
+  <section class="sensor light" id="bh1750">
+    <figure><img src="wiring/light-lux.svg" alt="BH1750 wiring" loading="lazy">
+      <figcaption>Shares the two green/white talking wires.</figcaption></figure>
+    <div>
+      <h3>Light, the precise way <span class="part">BH1750</span></h3>
+      <p class="what">measures real light levels in lux</p>
       <p>Actual numbers you can compare between rooms and days. (A shared classroom sensor.)</p>
-      <p class="links"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-lux/package.json">Install</a> &middot; <a href="#w-light-lux">Wiring</a></p></div>
-  </div>
+      <p class="multi"><b>More than one?</b> It rides the green/white I2C wires. Two on one bus need
+         different addresses &mdash; tie the ADDR pin high on one to move it to <code>0x5C</code> &mdash;
+         so at most two per bus.</p>
+      <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-lux/package.json">Install</a>
+        <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/light-lux">Project README</a></p>
+    </div>
+  </section>
 
   <h2>Distance &amp; compaction</h2>
   <hr class="rule">
-  <div class="cards">
-    <div class="st dist"><h3>Soil compaction</h3><p class="what">measures the gap down to the bedding surface &mdash; sensor: VL53L0X laser</p>
-      <p>Mounted in the lid, it watches the surface. As bedding settles, the gap grows; a sudden jump means someone disturbed the bin.</p>
-      <p class="links"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-station/package.json">Install</a> &middot; <a href="#w-distance-station">Wiring</a></p></div>
-    <div class="st dist"><h3>Longer-range version</h3><p class="what">measures distance up to 4 meters &mdash; sensor: VL53L1X laser</p>
+
+  <section class="sensor dist" id="vl53l0x">
+    <figure><img src="wiring/distance-station.svg" alt="VL53L0X wiring" loading="lazy">
+      <figcaption>The lid-mounted laser, on the green/white talking wires.</figcaption></figure>
+    <div>
+      <h3>Soil compaction <span class="part">VL53L0X</span></h3>
+      <p class="what">measures the gap down to the bedding surface</p>
+      <p>Mounted in the lid, it watches the surface. As bedding settles, the gap grows; a sudden jump
+         means someone disturbed the bin.</p>
+      <p class="multi"><b>More than one?</b> Every VL53L0X ships at the same address (<code>0x29</code>),
+         so two can't share a bus as-is &mdash; you'd have to power them up one at a time (XSHUT) and
+         re-address each. For the classroom, run one per bin.</p>
+      <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-station/package.json">Install</a>
+        <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/distance-station">Project README</a></p>
+    </div>
+  </section>
+
+  <section class="sensor dist" id="vl53l1x">
+    <figure><img src="wiring/distance-vl53l1x.svg" alt="VL53L1X wiring" loading="lazy">
+      <figcaption>Same wiring as the VL53L0X, more reach.</figcaption></figure>
+    <div>
+      <h3>Longer-range version <span class="part">VL53L1X</span></h3>
+      <p class="what">measures distance up to 4 meters</p>
       <p>For deeper bins with more headroom, or room-scale experiments.</p>
-      <p class="links"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-vl53l1x/package.json">Install</a> &middot; <a href="#w-distance-vl53l1x">Wiring</a></p></div>
-  </div>
+      <p class="multi"><b>More than one?</b> Same story as the VL53L0X &mdash; shared <code>0x29</code>
+         address, so one per bus unless you re-address with XSHUT. Note it shares that address with the
+         VL53L0X too, so don't put both on one bus.</p>
+      <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-vl53l1x/package.json">Install</a>
+        <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/distance-vl53l1x">Project README</a></p>
+    </div>
+  </section>
 
   <h2>Sound</h2>
   <hr class="rule">
-  <div class="cards">
-    <div class="st sound"><h3>Sound level</h3><p class="what">measures how loud it is &mdash; sensor: MAX9814 microphone</p>
+
+  <section class="sensor sound" id="microphone">
+    <figure><img src="wiring/sound.svg" alt="MAX9814 microphone wiring" loading="lazy">
+      <figcaption>Signal into one analog pin.</figcaption></figure>
+    <div>
+      <h3>Sound level <span class="part">MAX9814</span></h3>
+      <p class="what">measures how loud it is</p>
       <p>A live loudness meter. Clap, talk, or play music and watch the bar jump.</p>
-      <p class="links"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/sound/package.json">Install</a> &middot; <a href="#w-sound">Wiring</a></p></div>
-  </div>
+      <p class="multi"><b>More than one?</b> Each mic uses one analog pin (three on the Pico:
+         GP26/27/28), or add an <b>ADS1115</b> for more. For true whisper-quiet worm listening you want
+         the shared geophone rig instead &mdash; see the "Next Level" ideas.</p>
+      <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/sound/package.json">Install</a>
+        <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/sound">Project README</a></p>
+    </div>
+  </section>
 
   <h2>Make something move</h2>
   <hr class="rule g">
-  <div class="cards">
-    <div class="st move"><h3>Servo (a controllable arm)</h3><p class="what">an actuator: it moves to any angle you tell it</p>
-      <p>Drive it from a slider on your phone, sweep it automatically, or make it follow the light. The moment code moves something real.</p>
-      <p class="links"><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json">Install</a> &middot; <a href="#w-servo">Wiring</a></p></div>
-  </div>
+
+  <section class="sensor move" id="servo">
+    <figure><img src="wiring/servo.svg" alt="Servo wiring" loading="lazy">
+      <figcaption>Powered from 5V (VBUS), never 3.3V.</figcaption></figure>
+    <div>
+      <h3>Servo, a controllable arm <span class="part">SG90</span></h3>
+      <p class="what">an actuator: it moves to any angle you tell it</p>
+      <p>Drive it from a slider on your phone, sweep it automatically, or make it follow the light. The
+         moment code moves something real.</p>
+      <p class="multi"><b>More than one?</b> Each servo needs its own PWM-capable GPIO (most pins qualify)
+         and 5V power. One or two run fine on USB power; more than that want their own 5V supply so a
+         stalling servo can't brown-out the Pico. Share the ground.</p>
+      <p class="links"><a class="btn" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json">Install</a>
+        <a class="rd ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/servo">Project README</a></p>
+    </div>
+  </section>
 
   <h2>The big one: the worm-bin monitor</h2>
   <hr class="rule o">
-  <div class="big">
+  <div class="big" id="worm-bin">
     <h3>Every sensor and actuator, on one Pico</h3>
     <p>The showcase build: two air sensors (inside &amp; outside), a row of temperature probes, two
        moisture probes, light, sound, compaction, two servos, and a relay &mdash; all running together,
-       with a full control dashboard. This is where a real worm-bin station lives.</p>
-    <p><a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/worm-bin/package.json"><b>Install the worm-bin monitor &rarr;</b></a>
-       &nbsp;·&nbsp; <a href="https://github.com/acklenx/raspberrypi/tree/main/projects/worm-bin">full wiring &amp; details</a></p>
-  </div>
-
-  <h2>Wiring pictures</h2>
-  <hr class="rule">
-  <p class="lead">Exactly how each one connects. Red = power, black = ground, green/white = the two
-     shared "talking" wires, yellow = the sensor's own signal. Numbers outside the board are the
-     physical pins you count to.</p>
-  <div class="gallery">
-    <figure id="w-bme280"><img src="wiring/bme280.svg" alt="BME280 wiring" loading="lazy"><figcaption>Air conditions (BME280) &mdash; shares two wires with the screen.</figcaption></figure>
-    <figure id="w-soil-temperature"><img src="wiring/soil-temperature.svg" alt="DS18B20 wiring" loading="lazy"><figcaption>Temperature probes (DS18B20) &mdash; needs one 4.7k resistor. <a href="wiring/soil-temperature-multi.svg">Many on one wire &rarr;</a></figcaption></figure>
-    <figure id="w-soil-moisture"><img src="wiring/soil-moisture.svg" alt="Soil moisture wiring" loading="lazy"><figcaption>Soil moisture &mdash; an analog signal into one pin. <a href="wiring/soil-moisture-multi.svg">Several at once &rarr;</a></figcaption></figure>
-    <figure id="w-light-basic"><img src="wiring/light-basic.svg" alt="GL5528 wiring" loading="lazy"><figcaption>Light, simple (GL5528) &mdash; a photoresistor and one resistor.</figcaption></figure>
-    <figure id="w-light-lux"><img src="wiring/light-lux.svg" alt="BH1750 wiring" loading="lazy"><figcaption>Light, precise (BH1750) &mdash; shares the two talking wires.</figcaption></figure>
-    <figure id="w-distance-station"><img src="wiring/distance-station.svg" alt="VL53L0X wiring" loading="lazy"><figcaption>Compaction (VL53L0X) &mdash; the lid-mounted laser.</figcaption></figure>
-    <figure id="w-distance-vl53l1x"><img src="wiring/distance-vl53l1x.svg" alt="VL53L1X wiring" loading="lazy"><figcaption>Longer-range laser (VL53L1X) &mdash; same wiring, more reach.</figcaption></figure>
-    <figure id="w-sound"><img src="wiring/sound.svg" alt="MAX9814 wiring" loading="lazy"><figcaption>Sound (MAX9814) &mdash; signal into one pin.</figcaption></figure>
-    <figure id="w-servo"><img src="wiring/servo.svg" alt="Servo wiring" loading="lazy"><figcaption>Servo &mdash; powered from 5V (VBUS), never 3.3V.</figcaption></figure>
+       with a full control dashboard (units, calibration, and a wiring/pinout guide built into the menu).
+       This is where a real worm-bin station lives.</p>
+    <p><a class="ext" href="https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/worm-bin/package.json"><b>Install the worm-bin monitor</b></a>
+       &nbsp;·&nbsp; <a class="ext" href="https://github.com/acklenx/raspberrypi/tree/main/projects/worm-bin">full wiring &amp; details</a></p>
   </div>
 </div>
 <footer>&copy; 2026 Maker Lab Kids LLC · MakerLabKids.com · Learn. Make. Share.</footer>

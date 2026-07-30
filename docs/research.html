@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Research Projects · Maker Lab Kids</title>
+<title>Ideas · Maker Lab Kids</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="guide.css">
 <style>
   :root {
     --blue: #2E7DBC; --green: #7CB342; --orange: #E8762C; --yellow: #E8B62C;
@@ -30,7 +31,7 @@
   .dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 
   .filters { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 4px 0; position: sticky;
-             top: 0; background: #FFFFFFEE; padding: 10px 0; z-index: 10; backdrop-filter: blur(4px); }
+             top: 44px; background: #FFFFFFEE; padding: 10px 0; z-index: 10; backdrop-filter: blur(4px); }
   .chip { border: 1.5px solid #CBD5E1; background: #FFF; color: var(--ink); border-radius: 20px;
           padding: 5px 13px; font-size: 13px; cursor: pointer; font-weight: 600; }
   .chip:hover { border-color: var(--navy); }
@@ -59,6 +60,7 @@
   .card .q { font-size: 13.5px; margin: 0 0 10px 0; }
   .card .gear { font-size: 12px; color: var(--gray); margin-top: auto; }
   .card .gear b { color: var(--ink); }
+  .card .gear a { color: var(--blue); text-decoration: underline; font-weight: 600; }
   .trade { background: #FDF3E7; border: 1px solid var(--orange); border-radius: 7px;
            padding: 6px 9px; font-size: 12px; margin-top: 8px; }
   .trade b { color: var(--orange); }
@@ -67,7 +69,16 @@
 </style>
 </head>
 <body>
-<div class="topbar"></div>
+<nav class="topnav"><div class="inner">
+  <a class="brand" href="index.html">🪱 Wormhole</a>
+  <div class="links">
+    <a class="nl" href="index.html">Home</a><a class="nl" href="start.html">Start Here</a>
+    <a class="nl" href="sessions.html">Sessions</a><a class="nl" href="stations.html">Stations</a>
+    <a class="nl on" href="research.html">Ideas</a><a class="nl" href="demos/mission-control.html">Demos</a>
+    <a class="nl" href="glossary.html">Glossary</a><a class="nl" href="cheatsheet.html">Code</a>
+    <a class="nl" href="reset.html">Fix a Board</a>
+  </div>
+</div></nav>
 <div class="wrap">
   <header>
     <h1>Project Ideas</h1>
@@ -75,18 +86,15 @@
        and techniques we've shared. This page shows some of the projects you can build with what
        we've taught. We've grouped them to give a sense of how involved each one is, and every card
        lists the gear it needs (and flags when you might borrow a part from another group).</p>
-    <nav><a href="index.html">&larr; Home</a> <a href="stations.html">Build a Station</a>
-         <a href="glossary.html">Glossary</a>
-         <a href="https://github.com/acklenx/raspberrypi">Code</a></nav>
   </header>
 
   <div class="panel">
     <h2>How to read a card</h2>
     <div class="legend">
       <span><span class="dot" style="background:var(--green)"></span><b>Starter</b> — one sensor, one session, clear result</span>
-      <span><span class="dot" style="background:var(--blue)"></span><b>Solid</b> — a real experiment with a control</span>
-      <span><span class="dot" style="background:var(--orange)"></span><b>Stretch</b> — multi-day or multi-sensor, more moving parts</span>
-      <span><span class="dot" style="background:var(--mack)"></span><b>Mack Daddy</b> — marquee build, show it off (only 5 of these)</span>
+      <span><span class="dot" style="background:var(--blue)"></span><b>Basic</b> — a real experiment with a control</span>
+      <span><span class="dot" style="background:var(--orange)"></span><b>Advanced</b> — multi-day or multi-sensor, more moving parts</span>
+      <span><span class="dot" style="background:var(--mack)"></span><b>Next Level</b> — marquee build, show it off (only 5 of these)</span>
       <span><span class="dot" style="background:var(--meta)"></span><b>Meta</b> — improve our own setup</span>
     </div>
     <p style="margin:10px 0 0 0"><b style="color:var(--orange)">Horse-trade flag</b>: the orange
@@ -273,10 +281,34 @@ var CATS = [
   { k: "software", label: "Code & dashboards" },
   { k: "meta", label: "Improve the setup" },
   { k: "starter", label: "Starter", diff: true },
-  { k: "mack", label: "Mack Daddy", diff: true }
+  { k: "mack", label: "Next Level", diff: true }
 ];
-var DIFFLABEL = { starter: "Starter", solid: "Solid", stretch: "Stretch", mack: "Mack Daddy", meta: "Meta" };
+var DIFFLABEL = { starter: "Starter", solid: "Basic", stretch: "Advanced", mack: "Next Level", meta: "Meta" };
 var active = "all";
+
+// Turn sensor names in the Gear line into deep links to their section on
+// the Stations page. One combined regex, single pass, so an inserted
+// href never gets re-matched.
+var GEAR_RE = /\b(BME280|DS18B20|VL53L0X|VL53L1X|GL5528|BH1750|MAX9814|SG90|servos?|moisture)\b/gi;
+function gearAnchor(w) {
+  w = w.toLowerCase();
+  if (w === "bme280") return "bme280";
+  if (w === "ds18b20") return "ds18b20";
+  if (w === "vl53l0x") return "vl53l0x";
+  if (w === "vl53l1x") return "vl53l1x";
+  if (w === "gl5528") return "photoresistor";
+  if (w === "bh1750") return "bh1750";
+  if (w === "max9814") return "microphone";
+  if (w === "sg90" || w === "servo" || w === "servos") return "servo";
+  if (w === "moisture") return "moisture";
+  return null;
+}
+function linkifyGear(s) {
+  return s.replace(GEAR_RE, function (m) {
+    var a = gearAnchor(m);
+    return a ? '<a href="stations.html#' + a + '">' + m + '</a>' : m;
+  });
+}
 
 function render() {
   var grid = document.getElementById("grid");
@@ -294,7 +326,7 @@ function render() {
       '<h3>' + p.t + '</h3>' +
       '<p class="q">' + p.q + '</p>' +
       (p.trade ? '<div class="trade"><b>Horse trade:</b> ' + p.trade + '</div>' : '') +
-      '<div class="gear"><b>Gear:</b> ' + p.g + '</div>';
+      '<div class="gear"><b>Gear:</b> ' + linkifyGear(p.g) + '</div>';
     grid.appendChild(el);
   });
   document.getElementById("cnt").textContent = shown + " project" + (shown === 1 ? "" : "s");

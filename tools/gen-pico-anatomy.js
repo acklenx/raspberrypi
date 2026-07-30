@@ -91,55 +91,63 @@ function callout(px, py, lx, ly, title, lines, color, anchor) {
 const p36 = pin(36), p38 = pin(38), p40 = pin(40), p29 = pin(29);
 const p1 = pin(1), p2 = pin(2), p31 = pin(31);
 
-s += callout(BSX, BSY, 130, 108, "BOOTSEL (Boot SELect)", [
+// Left-side callouts are RIGHT-aligned (anchor "end") so their leader
+// lines leave from the RIGHT edge of the text (nearest the board) and
+// never run back across the words. Top-to-bottom the labels follow the
+// parts on the board (LED, then GP0/GP1, then BOOTSEL) so no lines cross.
+const LEFT_X = 390;
+
+s += callout(LEDX, LEDY, LEFT_X, 70, "Onboard LED, the truth light", [
+  "Blinking = your code is running.",
+  "POST codes say which part is unhappy.",
+], C.green, "end");
+
+s += `<ellipse cx="${p1.x}" cy="${(p1.y + p2.y) / 2}" rx="16" ry="28" fill="none" stroke="${C.blue}" stroke-width="3"/>`;
+s += `<line x1="${p1.x - 16}" y1="${(p1.y + p2.y) / 2}" x2="${LEFT_X + 8}" y2="150" stroke="${C.blue}" stroke-width="1.8"/>`;
+s += ((lx, ly, title, lines, color, anchor) => { let o = text(lx, ly, title, { size: 14, color, bold: true, anchor });
+  lines.forEach((ln, i) => { o += text(lx, ly + 16 + i * 14, ln, { size: 11, color: C.ink, anchor }); }); return o; })(LEFT_X, 150, "GP0 + GP1: the I2C bus", [
+  "SDA (green wire) and SCL (white wire).",
+  "OLED, BME280, ADS1115 all share these",
+  "two pins. Physical pins 1 and 2.",
+], C.blue, "end");
+
+s += callout(BSX, BSY, LEFT_X, 250, "BOOTSEL (Boot SELect)", [
   "Hold while plugging in USB and the chip",
   "boots from its USB bootloader instead of",
   "flash: the board becomes a flash drive",
   "you drop firmware onto. One button,",
   "two boot sources.",
-], C.orange, "start");
+], C.orange, "end");
 
-s += callout(LEDX, LEDY, 130, 40, "Onboard LED, the truth light", [
-  "Blinking = your code is running.",
-  "POST codes say which part is unhappy.",
-], C.green, "start");
-
-s += `<ellipse cx="${p1.x}" cy="${(p1.y + p2.y) / 2}" rx="16" ry="28" fill="none" stroke="${C.blue}" stroke-width="3"/>`;
-s += `<line x1="${p1.x - 16}" y1="${(p1.y + p2.y) / 2}" x2="138" y2="206" stroke="${C.blue}" stroke-width="1.8"/>`;
-s += ((lx, ly, title, lines, color, anchor) => { let o = text(lx, ly, title, { size: 14, color, bold: true, anchor });
-  lines.forEach((ln, i) => { o += text(lx, ly + 16 + i * 14, ln, { size: 11, color: C.ink, anchor }); }); return o; })(130, 210, "GP0 + GP1: the I2C bus", [
-  "SDA (green wire) and SCL (white wire).",
-  "OLED, BME280, ADS1115 all share these",
-  "two pins. Physical pins 1 and 2.",
-], C.blue, "start");
-
-s += callout(p36.x, p36.y, 905, 200, "3V3, physical pin 36", [
-  "The 3.3 V power output.",
-  "Feeds every sensor we use.",
-  "The RED wire starts here.",
-], C.red, "start");
+// Right-side labels are ordered to match their pins top-to-bottom
+// (VBUS, GND, 3V3, then GP26, GP22) so the leader lines never cross.
 s += callout(p40.x, p40.y, 905, 120, "VBUS, physical pin 40", [
   "Raw 5 V straight from USB.",
   "Servo food. Never for sensors.",
 ], C.orange, "start");
-s += callout(p38.x, p38.y, 905, 288, "GND, physical pin 38", [
+s += callout(p38.x, p38.y, 905, 200, "GND, physical pin 38", [
   "Ground, the shared zero volts.",
   "The BLACK wire. (Any of the 8",
   "GND pins works: 3, 8, 13, 18,",
   "23, 28, 33, 38.)",
 ], C.ink, "start");
-s += callout(p29.x, p29.y, 905, 400, "GP22, physical pin 29", [
-  "Our DS18B20 one-wire bus.",
-  "Note: GP number and physical pin",
-  "number are DIFFERENT numbers.",
-], C.yellow, "start");
-s += callout(p31.x, p31.y, 905, 490, "GP26 / GP27 / GP28", [
+s += callout(p36.x, p36.y, 905, 288, "3V3, physical pin 36", [
+  "The 3.3 V power output.",
+  "Feeds every sensor we use.",
+  "The RED wire starts here.",
+], C.red, "start");
+s += callout(p31.x, p31.y, 905, 400, "GP26 / GP27 / GP28", [
   "The three analog (ADC) pins,",
   "physical 31, 32, 34. Soil",
   "moisture, mic, photoresistor",
   "live here. Only these three",
   "can read analog.",
 ], C.green, "start");
+s += callout(p29.x, p29.y, 905, 490, "GP22, physical pin 29", [
+  "Our DS18B20 one-wire bus.",
+  "Note: GP number and physical pin",
+  "number are DIFFERENT numbers.",
+], C.yellow, "start");
 
 s += text(130, 662, "Numbers INSIDE the green board are GP names (what code uses).", { size: 12, color: C.gray });
 s += text(130, 678, "Numbers OUTSIDE are physical pin positions (what you count to when wiring).", { size: 12, color: C.gray });

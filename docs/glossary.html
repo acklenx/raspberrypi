@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Electronics Glossary · Maker Lab Kids</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="guide.css">
 <style>
   :root {
     --blue: #2E7DBC; --green: #7CB342; --orange: #E8762C; --yellow: #E8B62C;
@@ -38,15 +39,21 @@
 </style>
 </head>
 <body>
-<div class="topbar"></div>
+<nav class="topnav"><div class="inner">
+  <a class="brand" href="index.html">🪱 Wormhole</a>
+  <div class="links">
+    <a class="nl" href="index.html">Home</a><a class="nl" href="start.html">Start Here</a>
+    <a class="nl" href="sessions.html">Sessions</a><a class="nl" href="stations.html">Stations</a>
+    <a class="nl" href="research.html">Ideas</a><a class="nl" href="demos/mission-control.html">Demos</a>
+    <a class="nl on" href="glossary.html">Glossary</a><a class="nl" href="cheatsheet.html">Code</a>
+    <a class="nl" href="reset.html">Fix a Board</a>
+  </div>
+</div></nav>
 <div class="wrap">
   <header>
     <h1>Glossary</h1>
     <p>Every word we use in the workshop, in plain language. When someone says a term you
        don't know, it's on this page. Start with the basics below.</p>
-    <nav><a href="index.html">&larr; Home</a> <a href="cheatsheet.html">Code Snippets</a>
-         <a href="start.html">Start Here</a>
-         <a href="https://github.com/acklenx/raspberrypi">Code</a></nav>
   </header>
 
   <h2>The absolute basics</h2>
@@ -63,7 +70,7 @@
         computer like the Pico. Friendly, readable, forgiving. You put it on the Pico one time (see
         <em>firmware</em>, below).</dd>
     <dt>IDE (we use Viper IDE)</dt>
-    <dd>The place where you write code and press "run." Ours, <a href="https://viper-ide.org">Viper
+    <dd>The place where you write code and press "run." Ours, <a href="https://viper-ide.org" class="ext">Viper
         IDE</a>, runs right in a web browser &mdash; nothing to install. (IDE stands for "integrated
         development environment," a fancy phrase for "code workbench.")</dd>
     <dt>Run</dt>

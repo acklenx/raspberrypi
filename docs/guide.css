@@ -31,6 +31,10 @@ h3 { color: var(--navy); font-size: 18px; margin: 0 0 8px 0; }
 .rule.y { background: var(--yellow); } .rule.r { background: var(--red); }
 p { margin: 0 0 12px 0; } .lead { color: var(--gray); font-size: 17px; }
 a { color: var(--blue); }
+/* mark links that leave the guide (Viper, GitHub, Slides) */
+.ext::after { content: "\2197"; font-size: 0.82em; margin-left: 1px; vertical-align: 1px;
+              color: var(--gray); font-weight: bold; }
+.btn.ext::after { color: rgba(255,255,255,0.8); }
 code { background: #E5EBF1; border-radius: 4px; padding: 1px 6px;
        font-family: Consolas, Menlo, monospace; font-size: 13px; color: var(--navy); }
 

@@ -374,14 +374,27 @@
 
 <script>
 // ================= shared fake-data engine =================
+// 58 distinct names so all 46 bins (7 classes x 6-7 groups) get their own,
+// with headroom. Assigned by a running index below, never reused.
 var NAMEPOOL = ['Compost Cowboys','Worm Rangers','Dirt Nerds','The Decomposers',
   'Castings Inc','Team Wiggle','Soil Society','Bin There Done That','The Wrigglers',
-  'Mud Lab','Deep Roots','The Burrowers','Casting Crew','Tunnel Vision'];
+  'Mud Lab','Deep Roots','The Burrowers','Casting Crew','Tunnel Vision',
+  'Rot Stars','Night Crawlers','Squirm Squad','Wormholes','Humus Heroes',
+  'The Underminers','Loam Rangers','Vermi-Best','The Verminators','Dirt First',
+  'Compost Mentis','Wriggle Room','Soil Mates','The Rot Squad','Bed Heads',
+  'The Munchers','Scrap Happy','Peel Appeal','The Turn-Ups','Aeration Nation',
+  'Damp Champs','Wiggle Wranglers','The Castaways','Crumble Crew','Bin Bosses',
+  'Earthworm Squad','The Diggers','Subterraneans','The Recyclers','Worm Wide Web',
+  'Poop Troop','Muck Rakers','The Wormongers','Bin Diesel','Worm and Fuzzy',
+  'Soil Patrol','Decompose Crew','Grime Time','Dirt Devils','Mudslingers',
+  'The Composters','Squiggle Squad','Underground Inc','The Tunnelers'];
 var ALLSIMS = [];
+var nameIdx = 0;
 for (var cls = 1; cls <= 7; cls++) {
   var groups = cls % 2 ? 7 : 6;              // 7 classes, 6-7 groups: 46 bins
   for (var gi = 0; gi < groups; gi++) {
-    var nm = NAMEPOOL[(cls * 3 + gi) % NAMEPOOL.length];
+    var nm = NAMEPOOL[nameIdx % NAMEPOOL.length];
+    nameIdx++;
     ALLSIMS.push({ cls: 'P' + cls, name: nm, cs: 'P' + cls + '-' + (gi + 1),
       tin: 23 + Math.random() * 3, tout: 20 + Math.random() * 3,
       hum: 60 + Math.random() * 20, m1: 45 + Math.random() * 25, m2: 45 + Math.random() * 25,

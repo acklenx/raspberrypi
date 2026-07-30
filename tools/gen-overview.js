@@ -21,13 +21,24 @@ function txt(x, y, t, o = {}) {
     + ` fill="${color}" text-anchor="${anchor}"${bold ? ' font-weight="bold"' : ""}`
     + `${italic ? ' font-style="italic"' : ""}>${esc(t)}</text>`;
 }
-// a clickable label: dot on the part, leader line, bold title + subtitle
-function label(px, py, lx, ly, anchor, href, title, sub, color) {
-  const end = anchor === "end" ? lx : lx;
+// a clickable label: dot on the part, leader line, bold title + subtitle.
+// `tie` picks which point of the TEXT BLOCK the leader attaches to, so a
+// line reaches an edge/corner of the words instead of cutting across them.
+function label(px, py, lx, ly, anchor, href, title, sub, color, tie) {
+  // estimate the text block's size so we can find its edges/center
+  const tw = Math.max(title.length * 15.5 * 0.58, sub.length * 12.5 * 0.52);
+  const leftX = anchor === "middle" ? lx - tw / 2 : anchor === "end" ? lx - tw : lx;
+  const centerX = leftX + tw / 2;
+  const topY = ly - 17, bottomY = ly + 18;   // title top ... sub bottom
+  let ex = lx, ey = ly;                       // default: old attach point
+  if (tie === "bottom-center") { ex = centerX; ey = bottomY; }
+  else if (tie === "top-center") { ex = centerX; ey = topY; }
+  else if (tie === "bottom-left") { ex = leftX; ey = bottomY; }
+  else if (tie === "top-left") { ex = leftX; ey = topY; }
   let g = `<a href="${href}" target="_top">`;
   g += `<circle cx="${px}" cy="${py}" r="7" fill="none" stroke="${color}" stroke-width="3"/>`;
   g += `<circle cx="${px}" cy="${py}" r="2.5" fill="${color}"/>`;
-  g += `<path d="M${px} ${py} L${end} ${ly}" stroke="${color}" stroke-width="2" fill="none"/>`;
+  g += `<path d="M${px} ${py} L${ex} ${ey}" stroke="${color}" stroke-width="2" fill="none"/>`;
   g += txt(lx, ly - 4, title, { size: 15.5, bold: true, color: C.navy, anchor });
   g += txt(lx, ly + 14, sub, { size: 12.5, color: C.gray, anchor });
   g += `</a>`;
@@ -103,17 +114,17 @@ s += `<path d="M${wx + 42} ${wy + 30} Q600 120 ${fx} ${fy + 90}" stroke="${C.ora
 
 // ---- labels (clickable) ----
 s += label(px + 60, py + ph, 210, 520, "start", "sessions.html",
-  "Breadboard", "push parts together, no soldering yet", C.tan === "" ? C.gray : "#B08A3C");
+  "Breadboard", "push parts together, no soldering yet", "#B08A3C", "top-center");
 s += label(px + 30, py + 60, 70, 300, "start", "glossary.html#the-pico",
-  "The brain", "a tiny $8 computer", C.green);
+  "The brain", "a tiny $8 computer", C.green, "bottom-center");
 s += label(sx + sw / 2, sy + 26, 500, 500, "start", "stations.html",
   "A sensor", "it measures the world", C.teal);
 s += label(ox + ow - 30, oy, 330, 216, "start", "glossary.html",
-  "A little screen", "see the reading right here", C.blue);
+  "A little screen", "see the reading right here", C.blue, "bottom-left");
 s += label(wx + 34, wy + 2, 560, 216, "start", "sessions.html",
   "Its own WiFi", "no internet needed", C.orange);
 s += label(fx + fw / 2, fy + 150, 760, 555, "middle", "demos/mission-control.html",
-  "Your phone or laptop", "watch it live, anywhere in the room", C.navy);
+  "Your phone or laptop", "watch it live, anywhere in the room", C.navy, "top-left");
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="60 195 880 375" font-family="Arial, Helvetica, sans-serif" role="img" aria-label="One student station: a Pico, a sensor, and a screen on a breadboard, sending readings over its own WiFi to a phone.">`
   + `<rect width="${W}" height="${H}" fill="#FFFFFF"/>` + s + `</svg>`;
