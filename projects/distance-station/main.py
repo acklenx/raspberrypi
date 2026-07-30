@@ -156,27 +156,43 @@ server = None
 
 
 def init_server():
+  # Re-running the program can leave the OLD web socket holding port 80
+  # (a soft reset does not free network sockets). Retry with a growing
+  # wait, and if it truly will not bind, DO NOT crash: keep running with
+  # the screen and the distance sensor. A dead screen is never worth an
+  # unbindable port. (This is the bug that took a class's displays down.)
   global server
   addr = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
-  server = socket.socket()
-  server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-  try:
-    server.bind(addr)
-  except OSError as e:
-    if e.errno == 98:
-      print("Port 80 busy! Recycling Wi-Fi stack...")
-      ap.active(False)
-      time.sleep(0.5)
-      ap.active(True)
-      ap.ifconfig(("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.1"))
-      server.close()
+  for attempt in range(6):
+    try:
       server = socket.socket()
       server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
       server.bind(addr)
-
-  server.listen(2)
-  server.settimeout(0.05)
+      server.listen(2)
+      server.settimeout(0.05)
+      return
+    except OSError as e:
+      try:
+        server.close()
+      except Exception:
+        pass
+      server = None
+      if e.errno != 98:
+        print("Web server error:", e, "- running without the web page.")
+        return
+      gc.collect()
+      print("Port 80 busy, recycling Wi-Fi (try %d)..." % (attempt + 1))
+      try:
+        ap.active(False)
+        time.sleep(0.5)
+        ap.active(True)
+        ap.ifconfig(("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.1"))
+        ap.config(essid=ssid_name, security=0)
+      except Exception:
+        pass
+      time.sleep(1 + attempt)
+  print("Port 80 stayed busy - running WITHOUT the web page (screen + sensor still work).")
+  server = None
 
 
 init_server()
@@ -212,7 +228,10 @@ try:
       except Exception:
         pass
 
-    # 3. Handle Network Traffic
+    # 3. Handle Network Traffic (skip if the web page never opened)
+    if not server:
+      gc.collect()
+      continue
     try:
       cl, client_addr = server.accept()
       cl.settimeout(0.5)
