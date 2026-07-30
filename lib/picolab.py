@@ -594,30 +594,48 @@ class WebApp:
     self._init_server()
 
   def _init_server(self):
+    # Re-running a program (Viper: Stop then Run) can leave the OLD web
+    # socket still holding port 80 for a few seconds. So retry with a
+    # growing wait, freeing memory each time. And if it truly will not
+    # bind, DO NOT crash: the station keeps running with its screen,
+    # sensors, and light -- only the web page is missing. A dead screen
+    # is never worth an unbindable port.
+    import gc
     addr = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
-    self.server = socket.socket()
-    self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    try:
-      self.server.bind(addr)
-    except OSError as e:
-      if e.errno == 98:
-        if self.ap:
-          log("Port 80 busy! Recycling Wi-Fi stack...")
-          self.ap.active(False)
-          time.sleep(0.5)
-          self.ap.active(True)
-          self.ap.ifconfig(("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.1"))
-        else:
-          log("Port 80 busy! Waiting for the old socket to let go...")
-          time.sleep(1)
-        self.server.close()
+    for attempt in range(6):
+      try:
         self.server = socket.socket()
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server.bind(addr)
-      else:
-        raise
-    self.server.listen(2)
-    self.server.settimeout(0.05)
+        self.server.listen(2)
+        self.server.settimeout(0.05)
+        return
+      except OSError as e:
+        try:
+          self.server.close()
+        except Exception:
+          pass
+        self.server = None
+        if e.errno != 98:      # not "address in use": a real problem
+          log("Web server error:", e, "- station runs without the web page.")
+          return
+        gc.collect()
+        if self.ap:
+          log("Port 80 busy, recycling Wi-Fi (try %d)..." % (attempt + 1))
+          try:
+            self.ap.active(False)
+            time.sleep(0.5)
+            self.ap.active(True)
+            self.ap.ifconfig(("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.1"))
+            self.ap.config(essid=self.ssid, security=0)
+          except Exception:
+            pass
+        else:
+          log("Port 80 busy, waiting for the old socket to free (try %d)..." % (attempt + 1))
+        time.sleep(1 + attempt)   # 1, 2, 3, 4, 5 s
+    log("Port 80 stayed busy - station is running WITHOUT the web page")
+    log("(the screen and sensors work; do a full reset to get the web page back).")
+    self.server = None
 
   def locate(self):
     """The number that finds this board when it has no screen: the last
@@ -670,6 +688,8 @@ class WebApp:
     routes: optional list of (prefix, handler); handler(req) -> dict,
     also served as JSON. Use for actions like /set?angle=90.
     """
+    if not self.server:      # port 80 never opened; run without the web page
+      return
     try:
       cl, _ = self.server.accept()
     except OSError:
