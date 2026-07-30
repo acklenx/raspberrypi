@@ -1,0 +1,62 @@
+MAKER LAB KIDS - PICO PROJECT INDEX
+====================================
+
+With your Pico connected in Viper IDE, paste any install link below
+into the browser and that project lands on the board. Stop a running
+program (Ctrl+C or the Stop button), open any file in the file panel,
+and run it. No reason to ever leave Viper.
+
+everything
+  ALL of the below on the board at once (this install)
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/everything/package.json
+
+blink
+  blink in 4 levels, up to async + morse-code your name
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/blink/package.json
+
+worm-bin
+  THE CAPSTONE: every sensor + actuator at once (root main.py, runs at boot)
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/worm-bin/package.json
+
+bme280
+  temp/humidity/pressure in 4 tiers up to two hot-swap sensors
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json
+
+soil-temperature
+  DS18B20 probe array, per-probe POST codes, live rescan
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-temperature/package.json
+
+soil-moisture
+  capacitive moisture with calibration
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-moisture/package.json
+
+light-basic
+  GL5528 photoresistor divider (plus an ADS1115 variant)
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-basic/package.json
+
+light-lux
+  BH1750 real-lux meter (shared classroom kit)
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/light-lux/package.json
+
+sound
+  MAX9814 mic level meter, clap test
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/sound/package.json
+
+servo
+  SG90 servo: web slider, sweep, follow-light
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/servo/package.json
+
+distance-vl53l1x
+  long-range laser distance, 4 m
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-vl53l1x/package.json
+
+distance-station
+  the original VL53L0X station
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/distance-station/package.json
+
+workshop examples (01 hello-world, 03 blink, 04 webserver, 05 display)
+  https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/01-hello-world/package.json  (etc.)
+
+Lab guide + wiring diagrams:  https://acklenx.github.io/raspberrypi/
+Repo + docs:                  https://github.com/acklenx/raspberrypi
+Firmware (.uf2, flash once):  https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2

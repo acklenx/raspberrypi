@@ -26,6 +26,10 @@
     [
       "vl53l1x.py",
       "github:acklenx/raspberrypi/lib/vl53l1x.py"
+    ],
+    [
+      "fs:toc.txt",
+      "github:acklenx/raspberrypi/docs/TOC.txt"
     ]
   ]
 }

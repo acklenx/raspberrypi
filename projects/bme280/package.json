@@ -34,6 +34,10 @@
     [
       "bme280.py",
       "github:acklenx/raspberrypi/lib/bme280.py"
+    ],
+    [
+      "fs:toc.txt",
+      "github:acklenx/raspberrypi/docs/TOC.txt"
     ]
   ]
 }

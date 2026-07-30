@@ -88,6 +88,8 @@ of them uses the truth light.
 
 | Project | Sensor / actuator | Signal | Wiring | One-click install |
 | ------- | ----------------- | ------ | ------ | ----------------- |
+| [`everything`](projects/everything) | ALL projects on the board at once, each in its own folder, plus all drivers and a toc.txt of install links. Stop, open a file, run: never leave Viper | | | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/everything/package.json) |
+| [`blink`](projects/blink) | The blink suite, 4 levels: simple, config-at-top, async, and morse-code your name | onboard LED, no wiring | | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/blink/package.json) |
 | [`worm-bin`](projects/worm-bin) | THE CAPSTONE: 2 BME280s, DS18B20 array, 2 soil moistures + light on an ADS1115, mic, distance, 2 servos, relay, all on one Pico with POST codes and a control dashboard | see its README | [table](projects/worm-bin#the-full-wiring) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/worm-bin/package.json) |
 | [`bme280`](projects/bme280) | BME280 temperature + humidity + pressure, in four tiers up to two hot-swappable sensors at once | I2C `0x76/0x77` | [diagram](docs/wiring/bme280.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/bme280/package.json) |
 | [`soil-temperature`](projects/soil-temperature) | DS18B20 waterproof probes (many per wire) | GP22 (pin 29) + 4.7k pullup | [diagram](docs/wiring/soil-temperature.svg) | [install](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/soil-temperature/package.json) |

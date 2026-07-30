@@ -30,6 +30,10 @@
     [
       "ads1115.py",
       "github:acklenx/raspberrypi/lib/ads1115.py"
+    ],
+    [
+      "fs:toc.txt",
+      "github:acklenx/raspberrypi/docs/TOC.txt"
     ]
   ]
 }

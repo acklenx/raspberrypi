@@ -26,6 +26,10 @@
     [
       "bh1750.py",
       "github:acklenx/raspberrypi/lib/bh1750.py"
+    ],
+    [
+      "fs:toc.txt",
+      "github:acklenx/raspberrypi/docs/TOC.txt"
     ]
   ]
 }

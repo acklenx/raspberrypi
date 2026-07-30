@@ -6,6 +6,10 @@
     [
       "fs:main.py",
       "github:acklenx/raspberrypi/examples/03-blink/main.py"
+    ],
+    [
+      "fs:toc.txt",
+      "github:acklenx/raspberrypi/docs/TOC.txt"
     ]
   ]
 }

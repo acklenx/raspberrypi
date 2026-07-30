@@ -40,7 +40,7 @@ def data_fn():
 sensor = picolab.Sensor("BH1750", connect, read)
 display = picolab.Display()
 light = picolab.StatusLight()
-app = picolab.WebApp()
+app = picolab.WebApp(index="light-lux/index.html")
 tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 

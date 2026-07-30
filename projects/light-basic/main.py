@@ -45,7 +45,7 @@ def data_fn():
 sensor = picolab.Sensor("GL5528", connect, read)
 display = picolab.Display()
 light = picolab.StatusLight()
-app = picolab.WebApp()
+app = picolab.WebApp(index="light-basic/index.html")
 tick = picolab.Throttle(250)
 heartbeat = picolab.Throttle(5000)
 

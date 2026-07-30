@@ -268,9 +268,14 @@ def query_int(req, key, default=None):
 
 
 class WebApp:
-  def __init__(self, import_network=True):
+  def __init__(self, import_network=True, index="index.html"):
     import network
 
+    # Where this app's dashboard lives. Under the EVERYTHING install a
+    # project's files sit in their own folder (bme280/index.html); when
+    # a project is installed alone, its index.html is at the root. We
+    # try the given path first and fall back to the root copy.
+    self.index = index
     self.ssid = "PicoLab" + str(node_id())
 
     self.ap = network.WLAN(network.AP_IF)
@@ -352,14 +357,20 @@ class WebApp:
 
       if not handled:
         cl.sendall(HEADER_HTML)
-        try:
-          with open("index.html", "rb") as f:
-            while True:
-              chunk = f.read(512)
-              if not chunk:
-                break
-              cl.sendall(chunk)
-        except Exception:
+        served = False
+        for page in (self.index, "index.html"):
+          try:
+            with open(page, "rb") as f:
+              while True:
+                chunk = f.read(512)
+                if not chunk:
+                  break
+                cl.sendall(chunk)
+            served = True
+            break
+          except Exception:
+            continue
+        if not served:
           cl.sendall(b"<h1>404: File Not Found</h1>")
       cl.close()
     except Exception:

@@ -82,7 +82,7 @@ def data_fn():
 display = picolab.Display()
 light = picolab.StatusLight()
 light.set_slots([True])
-app = picolab.WebApp()
+app = picolab.WebApp(index="servo/index.html")
 heartbeat = picolab.Throttle(5000)
 motion = picolab.Throttle(50)
 
