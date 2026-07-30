@@ -30,6 +30,10 @@
             font-family: Consolas, Menlo, monospace; font-size: 14px; }
   dd { margin: 2px 0 0 0; font-size: 15px; }
   dd em { color: var(--orange); font-style: normal; font-weight: bold; }
+  figure { margin: 14px 0; }
+  figure img { width: 100%; height: auto; display: block; border: 1px solid #E1E8EF;
+               border-radius: 10px; background: #FFF; }
+  figcaption { color: var(--gray); font-size: 13px; margin-top: 6px; }
   footer { text-align: center; color: var(--gray); font-size: 12.5px; padding: 26px 10px; }
 </style>
 </head>
@@ -76,7 +80,12 @@
     <dt>Pullup resistor</dt>
     <dd>A resistor from a signal wire up to 3.3&nbsp;V that holds the line HIGH when nobody is
         talking. The DS18B20 bus needs one (4.7k). A pull<em>down</em> does the same job toward
-        ground. Putting the pullup toward ground instead is the classic silent killer.</dd>
+        ground. Putting the pullup toward ground instead is the classic silent killer.
+        <figure>
+          <img src="wiring/soil-temperature.svg" alt="DS18B20 wiring with the 4.7k pullup drawn with its color bands" loading="lazy">
+          <figcaption>A pullup in the wild: the banded 4.7k (yellow-violet-red-gold) from the
+            DS18B20 data line up to the 3V3 rail.</figcaption>
+        </figure></dd>
     <dt>Voltage divider</dt>
     <dd>Two resistors in series splitting a voltage. Our light sensor is one: photoresistor on
         top, 10k on the bottom, and the middle point's voltage says how bright it is.</dd>
@@ -141,6 +150,12 @@
 
   <h2>The Pico itself</h2>
   <hr class="rule y">
+  <figure>
+    <img src="img/pico-anatomy.svg" alt="Pico 2 W with BOOTSEL, LED, 3V3, GND, VBUS, I2C pins, GP22, and the ADC pins circled and labeled">
+    <figcaption>The board, introduced properly: every circled thing has an entry below.
+      Numbers inside the board are GP names (what code uses); numbers outside are physical
+      pin positions (what you count to when wiring).</figcaption>
+  </figure>
   <dl>
     <dt>Microcontroller</dt>
     <dd>A tiny complete computer on one chip that runs exactly one program, instantly, forever.
@@ -150,12 +165,16 @@
     <dt>VBUS / VSYS</dt>
     <dd>VBUS (pin 40) is raw 5&nbsp;V straight from USB: servo food. VSYS (pin 39) is the Pico's
         own supply input for battery projects.</dd>
-    <dt>BOOTSEL</dt>
-    <dd>The button that, held while plugging in, turns the Pico into a USB flash drive so you
-        can drop a firmware file on it. Software can get there too: <code>machine.bootloader()</code>.</dd>
+    <dt>BOOTSEL ("Boot SELect")</dt>
+    <dd>The button that selects <em>where the chip boots from</em>. Held while plugging in
+        USB, the chip boots from its built-in USB bootloader, which shows up as a flash drive
+        you drop firmware onto. Untouched, it boots from flash memory: MicroPython and your
+        <code>main.py</code>. One button, two boot sources. Software can pick the bootloader
+        too: <code>machine.bootloader()</code>, no finger required.</dd>
     <dt>Firmware</dt>
-    <dd>The base software the board runs: for us, MicroPython v1.28.0 (the exact tested build
-        lives in the repo). Flash once per board, ever.</dd>
+    <dd>The software that is flashed <em>into</em> the board and lives there: for us,
+        MicroPython v1.28.0. Full story under
+        <a href="#fourwords">"Four words, one machine"</a> in the Code words section.</dd>
     <dt>Flash memory</dt>
     <dd>The Pico's onboard storage (4&nbsp;MB) where your files live: <code>main.py</code>,
         <code>lib/</code>, <code>placements.json</code>. Survives power-off.</dd>
@@ -168,6 +187,40 @@
   <h2>Code words</h2>
   <hr class="rule b">
   <dl>
+    <dt id="fourwords">Four words, one machine: hardware, firmware, driver, software</dt>
+    <dd>These four confuse everyone, so here is the whole stack at once, bottom to top.
+        <br><br>
+        <em>Hardware</em> is the physical stuff: the green board, the chips, the wires. You
+        can drop it on your foot.
+        <br><br>
+        <em>Firmware</em> is software that is installed INTO a piece of hardware and lives
+        there, one layer up from the metal. The name is the answer to "why not just call it
+        software": it sits between <b>hard</b>ware and <b>soft</b>ware, so it is
+        <b>firm</b> &mdash; software by nature, part-of-the-device by residence. It survives
+        power-off, ships with the device, and changes rarely and deliberately (you flash it,
+        you don't edit it). On our Pico the firmware is MicroPython itself: the thing that
+        wakes the chip up and teaches it to understand Python. Flash once, ever.
+        <br><br>
+        <em>Driver</em> is a piece of ordinary software with one narrow job: speak the
+        private language of ONE piece of hardware so the rest of your code never has to.
+        <code>lib/bme280.py</code> knows the BME280's registers, wake-up dance, and math;
+        your program just asks it for a temperature. It is called a driver because it
+        <b>operates the device on your behalf</b>, like a chauffeur: you say where to go, it
+        works the pedals. And the follow-up question, answered: drivers aren't firmware
+        because of where they live &mdash; ours are readable files in <code>lib/</code> you
+        can open and change like any code. If we burned them into the chip, they would
+        become part of the firmware. (Fun fact: layers go all the way down. The BME280
+        sensor has its own tiny factory firmware inside, running its own measurements
+        before our driver ever says hello.)
+        <br><br>
+        <em>Software</em> is everything above: the drivers, <code>picolab.py</code>, and
+        your program (<code>main.py</code>), the part you write, edit, break, and fix ten
+        times an hour. Same stuff as firmware chemically; the difference is who installs it,
+        where it lives, and how often it changes.
+        <br><br>
+        The stack, bottom to top: <b>hardware</b> (the board) &rarr; <b>firmware</b>
+        (MicroPython, flashed in) &rarr; <b>drivers</b> (one per device, in lib/) &rarr;
+        <b>your program</b> (main.py, the boss).</dd>
     <dt>MicroPython</dt>
     <dd>Python, shrunk to run on microcontrollers. What every program in this repo is written in.</dd>
     <dt>REPL</dt>
@@ -177,8 +230,10 @@
     <dd>The file the board runs automatically at every power-up. Saving your program as
         main.py is how a project "ships".</dd>
     <dt>Library / driver</dt>
-    <dd>Ready-made code you import. Our <code>lib/</code> folder holds sensor drivers plus
-        <code>picolab.py</code>, the shared fault-tolerance framework.</dd>
+    <dd>Ready-made code you import instead of writing. Our <code>lib/</code> folder holds
+        one driver per sensor plus <code>picolab.py</code>, the shared fault-tolerance
+        framework. (Driver vs library: a driver is a library whose specialty is one piece of
+        hardware; see <a href="#fourwords">the four words</a>.)</dd>
     <dt>Exception / try-except</dt>
     <dd>How Python reports "that went wrong" and how code survives it. Our house style: a
         missing sensor never crashes a program; it goes in the POST blinks instead.</dd>
