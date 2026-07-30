@@ -56,7 +56,7 @@ while True:
     continue
 
   data = sensor.poll()
-  light.set_slots([sensor.ok])
+  picolab.status(light, [sensor.ok], display, app)
 
   if data:
     display.show([

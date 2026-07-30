@@ -329,7 +329,7 @@ while True:
     slots.extend(dsd["probe_ok"])
   else:
     slots.append(DS.ok)
-  light.set_slots(slots)
+  picolab.status(light, slots, display, app)
 
   d = data_fn()
   page = (time.ticks_ms() // (PAGE_SECONDS * 1000)) % 4

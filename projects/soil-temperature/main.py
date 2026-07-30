@@ -144,9 +144,9 @@ while True:
 
   data = sensor.poll()
   if data and data["probes"] > 0:
-    light.set_slots(data["ok_flags"])
+    picolab.status(light, data["ok_flags"], display, app)
   else:
-    light.set_slots([sensor.ok])
+    picolab.status(light, [sensor.ok], display, app)
 
   if data and data["probes"] > 0:
     lines = [app.ssid, "probes: %d/%d" % (data["count"], data["probes"])]

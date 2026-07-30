@@ -65,24 +65,33 @@ class Throttle:
 class StatusLight:
   """The onboard LED as a truth light. Poll it; it never blocks.
 
-  If code is running, the light is doing something. If a part is in
-  trouble, the light says so. Two modes:
+  If code is running, the light is doing something. Modes:
 
     set_ok(bool)    Simplest demos: solid ON means working, OFF means not.
     set_slots(list) POST blinks: one blink per entry, in a fixed order,
                     then a pause, then repeat. Short blink = that part is
                     OK. Long blink = that part is in trouble. So with five
-                    probes, ". . . _ ." means probe 4 has a problem. No
-                    blinking at all means the code is not running.
+                    probes, ". . . _ ." means probe 4 has a problem.
+    set_number(n)   Blink a number 0-999 by place, so a board with NO
+                    display can still tell you its address. LONG blinks =
+                    hundreds, MEDIUM = tens, SHORT = ones, a zero place is
+                    skipped, and the blink SPEED tells you the place so
+                    skipping is never ambiguous. 203 = two long, (skip),
+                    three short. 42 = four medium, two short. Big pause
+                    between repeats. Read the last octet of the IP this
+                    way and you can browse straight to the station.
 
-  Call poll() every trip through the main loop (50 ms or faster keeps the
-  blinks crisp). Changes from set_slots() take effect at the next cycle.
+  No blinking at all means the code is not running. Call poll() every
+  trip through the main loop (50 ms or faster keeps the blinks crisp).
   """
 
-  SHORT_MS = 100
-  LONG_MS = 600
-  GAP_MS = 250
-  PAUSE_MS = 1400
+  SHORT_MS = 110
+  MED_MS = 330
+  LONG_MS = 640
+  GAP_MS = 240          # between blinks within one place
+  GROUP_GAP_MS = 780    # between places (hundreds -> tens -> ones)
+  PAUSE_MS = 1400       # between repeats of a slot pattern
+  NUM_PAUSE_MS = 2600   # longer, so a number's repeat boundary is obvious
 
   def __init__(self):
     try:
@@ -91,7 +100,10 @@ class StatusLight:
     except Exception:
       self.led = None
     self._solid = None
-    self._slots = [True]
+    # A schedule is a list of (on_ms, gap_after_ms) pulses, played in
+    # order, then _pause, then repeat. set_slots/set_number build one.
+    self._sched = [(self.SHORT_MS, self.GAP_MS)]
+    self._pause = self.PAUSE_MS
     self._cycle = None
     self._i = 0
     self._lit = False
@@ -102,7 +114,22 @@ class StatusLight:
 
   def set_slots(self, slots):
     self._solid = None
-    self._slots = [bool(s) for s in slots] or [False]
+    sl = [bool(s) for s in slots] or [False]
+    self._sched = [(self.SHORT_MS if s else self.LONG_MS, self.GAP_MS) for s in sl]
+    self._pause = self.PAUSE_MS
+
+  def set_number(self, n):
+    self._solid = None
+    n = max(0, min(999, int(n)))
+    sched = []
+    for count, dur in ((n // 100, self.LONG_MS),
+                       (n // 10 % 10, self.MED_MS),
+                       (n % 10, self.SHORT_MS)):
+      for k in range(count):
+        gap = self.GROUP_GAP_MS if k == count - 1 else self.GAP_MS
+        sched.append((dur, gap))
+    self._sched = sched or [(self.SHORT_MS, self.GAP_MS)]  # 0 -> a lone blip
+    self._pause = self.NUM_PAUSE_MS
 
   def poll(self):
     if not self.led:
@@ -116,20 +143,22 @@ class StatusLight:
     if self._lit:
       self.led.off()
       self._lit = False
+      _, gap = self._cycle[self._i]
       self._i += 1
-      if self._cycle is None or self._i >= len(self._cycle):
+      if self._i >= len(self._cycle):
         self._cycle = None
-        self._until = time.ticks_add(now, self.PAUSE_MS)
+        self._until = time.ticks_add(now, self._cyclepause)
       else:
-        self._until = time.ticks_add(now, self.GAP_MS)
+        self._until = time.ticks_add(now, gap)
     else:
       if self._cycle is None:
-        self._cycle = self._slots[:]
+        self._cycle = self._sched[:]      # snapshot so mid-play edits are clean
+        self._cyclepause = self._pause
         self._i = 0
+      on, _ = self._cycle[self._i]
       self.led.on()
       self._lit = True
-      self._until = time.ticks_add(
-          now, self.SHORT_MS if self._cycle[self._i] else self.LONG_MS)
+      self._until = time.ticks_add(now, on)
 
 
 class Display:
@@ -140,6 +169,10 @@ class Display:
     self.oled = None
     self._retry = Throttle(3000)
     self._was_ok = False
+
+  @property
+  def present(self):
+    return self.oled is not None
 
   def _connect(self):
     try:
@@ -381,6 +414,17 @@ def _try_join(sta, ssid, password, attempts=2, wait_s=12):
   return sta.isconnected()
 
 
+def status(light, slots, display, app):
+  """Drive the truth light for a web station. Normally POST codes for the
+  parts (slots). But if the OLED is MISSING, the light instead blinks the
+  board's locator number (IP octet, or AP number) so you can still reach
+  the web interface. Sensors do not matter if you can't find the page."""
+  if display.present:
+    light.set_slots(slots)
+  else:
+    light.set_number(app.locate())
+
+
 def board_uid():
   """The board's PERMANENT, globally-unique id: the factory-burned flash
   serial (16 hex chars). Same every boot, survives a re-flash and a
@@ -574,6 +618,17 @@ class WebApp:
         raise
     self.server.listen(2)
     self.server.settimeout(0.05)
+
+  def locate(self):
+    """The number that finds this board when it has no screen: the last
+    octet of its IP when joined (browse to it), or its PicoLab number
+    when hosting its own AP (join that SSID). StatusLight blinks it."""
+    if self.joined:
+      try:
+        return int(self.ip.rsplit(".", 1)[-1])
+      except Exception:
+        return 0
+    return board_num()
 
   def identity(self):
     """Who this board is, for the dashboard and the wall to label by."""
