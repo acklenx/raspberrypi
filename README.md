@@ -2,8 +2,10 @@
 
 MicroPython samples for the Raspberry Pi Pico 2 W, used in
 [Maker Lab Kids](https://MakerLabKids.com) workshops. Everything here is
-written to run from [Viper IDE](https://viper-ide.org), a MicroPython IDE
-that runs entirely in your browser. Nothing to install.
+written to run from [Viper IDE](https://viper-ide.org/?install=github:acklenx/raspberrypi/projects/everything/package.json),
+a MicroPython IDE that runs entirely in your browser. Nothing to
+install on your computer, and that link puts every project in this
+repo onto a connected Pico in one click.
 
 ## The workshop, in order
 
