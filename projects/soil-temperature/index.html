@@ -295,7 +295,7 @@ function tick() {
         var sig = info.map(function (p) { return p.id; }).join(',');
         if (sig !== tableSig) { tableSig = sig; buildTable(info); }
         updateTable(info);
-        probeCal.update(j);
+        if (probeCal) probeCal.update(j);
         setStatus('live on ' + j.ssid, false);
       } else {
         document.getElementById('count').textContent = '--';
@@ -395,16 +395,30 @@ si.onchange = function () { S.showIds = this.checked; saveS(); if (S.showLog) re
 syncLogCard();
 
 // ---- calibration (shared widget) ------------------------------------
-var probeCal = Cal.create(document.getElementById('calbox'), {
-  title: 'CALIBRATE (saved on the board, survives reboot)',
-  hint: 'Ice water = 0, boiling = 100 (at sea level). Put a probe in the ice, type 0, set A; in the boil, type 100, set B; apply.',
-  unit: '°C', lowName: 'A', highName: 'B', entered: true,
-  itemsFrom: function (d) {
-    return (d.probes_info || []).map(function (p) {
-      return { id: p.id, label: p.label, raw: p.raw };
+// Optional add-on served by cal.js from the board. If it can't load,
+// the whole dashboard must still run, so guard it (and probeCal.update).
+var probeCal = null;
+if (window.Cal) {
+  try {
+    probeCal = Cal.create(document.getElementById('calbox'), {
+      title: 'CALIBRATE (saved on the board, survives reboot)',
+      hint: 'Ice water = 0, boiling = 100 (at sea level). Put a probe in the ice, type 0, set A; in the boil, type 100, set B; apply.',
+      unit: '°C', lowName: 'A', highName: 'B', entered: true,
+      itemsFrom: function (d) {
+        return (d.probes_info || []).map(function (p) {
+          return { id: p.id, label: p.label, raw: p.raw };
+        });
+      }
     });
-  }
-});
+  } catch (e) { probeCal = null; }
+}
+if (!probeCal) {
+  var _cb = document.getElementById('calbox');
+  if (_cb) _cb.innerHTML = '<h3>CALIBRATION</h3><div style="font-size:12px;color:#94a3b8">' +
+    'The calibration tools load from the board (cal.js). If this stays blank, ' +
+    'reinstall the project so cal.js lands on the Pico. The rest of the dashboard ' +
+    'works without it.</div>';
+}
 
 setInterval(tick, POLL_MS);
 tick();

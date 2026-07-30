@@ -132,21 +132,39 @@
 var misses = 0, relayOn = 0, holdoff = 0;
 var units = 'C';
 try { units = localStorage.getItem('wb_units') || 'C'; } catch (e) {}
-var moistCal = Cal.create(document.getElementById('calbox'), {
-  title: 'CALIBRATE MOISTURE',
-  hint: 'Hold a probe in the AIR and set dry; put it in WATER to the line and set wet.',
-  unit: 'V', lowName: 'dry', lowVal: 0, highName: 'wet', highVal: 100,
-  itemsFrom: function (d) {
-    return [{ id: 'moist1', label: 'Probe 1', raw: d.moist1_v },
-            { id: 'moist2', label: 'Probe 2', raw: d.moist2_v }];
-  }
-});
-var distCal = Cal.create(document.getElementById('calbox2'), {
-  title: 'CALIBRATE DISTANCE (compaction)',
-  hint: 'Put a target at a measured distance, type the mm, and capture. Do a near and a far point.',
-  unit: 'mm', lowName: 'near', highName: 'far', entered: true,
-  itemsFrom: function (d) { return [{ id: 'distance', label: 'Surface', raw: d.surface_raw_mm }]; }
-});
+// Calibration is an optional add-on served by cal.js from the board.
+// If it fails to load (missing file, older firmware, offline), the
+// dashboard MUST still run: the readings, the menu, the servos, and
+// the relay never depend on it. So guard every use of Cal.
+var moistCal = null, distCal = null;
+if (window.Cal) {
+  try {
+    moistCal = Cal.create(document.getElementById('calbox'), {
+      title: 'CALIBRATE MOISTURE',
+      hint: 'Hold a probe in the AIR and set dry; put it in WATER to the line and set wet.',
+      unit: 'V', lowName: 'dry', lowVal: 0, highName: 'wet', highVal: 100,
+      itemsFrom: function (d) {
+        return [{ id: 'moist1', label: 'Probe 1', raw: d.moist1_v },
+                { id: 'moist2', label: 'Probe 2', raw: d.moist2_v }];
+      }
+    });
+    distCal = Cal.create(document.getElementById('calbox2'), {
+      title: 'CALIBRATE DISTANCE (compaction)',
+      hint: 'Put a target at a measured distance, type the mm, and capture. Do a near and a far point.',
+      unit: 'mm', lowName: 'near', highName: 'far', entered: true,
+      itemsFrom: function (d) { return [{ id: 'distance', label: 'Surface', raw: d.surface_raw_mm }]; }
+    });
+  } catch (e) { moistCal = null; distCal = null; }
+}
+if (!moistCal) {
+  var _cb = document.getElementById('calbox');
+  if (_cb) _cb.innerHTML = '<h3>CALIBRATION</h3><div style="font-size:12px;color:#94a3b8">' +
+    'The calibration tools load from the board (cal.js). If this stays blank, ' +
+    'reinstall the worm-bin project so cal.js lands on the Pico. Everything else on ' +
+    'this dashboard works without it.</div>';
+  var _cb2 = document.getElementById('calbox2');
+  if (_cb2 && _cb2.parentElement) _cb2.parentElement.style.display = 'none';
+}
 function $(id) { return document.getElementById(id); }
 function put(id, v) { $(id).textContent = (v === null || v === undefined) ? '--' : v; }
 function dispT(c) { return c == null ? null : (units === 'F' ? Math.round((c * 9 / 5 + 32) * 10) / 10 : c); }

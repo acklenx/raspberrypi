@@ -770,7 +770,16 @@ class WebApp:
             cl.close()
             return
           except Exception:
-            pass
+            # The request named a real file (e.g. /cal.js) that isn't on
+            # the board. Answer with an honest 404, NOT the dashboard
+            # HTML: a <script src> or <link> that receives HTML fails in
+            # confusing ways (undefined globals) instead of failing clean.
+            try:
+              cl.sendall(b"HTTP/1.0 404 Not Found\r\nConnection: close\r\n\r\nnot found")
+              cl.close()
+            except Exception:
+              pass
+            return
         cl.sendall(HEADER_HTML)
         served = False
         for page in (self.index, "index.html"):
