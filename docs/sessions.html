@@ -22,7 +22,8 @@
   .session p { margin: 0 0 6px 0; font-size: 14.5px; }
   .session .prove { color: var(--gray); font-size: 13.5px; }
   .lightdemo { font-family: Consolas, Menlo, monospace; font-size: 15px; letter-spacing: 2px;
-               background: #0f172a; color: #7CFF6B; padding: 3px 8px; border-radius: 5px; }
+               background: #0f172a; color: #7CFF6B; padding: 3px 8px; border-radius: 5px;
+               white-space: nowrap; display: inline-block; margin: 4px 0; }
 </style>
 </head>
 <body>
@@ -85,7 +86,7 @@
          picks up again in a couple of seconds. No restart, no panic.</p></div>
     <div class="card"><h3>The little light tells the truth</h3>
       <p>The green light on the Pico is honest. Blinking = your code is running. It even blinks a code
-         for <em>which</em> part is unhappy: <span class="lightdemo">. . . _ .</span> means part 4 has a
+         for <em>which</em> part is unhappy:<br><span class="lightdemo">. . . _ .</span> means part 4 has a
          problem. Dark = nothing is running.</p></div>
     <div class="card"><h3>It makes its own WiFi</h3>
       <p>Each station creates a little WiFi network named after itself (like <code>PicoLab530</code>).
@@ -95,7 +96,7 @@
          needs onto the board. No copying files by hand.</p></div>
   </div>
 
-  <h2>The wiring is always the same four ideas</h2>
+  <h2>The wiring is always the same few colors</h2>
   <hr class="rule o">
   <p class="lead">Every diagram in this guide uses the same wire colors, so anyone can read anyone's
      breadboard.</p>
@@ -103,8 +104,9 @@
     <tr><th>Wire color</th><th>What it carries</th></tr>
     <tr><td><b style="color:#C62828">Red</b></td><td>Power (3.3 volts). The part's "VCC" or "VIN".</td></tr>
     <tr><td><b>Black</b></td><td>Ground. The shared zero. Every part connects back to it.</td></tr>
-    <tr><td><b style="color:#7CB342">Green</b> &amp; <b>white</b></td><td>The two "talking" wires (called SDA and SCL) that many parts share.</td></tr>
-    <tr><td><b style="color:#E8B62C">Yellow</b></td><td>A part's own signal wire.</td></tr>
+    <tr><td><b style="color:#7CB342">Green &mdash; SDA</b></td><td>The I2C <b>data</b> line. (Green is our color for data.)</td></tr>
+    <tr><td><span style="display:inline-block;width:11px;height:11px;background:#fff;border:1px solid #94A3B8;border-radius:2px;vertical-align:-1px;margin-right:5px"></span><b>White &mdash; SCL</b></td><td>The I2C <b>clock</b> line. Many parts share this SDA + SCL pair.</td></tr>
+    <tr><td><b style="color:#E8B62C">Yellow</b></td><td>A part's own signal wire &mdash; anything that isn't power, ground, data, or clock.</td></tr>
   </table></div>
   <p style="margin-top:12px">Ready to wire one up? <a href="stations.html"><b>Build a Station &rarr;</b></a></p>
 </div>
