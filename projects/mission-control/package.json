@@ -8,7 +8,7 @@
       "github:acklenx/raspberrypi/projects/mission-control/wifi.json"
     ],
     [
-      "picolab.py",
+      "fs:lib/picolab.py",
       "github:acklenx/raspberrypi/lib/picolab.py"
     ],
     [

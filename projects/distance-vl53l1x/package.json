@@ -16,15 +16,15 @@
       "github:acklenx/raspberrypi/projects/distance-vl53l1x/bench.py"
     ],
     [
-      "picolab.py",
+      "fs:lib/picolab.py",
       "github:acklenx/raspberrypi/lib/picolab.py"
     ],
     [
-      "ssd1306.py",
+      "fs:lib/ssd1306.py",
       "github:acklenx/raspberrypi/lib/ssd1306.py"
     ],
     [
-      "vl53l1x.py",
+      "fs:lib/vl53l1x.py",
       "github:acklenx/raspberrypi/lib/vl53l1x.py"
     ],
     [

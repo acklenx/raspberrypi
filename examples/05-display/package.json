@@ -8,7 +8,7 @@
       "github:acklenx/raspberrypi/examples/05-display/main.py"
     ],
     [
-      "ssd1306.py",
+      "fs:lib/ssd1306.py",
       "github:acklenx/raspberrypi/lib/ssd1306.py"
     ],
     [
