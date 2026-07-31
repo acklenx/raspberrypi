@@ -3,7 +3,8 @@
 #
 #   2x BME280 (0x76 inside the bin, 0x77 outside)
 #   DS18B20 waterproof probes on GP22 (as many as you own, one wire)
-#   ADS1115 analog bank at 0x48: A0 + A1 soil moisture, A2 light divider
+#   ADS1115 analog bank at 0x48: A0 + A1 soil moisture
+#   GL5528 photoresistor divider on GP28 (native ADC), BH1750 lux at 0x23
 #   MAX9814 mic on GP27 (native ADC: it needs the fast sampling)
 #   VL53L0X time-of-flight at 0x29 (SOIL COMPACTION: distance from the
 #     lid down to the bedding surface. As worms process and the bedding
@@ -22,7 +23,7 @@
 # any part your bin does not have and its slot disappears.
 #
 # On the board: main.py, index.html, and from lib/: picolab.py,
-# ssd1306.py, bme280.py, ads1115.py, vl53l0x.py.
+# ssd1306.py, bme280.py, ads1115.py, vl53l0x.py, bh1750.py.
 #
 # Project page (docs, wiring, install link): https://github.com/acklenx/raspberrypi/tree/main/projects/worm-bin
 
@@ -47,6 +48,7 @@ MOIST_WET_V = 0.91   # default 0.91 V
 # (GP22 is physical pin 29; the wiring diagrams show both).
 PROBE_PIN = 22        # DS18B20 one-wire bus + its 4.7k pullup (default GP22)
 MIC_PIN = 27          # MAX9814 mic; must be a native ADC pin (default GP27)
+LIGHT_PIN = 28        # GL5528 photoresistor divider; native ADC pin (default GP28)
 SERVO_BIG_PIN = 16    # MG995; own 5V supply, grounds joined (default GP16)
 SERVO_SMALL_PIN = 17  # SG90; VBUS power is fine (default GP17)
 RELAY_PIN = 15        # relay module IN (default GP15)
@@ -97,7 +99,8 @@ def _moist_pct(pid, v):
 
 
 def analog_bank():
-  """ADS1115: two moisture probes and the light divider, one part."""
+  """ADS1115: two soil-moisture probes, one part. (Light moved to the
+  Pico's own GP28 ADC, see photoresistor(), so it works with no ADS1115.)"""
 
   def connect():
     from ads1115 import ADS1115
@@ -106,14 +109,27 @@ def analog_bank():
   def read(dev):
     m1 = dev.read_volts(0)
     m2 = dev.read_volts(1)
-    lv = dev.read_volts(2)
     return {
         "moist1_pct": _moist_pct("moist1", m1), "moist1_v": round(m1, 2),
         "moist2_pct": _moist_pct("moist2", m2), "moist2_v": round(m2, 2),
-        "light_pct": round(max(0.0, min(100.0, lv / 3.3 * 100)), 1),
     }
 
   return picolab.Sensor("ADS1115 bank (0x48)", connect, read)
+
+
+def photoresistor():
+  """GL5528 photoresistor divider on GP28 (Pico ADC): 3V3 - LDR - GP28 -
+  10k - GND, the GP28 node rises with light. Same pin the light-basic
+  project uses, and no ADS1115 needed. Like the mic, an ADC pin cannot
+  tell 'unplugged' from 'dark', so this slot mostly proves it is sampling."""
+
+  def connect():
+    return ADC(LIGHT_PIN)
+
+  def read(dev):
+    return {"light_pct": round(dev.read_u16() / 65535 * 100, 1)}
+
+  return picolab.Sensor("GL5528 light (GP28)", connect, read)
 
 
 def microphone():
@@ -229,6 +245,7 @@ PARTS = [
     bme("out", 0x77),
     analog_bank(),
     microphone(),
+    photoresistor(),
     compaction(),
     lux_meter(),
 ]
