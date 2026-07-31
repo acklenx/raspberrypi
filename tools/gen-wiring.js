@@ -349,23 +349,52 @@ projects["sound"] = () => diagram(
   ]);
 
 projects["light-basic"] = () => diagram(
-  "light-basic wiring", "GL5528 photoresistor voltage divider + OLED",
+  "light-basic wiring", "GL5528 photoresistor divider: 3V3 - LDR - GP28 - 10k - GND, + OLED",
   [1, 2, 34, 36, 38], () => {
-    const x = DEV_X, y = 258, w = DEV_W, h = 104;
-    let s = deviceBox(x, y, w, h, "GL5528 + 10k", "voltage divider", C.yellow);
-    const p = { TOP: { x, y: y + 42 }, MID: { x, y: y + 64 }, BOT: { x, y: y + 86 } };
-    s += devPin(x, p.TOP.y, "LDR->3V3") + devPin(x, p.MID.y, "junction") + devPin(x, p.BOT.y, "10k->GND");
-    s += oledI2C();
-    s += tap(RAIL_PWR, p.TOP, W.pwr);
-    s += sig(34, p.MID, W.sig);
-    s += tap(RAIL_GND, p.BOT, W.gnd);
+    let s = oledI2C();
+    const GX = DEV_X + 54, GW = 24;                 // divider column
+    const ldrTop = 244, ldrH = 54, ldrBot = ldrTop + ldrH;
+    const resTop = 320, resH = 54, resBot = resTop + resH;
+    const junc = (ldrBot + resTop) / 2;             // the shared node = GP28 row
+
+    // 3V3 rail -> top of the LDR
+    s += tap(RAIL_PWR, { x: GX, y: ldrTop }, W.pwr);
+
+    // the LDR (photoresistor): a body with a serpentine + light arrows
+    s += `<rect x="${GX - GW / 2}" y="${ldrTop}" width="${GW}" height="${ldrH}" rx="4" fill="#E9D9B6" stroke="${C.ink}" stroke-width="1.3"/>`;
+    s += `<path d="M${GX - 7} ${ldrTop + 12} h14 v9 h-14 v9 h14 v9 h-14" fill="none" stroke="${C.orange}" stroke-width="1.7"/>`;
+    for (const yy of [ldrTop + 15, ldrTop + 33]) {   // two "light" arrows pointing in
+      const tipX = GX + GW / 2 + 4;
+      s += wire([[tipX + 22, yy - 16], [tipX, yy]], C.yellow, 2);
+      s += `<path d="M${tipX} ${yy} l9 -1 l-4 7 z" fill="${C.yellow}"/>`;
+    }
+    s += text(GX + GW / 2 + 40, ldrTop + 20, "GL5528", { size: 10.5, color: C.ink, bold: true });
+    s += text(GX + GW / 2 + 40, ldrTop + 33, "LDR", { size: 10.5, color: C.ink, bold: true });
+
+    // LDR bottom -> junction -> 10k top (one vertical wire)
+    s += wire([[GX, ldrBot], [GX, resTop]], C.ink, 2.5);
+    s += dot(GX, junc, W.sig);
+    // junction taps out to GP28 (the ADC reads this node)
+    s += sig(34, { x: GX, y: junc }, W.sig);
+    s += text(GX + 12, junc - 5, "junction = the GP28 row", { size: 9.5, color: C.ink, italic: true });
+
+    // the 10k, with real color bands
+    s += resistorGlyph(GX - GW / 2, resTop, GW, resH, 10000, true);
+    s += text(GX + GW / 2 + 8, resTop + resH / 2 + 3, "10k", { size: 10.5, color: C.ink, bold: true });
+
+    // 10k bottom -> GND rail
+    s += tap(RAIL_GND, { x: GX, y: resBot }, W.gnd);
     return s;
   },
   [
-    { color: W.sig, text: "divider junction -> GP28 (pin 34, ADC2)" },
     { color: W.pwr, text: "3V3 (pin 36) -> top of the LDR" },
+    { color: W.sig, text: "LDR/10k junction -> GP28 (pin 34, ADC2)" },
     { color: W.gnd, text: "GND (pin 38) -> bottom of the 10k" },
+    { text: "the junction is NOT a wire: it is just the" },
+    { text: "breadboard row GP28 plugs into (LDR low" },
+    { text: "leg + 10k high leg both land there)" },
     { color: W.sda, text: "OLED SDA/SCL on GP0 / GP1 (pins 1, 2)" },
+    { text: "brighter light -> LDR drops -> GP28 rises" },
   ]);
 
 // shared: the banded 4.7k pullup from a DATA line up to the 3V3 rail
