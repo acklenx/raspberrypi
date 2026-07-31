@@ -391,33 +391,41 @@ heartbeat = picolab.Throttle(5000)
 
 app.announce("Worm Bin Command Center Active!")
 
-while True:
-  light.poll()
-  app.poll(data_fn, routes=[("/set", set_handler), ("/cal", cal.handle)])
-  servo_big.step()      # ramp the servos toward their targets every pass
-  servo_small.step()
-  if not tick.ready():
-    continue
+# The main loop is wrapped so that however it ends -- a clean stop, an
+# unhandled error, or the KeyboardInterrupt a Viper/Thonny "Stop" raises --
+# the web socket is closed on the way out and port 80 is free for the next
+# run. (A hard reset or brownout skips the finally, but that frees the port
+# by itself.) This is what stops the "address already in use" headache.
+try:
+  while True:
+    light.poll()
+    app.poll(data_fn, routes=[("/set", set_handler), ("/cal", cal.handle)])
+    servo_big.step()      # ramp the servos toward their targets every pass
+    servo_small.step()
+    if not tick.ready():
+      continue
 
-  for s in PARTS:
-    s.poll()
-  DS.poll()
+    for s in PARTS:
+      s.poll()
+    DS.poll()
 
-  slots = [s.ok for s in PARTS]
-  dsd = DS.data
-  if dsd and dsd.get("probes"):
-    slots.extend(dsd["probe_ok"])
-  else:
-    slots.append(DS.ok)
-  picolab.status(light, slots, display, app)
+    slots = [s.ok for s in PARTS]
+    dsd = DS.data
+    if dsd and dsd.get("probes"):
+      slots.extend(dsd["probe_ok"])
+    else:
+      slots.append(DS.ok)
+    picolab.status(light, slots, display, app)
 
-  d = data_fn()
-  page = (time.ticks_ms() // (PAGE_SECONDS * 1000)) % 4
-  lines = [app.ssid + " p%d/4" % (page + 1)] + page_lines(page, d)
-  display.show(lines[:5])
+    d = data_fn()
+    page = (time.ticks_ms() // (PAGE_SECONDS * 1000)) % 4
+    lines = [app.ssid + " p%d/4" % (page + 1)] + page_lines(page, d)
+    display.show(lines[:5])
 
-  if heartbeat.ready():
-    bad = [s.name for s in PARTS if not s.ok] + ([] if DS.ok else [DS.name])
-    picolab.log("all parts OK" if not bad else "TROUBLE: " + ", ".join(bad))
+    if heartbeat.ready():
+      bad = [s.name for s in PARTS if not s.ok] + ([] if DS.ok else [DS.name])
+      picolab.log("all parts OK" if not bad else "TROUBLE: " + ", ".join(bad))
 
-  gc.collect()
+    gc.collect()
+finally:
+  app.close()      # release port 80 on ANY exit (clean, error, or Stop)

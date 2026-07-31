@@ -658,6 +658,23 @@ class WebApp:
     log("(the screen and sensors work; do a full reset to get the web page back).")
     self.server = None
 
+  def close(self):
+    """Release port 80 so the NEXT run does not hit 'address in use'.
+
+    Call this from a `finally:` around your main loop. The finally runs on
+    a normal exit AND on a crash (an unhandled exception or the
+    KeyboardInterrupt a Stop/Ctrl-C raises unwinds THROUGH finally), so the
+    socket is closed either way. The only thing that skips it is a hard
+    power event (brownout, hard reset, watchdog), and that frees the port
+    on its own. Safe to call anytime, more than once, and never raises."""
+    try:
+      if self.server:
+        self.server.close()
+        log("web port 80 released for the next run.")
+    except Exception:
+      pass
+    self.server = None
+
   def locate(self):
     """The number that finds this board when it has no screen: the last
     octet of its IP when joined (browse to it), or its PicoLab number
