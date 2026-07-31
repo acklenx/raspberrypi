@@ -103,8 +103,15 @@ function drawPico() {
   for (let p = 1; p <= 40; p++) {
     const { x, y } = pin(p);
     const used = USED.has(p);
-    s += `<rect x="${x - 7}" y="${y - 7}" width="14" height="14" rx="3"`
-      + ` fill="${used ? C.pad : C.padOff}" stroke="${C.boardEdge}" stroke-width="1"/>`;
+    // GROUND pads are SQUARE on the real Pico, everything else is ROUND.
+    // It is the best landmark for counting pins, so match it exactly.
+    if (FUNC[p] === "GND" || FUNC[p] === "AGND") {
+      s += `<rect x="${x - 7}" y="${y - 7}" width="14" height="14" rx="1"`
+        + ` fill="${used ? C.pad : C.padOff}" stroke="${C.boardEdge}" stroke-width="1"/>`;
+    } else {
+      s += `<circle cx="${x}" cy="${y}" r="7.2"`
+        + ` fill="${used ? C.pad : C.padOff}" stroke="${C.boardEdge}" stroke-width="1"/>`;
+    }
     s += `<circle cx="${x}" cy="${y}" r="3" fill="${used ? C.padHole : "#7E8791"}"/>`;
     const inX = p <= 20 ? x + 13 : x - 13;
     const anchor = p <= 20 ? "start" : "end";

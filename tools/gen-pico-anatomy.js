@@ -64,7 +64,13 @@ s += text(BX + BW / 2, BY + 26, "Pico 2 W", { size: 13, color: "#C7E0C9", anchor
 // pins
 for (let p = 1; p <= 40; p++) {
   const { x, y } = pin(p);
-  s += `<rect x="${x - 8}" y="${y - 8}" width="16" height="16" rx="3" fill="${C.pad}" stroke="${C.boardEdge}" stroke-width="1"/>`;
+  // GROUND pads are SQUARE on the real Pico, everything else ROUND -- the
+  // landmark you count from, so draw it that way.
+  if (FUNC[p] === "GND" || FUNC[p] === "AGND") {
+    s += `<rect x="${x - 8}" y="${y - 8}" width="16" height="16" rx="1" fill="${C.pad}" stroke="${C.boardEdge}" stroke-width="1"/>`;
+  } else {
+    s += `<circle cx="${x}" cy="${y}" r="8.2" fill="${C.pad}" stroke="${C.boardEdge}" stroke-width="1"/>`;
+  }
   s += `<circle cx="${x}" cy="${y}" r="3.4" fill="${C.padHole}"/>`;
   const inX = p <= 20 ? x + 14 : x - 14;
   const anchor = p <= 20 ? "start" : "end";
@@ -127,9 +133,10 @@ s += callout(p40.x, p40.y, 905, 120, "VBUS, physical pin 40", [
 ], C.orange, "start");
 s += callout(p38.x, p38.y, 905, 200, "GND, physical pin 38", [
   "Ground, the shared zero volts.",
-  "The BLACK wire. (Any of the 8",
-  "GND pins works: 3, 8, 13, 18,",
-  "23, 28, 33, 38.)",
+  "The BLACK wire, and the ONLY",
+  "square pads (count from these!).",
+  "Any GND works: 3, 8, 13, 18,",
+  "23, 28, 33, 38.",
 ], C.ink, "start");
 s += callout(p36.x, p36.y, 905, 288, "3V3, physical pin 36", [
   "The 3.3 V power output.",
