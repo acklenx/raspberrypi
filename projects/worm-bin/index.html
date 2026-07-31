@@ -108,8 +108,10 @@
       <div class="val m"><span id="m2">--</span><span class="unit"> %</span></div>
       <div class="sub"><span id="m2v">--</span> V raw</div></div>
 
-    <div class="card"><h3>LIGHT</h3>
+    <div class="card"><h3>LIGHT (photo)</h3>
       <div class="val l"><span id="lt">--</span><span class="unit"> %</span></div></div>
+    <div class="card"><h3>LUX (BH1750)</h3>
+      <div class="val l"><span id="lux">--</span><span class="unit"> lx</span></div></div>
     <div class="card"><h3>SOUND</h3>
       <div class="val s"><span id="snd">--</span><span class="unit"> %</span></div></div>
     <div class="card"><h3>COMPACTION</h3>
@@ -198,7 +200,7 @@ function tick() {
       put('tout', dispT(j.out_temp_c)); put('hout', j.out_hum_pct);
       put('m1', j.moist1_pct); put('m1v', j.moist1_v);
       put('m2', j.moist2_pct); put('m2v', j.moist2_v);
-      put('lt', j.light_pct); put('snd', j.sound_pct); put('dist', j.surface_mm);
+      put('lt', j.light_pct); put('lux', j.lux); put('snd', j.sound_pct); put('dist', j.surface_mm);
       if (moistCal) moistCal.update(j);
       if (distCal) distCal.update(j);
 

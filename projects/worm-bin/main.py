@@ -157,6 +157,21 @@ def compaction():
   return picolab.Sensor("VL53L0X compaction (0x29)", connect, read)
 
 
+def lux_meter():
+  """BH1750 (GY-302) on the shared I2C bus at 0x23: light in real lux, the
+  precise reading next to the photoresistor's rough percent. Both are
+  optional and hot-pluggable like everything else."""
+
+  def connect():
+    from bh1750 import BH1750
+    return BH1750(picolab.i2c())
+
+  def read(dev):
+    return {"lux": round(dev.read(), 1)}
+
+  return picolab.Sensor("BH1750 lux (0x23)", connect, read)
+
+
 def probe_bus():
   """DS18B20 array on GP22, same live-rescan engine as soil-temperature:
   one bad probe faults alone, added probes appear by themselves."""
@@ -215,6 +230,7 @@ PARTS = [
     analog_bank(),
     microphone(),
     compaction(),
+    lux_meter(),
 ]
 DS = probe_bus()   # dynamic slots, always last
 
@@ -320,10 +336,11 @@ def page_lines(page, d):
   if page == 2:
     return [
         "SOIL + LIGHT",
-        "M1 %s" % fmt(d.get("moist1_pct"), "%.0f%%"),
-        "M2 %s" % fmt(d.get("moist2_pct"), "%.0f%%"),
-        "Lt %s  Snd %s" % (fmt(d.get("light_pct"), "%.0f%%"),
-                           fmt(d.get("sound_pct"), "%.0f%%")),
+        "M1 %s  M2 %s" % (fmt(d.get("moist1_pct"), "%.0f%%"),
+                          fmt(d.get("moist2_pct"), "%.0f%%")),
+        "Lt %s  Lux %s" % (fmt(d.get("light_pct"), "%.0f%%"),
+                           fmt(d.get("lux"), "%.0f")),
+        "Snd %s" % fmt(d.get("sound_pct"), "%.0f%%"),
     ]
   return [
       "ACT + DIST",

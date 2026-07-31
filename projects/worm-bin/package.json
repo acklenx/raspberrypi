@@ -32,6 +32,10 @@
       "github:acklenx/raspberrypi/lib/vl53l0x.py"
     ],
     [
+      "fs:lib/bh1750.py",
+      "github:acklenx/raspberrypi/lib/bh1750.py"
+    ],
+    [
       "fs:cal.js",
       "github:acklenx/raspberrypi/web/cal.js"
     ],
