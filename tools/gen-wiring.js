@@ -72,10 +72,11 @@ function nextTOP() { const y = TOPY; TOPY += 12; return y; }
 
 function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
 function text(x, y, s, o = {}) {
-  const { size = 12, color = C.ink, bold = false, anchor = "start", italic = false } = o;
+  const { size = 12, color = C.ink, bold = false, anchor = "start", italic = false, halo = false } = o;
+  const h = halo ? ' stroke="#FFFFFF" stroke-width="2.6" paint-order="stroke" stroke-linejoin="round"' : "";
   return `<text x="${x}" y="${y}" font-family="Arial, Helvetica, sans-serif" font-size="${size}"`
     + ` fill="${color}" text-anchor="${anchor}"${bold ? ' font-weight="bold"' : ""}`
-    + `${italic ? ' font-style="italic"' : ""}>${esc(s)}</text>`;
+    + `${italic ? ' font-style="italic"' : ""}${h}>${esc(s)}</text>`;
 }
 const CASED = () => [W.scl, W.sig];  // light colors that need an outline on white
 function wire(pts, color, width = 3.5) {
@@ -88,6 +89,12 @@ function wire(pts, color, width = 3.5) {
   s += `<path d="${d}" fill="none" stroke="${color}" stroke-width="${width}"`
     + ` stroke-linejoin="round" stroke-linecap="round"/>`;
   return s;
+}
+// a filled triangle arrowhead: tip AT (x,y), pointing along (dx,dy)
+function arrowhead(x, y, dx, dy, len, color) {
+  const L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L, px = -uy, py = ux;
+  const bx = x - ux * len, by = y - uy * len, w = len * 0.5;
+  return `<path d="M${x} ${y} L${bx + px * w} ${by + py * w} L${bx - px * w} ${by - py * w} z" fill="${color}"/>`;
 }
 function dot(x, y, color) {
   const ring = CASED().includes(color) ? ` stroke="${CASING}" stroke-width="1.6"` : "";
@@ -120,8 +127,8 @@ function drawPico() {
       const ax = p <= 20 ? inX + 34 : inX - 34;
       s += text(ax, y + 4, ADC[p], { size: 8, color: "#A6C4A8", anchor });
     }
-    const numX = p <= 20 ? x - 12 : x + 12;
-    s += text(numX, y + 3.5, p, { size: 9, color: used ? C.ink : C.gray, anchor: p <= 20 ? "end" : "start", bold: used });
+    const numX = p <= 20 ? x - 20 : x + 20;   // pushed clear of the board edge
+    s += text(numX, y + 3.5, p, { size: 9, color: used ? C.ink : "#3B4756", anchor: p <= 20 ? "end" : "start", bold: used, halo: true });
   }
   return s;
 }
@@ -370,10 +377,10 @@ projects["light-basic"] = () => diagram(
     // the LDR (photoresistor): a body with a serpentine + light arrows
     s += `<rect x="${GX - GW / 2}" y="${ldrTop}" width="${GW}" height="${ldrH}" rx="4" fill="#E9D9B6" stroke="${C.ink}" stroke-width="1.3"/>`;
     s += `<path d="M${GX - 7} ${ldrTop + 12} h14 v9 h-14 v9 h14 v9 h-14" fill="none" stroke="${C.orange}" stroke-width="1.7"/>`;
-    for (const yy of [ldrTop + 15, ldrTop + 33]) {   // two "light" arrows pointing in
-      const tipX = GX + GW / 2 + 4;
-      s += wire([[tipX + 22, yy - 16], [tipX, yy]], C.yellow, 2);
-      s += `<path d="M${tipX} ${yy} l9 -1 l-4 7 z" fill="${C.yellow}"/>`;
+    for (const yy of [ldrTop + 15, ldrTop + 33]) {   // two light rays pointing INTO the LDR
+      const ex = GX + GW / 2 + 4, ey = yy, sx = ex + 23, sy = ey - 18;
+      s += wire([[sx, sy], [ex, ey]], C.yellow, 2);
+      s += arrowhead(ex, ey, ex - sx, ey - sy, 9, C.yellow);
     }
     s += text(GX + GW / 2 + 40, ldrTop + 20, "GL5528", { size: 10.5, color: C.ink, bold: true });
     s += text(GX + GW / 2 + 40, ldrTop + 33, "LDR", { size: 10.5, color: C.ink, bold: true });

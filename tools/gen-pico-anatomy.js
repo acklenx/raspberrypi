@@ -35,10 +35,11 @@ function pin(p) {
 }
 function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
 function text(x, y, s, o = {}) {
-  const { size = 12, color = C.ink, bold = false, anchor = "start", italic = false } = o;
+  const { size = 12, color = C.ink, bold = false, anchor = "start", italic = false, halo = false } = o;
+  const h = halo ? ' stroke="#FFFFFF" stroke-width="2.6" paint-order="stroke" stroke-linejoin="round"' : "";
   return `<text x="${x}" y="${y}" font-family="Arial, Helvetica, sans-serif" font-size="${size}"`
     + ` fill="${color}" text-anchor="${anchor}"${bold ? ' font-weight="bold"' : ""}`
-    + `${italic ? ' font-style="italic"' : ""}>${esc(s)}</text>`;
+    + `${italic ? ' font-style="italic"' : ""}${h}>${esc(s)}</text>`;
 }
 
 let s = "";
@@ -79,8 +80,8 @@ for (let p = 1; p <= 40; p++) {
     const ax = p <= 20 ? inX + 38 : inX - 40;
     s += text(ax, y + 4, ADC[p], { size: 8.5, color: "#A6C4A8", anchor });
   }
-  const numX = p <= 20 ? x - 14 : x + 14;
-  s += text(numX, y + 4, p, { size: 10, color: C.gray, anchor: p <= 20 ? "end" : "start" });
+  const numX = p <= 20 ? x - 22 : x + 22;   // pushed clear of the board edge
+  s += text(numX, y + 4, p, { size: 10, color: "#3B4756", anchor: p <= 20 ? "end" : "start", halo: true });
 }
 
 // ---- callouts: circle the pin/part, leader line to a label ----------
