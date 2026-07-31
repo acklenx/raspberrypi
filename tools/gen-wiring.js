@@ -127,6 +127,18 @@ function drawPico() {
       const ax = p <= 20 ? inX + 34 : inX - 34;
       s += text(ax, y + 4, ADC[p], { size: 8, color: "#A6C4A8", anchor });
     }
+  }
+  return s;
+}
+
+// Pin numbers are drawn LAST (see diagram()) so they sit ON TOP of the
+// wires: the connected pins are the ones you most need to read, and their
+// own wires would otherwise bury the number. Halo keeps them legible.
+function drawPinNumbers() {
+  let s = "";
+  for (let p = 1; p <= 40; p++) {
+    const { x, y } = pin(p);
+    const used = USED.has(p);
     const numX = p <= 20 ? x - 20 : x + 20;   // pushed clear of the board edge
     s += text(numX, y + 3.5, p, { size: 9, color: used ? C.ink : "#3B4756", anchor: p <= 20 ? "end" : "start", bold: used, halo: true });
   }
@@ -261,7 +273,7 @@ function drawOLED() {
 function diagram(title, sub, usedPins, bodyFn, legend) {
   reset(usedPins);
   const body = drawOLED() + bodyFn();   // side effects: RAIL_MAXY, OLED_PINS, lanes
-  let inner = drawPico() + drawRails() + body;
+  let inner = drawPico() + drawRails() + body + drawPinNumbers();
   let head = text(40, 36, title, { size: 22, color: C.navy, bold: true })
     + text(40, 55, sub, { size: 12.5, color: C.gray });
   const lx = 648, ly = 128;
@@ -379,8 +391,10 @@ projects["light-basic"] = () => diagram(
     s += `<path d="M${GX - 7} ${ldrTop + 12} h14 v9 h-14 v9 h14 v9 h-14" fill="none" stroke="${C.orange}" stroke-width="1.7"/>`;
     for (const yy of [ldrTop + 15, ldrTop + 33]) {   // two light rays pointing INTO the LDR
       const ex = GX + GW / 2 + 4, ey = yy, sx = ex + 23, sy = ey - 18;
+      const dx = ex - sx, dy = ey - sy, L = Math.hypot(dx, dy);
       s += wire([[sx, sy], [ex, ey]], C.yellow, 2);
-      s += arrowhead(ex, ey, ex - sx, ey - sy, 9, C.yellow);
+      // tip pokes ~3px past the line end so the line cannot blunt the point
+      s += arrowhead(ex + dx / L * 3, ey + dy / L * 3, dx, dy, 9, C.yellow);
     }
     s += text(GX + GW / 2 + 40, ldrTop + 20, "GL5528", { size: 10.5, color: C.ink, bold: true });
     s += text(GX + GW / 2 + 40, ldrTop + 33, "LDR", { size: 10.5, color: C.ink, bold: true });

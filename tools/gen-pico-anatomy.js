@@ -80,8 +80,6 @@ for (let p = 1; p <= 40; p++) {
     const ax = p <= 20 ? inX + 38 : inX - 40;
     s += text(ax, y + 4, ADC[p], { size: 8.5, color: "#A6C4A8", anchor });
   }
-  const numX = p <= 20 ? x - 22 : x + 22;   // pushed clear of the board edge
-  s += text(numX, y + 4, p, { size: 10, color: "#3B4756", anchor: p <= 20 ? "end" : "start", halo: true });
 }
 
 // ---- callouts: circle the pin/part, leader line to a label ----------
@@ -161,6 +159,13 @@ s += text(130, 662, "Numbers INSIDE the green board are GP names (what code uses
 s += text(130, 678, "Numbers OUTSIDE are physical pin positions (what you count to when wiring).", { size: 12, color: C.gray });
 s += text(40, 706, "Maker Lab Kids · the Pico 2 W, introduced properly", { size: 11, color: C.gray });
 s += text(1110, 706, "MakerLabKids.com", { size: 11, color: C.blue, anchor: "end", bold: true });
+
+// physical pin numbers LAST, so they sit on top of the callout leaders
+for (let p = 1; p <= 40; p++) {
+  const { x, y } = pin(p);
+  const numX = p <= 20 ? x - 22 : x + 22;
+  s += text(numX, y + 4, p, { size: 10, color: "#3B4756", anchor: p <= 20 ? "end" : "start", halo: true });
+}
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 720" font-family="Arial, Helvetica, sans-serif">`
   + `<rect width="1150" height="720" fill="#FFFFFF"/>` + s + `</svg>`;
