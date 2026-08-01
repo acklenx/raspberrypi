@@ -31,6 +31,14 @@
             font-family: Consolas, Menlo, monospace; font-size: 14px; }
   dd { margin: 2px 0 0 0; font-size: 15px; }
   dd em { color: var(--orange); font-style: normal; font-weight: bold; }
+  /* every term is deep-linkable; a hover "#" gives you the copyable URL */
+  dt { scroll-margin-top: 76px; }
+  dt .anchor { color: #B9C2CC; text-decoration: none; font-weight: normal; margin-left: 7px;
+               opacity: 0; transition: opacity .1s; }
+  dt:hover .anchor, dt .anchor:focus { opacity: 1; }
+  dt .anchor:hover { color: var(--blue); }
+  dt:target { background: #FDF3E7; border-radius: 6px;
+              box-shadow: -6px 0 0 #FDF3E7, 6px 0 0 #FDF3E7; }
   figure { margin: 14px 0; }
   figure img { width: 100%; height: auto; display: block; border: 1px solid #E1E8EF;
                border-radius: 10px; background: #FFF; }
@@ -89,15 +97,25 @@
   <h2 id="electricity-basics">Electricity basics</h2>
   <hr class="rule b">
   <dl>
-    <dt id="voltage">Voltage (V, volts)</dt>
-    <dd>Electrical pressure. Our logic runs at <em>3.3&nbsp;V</em>; USB provides 5&nbsp;V.
-        Think water pressure in a pipe.</dd>
-    <dt id="current">Current (A, amps)</dt>
-    <dd>How much electricity is flowing. Small numbers here: an LED sips about 0.01&nbsp;A
-        (10&nbsp;mA); a stalled servo can gulp over 1&nbsp;A.</dd>
-    <dt id="resistance">Resistance (&Omega;, ohms)</dt>
-    <dd>How hard a part pushes back against current. Ohm's law ties the three together:
-        <em>V = I &times; R</em>.</dd>
+    <dt id="voltage">Voltage (symbol <em>V</em>, measured in volts)</dt>
+    <dd>Electrical pressure, the push. Our logic runs at <em>3.3&nbsp;V</em>; USB provides
+        5&nbsp;V. Think water pressure in a pipe.</dd>
+    <dt id="current">Current (symbol <em>I</em>, measured in amps, A)</dt>
+    <dd>How much electricity is flowing. Watch the letters: the symbol is <em>I</em> (for
+        "intensity"), but the unit is the amp (A), that mismatch trips everyone up. Small numbers
+        here: an LED sips about 0.01&nbsp;A (10&nbsp;mA); a stalled servo can gulp over 1&nbsp;A.</dd>
+    <dt id="resistance">Resistance (symbol <em>R</em>, measured in ohms, &Omega;)</dt>
+    <dd>How hard a part pushes back against the current.</dd>
+    <dt id="ohms-law">Ohm's law (<em>V = I &times; R</em>)</dt>
+    <dd>The one equation that ties them together: voltage (<em>V</em>) equals current
+        (<em>I</em>) times resistance (<em>R</em>). Push harder (more V) and more current flows;
+        add resistance and less flows. Rearranged, it is how we size a resistor: pick R so the
+        current I lands where you want it.
+        <figure>
+          <img src="img/glossary/ohms-law.svg" alt="A circuit loop: a battery labelled V (the push), charges flowing along the top labelled I (the flow), and a resistor labelled R (pushes back), with V = I times R below" loading="lazy">
+          <figcaption>V pushes, I flows, R pushes back. Cover the letter you want and the other
+            two show the formula: V = I&times;R, or I = V/R, or R = V/I.</figcaption>
+        </figure></dd>
     <dt id="ground">Ground (GND)</dt>
     <dd>The shared zero-volt reference every circuit measures against. Everything on the
         breadboard connects back to it. Black wire, always.</dd>
@@ -160,6 +178,12 @@
   <h2 id="buses-and-signals">Buses and signals</h2>
   <hr class="rule o">
   <dl>
+    <dt id="signal-wire">Signal wire</dt>
+    <dd>A wire that carries <em>information or a command</em>, not power. A signal is just a
+        voltage that swings HIGH and LOW to mean something: a data line (I2C SDA), a clock (SCL),
+        the pulse that tells a servo its angle (PWM), a button press. Every wire on the board does
+        exactly one of three jobs: carry <em>power</em> (3V3, 5V), carry <em>ground</em> (the
+        shared 0&nbsp;V), or carry a <em>signal</em>. In our color code a lone signal wire is yellow.</dd>
     <dt id="gpio">GPIO</dt>
     <dd>General Purpose Input/Output: the Pico's programmable pins. Named GP0&hellip;GP28.
         <em>GP numbers are not physical pin numbers</em>: GP22 lives at physical pin 29. Our
@@ -354,5 +378,18 @@
   </dl>
 </div>
 <footer>&copy; 2026 Maker Lab Kids LLC · MakerLabKids.com · Learn. Make. Share.</footer>
+<script>
+// Give every term a hover "#" that links to itself, so the deep-link URL
+// (e.g. glossary.html#run) is discoverable and copyable from any page.
+document.querySelectorAll('dt[id]').forEach(function (dt) {
+  var a = document.createElement('a');
+  a.className = 'anchor';
+  a.href = '#' + dt.id;
+  a.textContent = '#';
+  a.title = 'Copy link to this term';
+  a.setAttribute('aria-label', 'Link to this term');
+  dt.appendChild(a);
+});
+</script>
 </body>
 </html>

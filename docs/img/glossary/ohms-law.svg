@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 250" font-family="Arial, Helvetica, sans-serif">
+  <rect width="500" height="250" fill="#FFFFFF"/>
+
+  <!-- circuit loop (four segments, gaps for the battery and the resistor) -->
+  <g fill="none" stroke="#1B3A5C" stroke-width="5" stroke-linecap="round">
+    <path d="M70 55 H400"/>                <!-- top -->
+    <path d="M400 55 V95"/>                <!-- right, above resistor -->
+    <path d="M400 135 V165"/>              <!-- right, below resistor -->
+    <path d="M400 165 H70"/>               <!-- bottom -->
+    <path d="M70 165 V130"/>               <!-- left, below battery -->
+    <path d="M70 90 V55"/>                 <!-- left, above battery -->
+  </g>
+
+  <!-- battery = Voltage (the push) -->
+  <g stroke="#C62828" stroke-width="5" stroke-linecap="round">
+    <path d="M70 90 h-14 m14 0 h14"/>      <!-- long plate (+) -->
+    <path d="M62 130 h16"/>                <!-- short plate (-) -->
+  </g>
+  <rect x="70" y="98" width="0" height="0"/>
+  <text x="70" y="112" fill="#C62828" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+  <text x="22" y="112" fill="#C62828" font-size="26" font-weight="bold">V</text>
+  <text x="16" y="150" fill="#6B7280" font-size="12">the push</text>
+
+  <!-- current = the flow of charges along the top wire -->
+  <g fill="#2E7DBC"><circle cx="150" cy="55" r="6"/><circle cx="215" cy="55" r="6"/>
+     <circle cx="280" cy="55" r="6"/><circle cx="345" cy="55" r="6"/></g>
+  <path d="M120 33 h250" fill="none" stroke="#2E7DBC" stroke-width="4"
+        marker-end="url(#a)" stroke-linecap="round"/>
+  <defs><marker id="a" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+    <path d="M0 0 L8 3 L0 6 Z" fill="#2E7DBC"/></marker></defs>
+  <text x="235" y="24" fill="#2E7DBC" font-size="26" font-weight="bold" text-anchor="middle">I</text>
+  <text x="270" y="24" fill="#6B7280" font-size="12">the flow</text>
+
+  <!-- resistor = Resistance (the squeeze) -->
+  <polyline points="400,95 388,102 412,110 388,118 412,126 400,135"
+            fill="none" stroke="#E8762C" stroke-width="5" stroke-linejoin="round"/>
+  <text x="424" y="116" fill="#E8762C" font-size="26" font-weight="bold">R</text>
+  <text x="418" y="138" fill="#6B7280" font-size="12">pushes back</text>
+
+  <!-- the equation -->
+  <text x="235" y="212" font-size="34" font-weight="bold" text-anchor="middle">
+    <tspan fill="#C62828">V</tspan><tspan fill="#1B3A5C"> = </tspan><tspan fill="#2E7DBC">I</tspan><tspan fill="#1B3A5C"> &#215; </tspan><tspan fill="#E8762C">R</tspan></text>
+  <text x="235" y="236" fill="#6B7280" font-size="14" text-anchor="middle">voltage = current &#215; resistance</text>
+</svg>
