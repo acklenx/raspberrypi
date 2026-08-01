@@ -285,6 +285,53 @@ ICONS["stale-library"] = () =>
   + t(65,58,".mpy",{c:"#8a7d5a",b:1,s:13}) + `<circle cx="52" cy="70" r="8" fill="none" stroke="${C.gray}" stroke-width="2"/><line x1="52" y1="70" x2="52" y2="65" stroke="${C.gray}" stroke-width="2"/><line x1="52" y1="70" x2="56" y2="70" stroke="${C.gray}" stroke-width="2"/>`
   + t(66,92,"old copy, shadows new");
 
+// ---- final pass ----------------------------------------------------
+ICONS["program-code"] = () =>
+  `<rect x="22" y="26" width="88" height="44" rx="5" fill="#20303f"/>`
+  + t(46,54,"&lt;/&gt;",{c:"#7FD07F",b:1,s:20})
+  + [50,58].map((y,i)=>`<line x1="70" y1="${y}" x2="${100-i*14}" y2="${y}" stroke="${[C.blue,C.orange][i]}" stroke-width="3"/>`).join("")
+  + t(66,90,"instructions you write");
+ICONS["http-webserver"] = () =>
+  `<rect x="30" y="46" width="40" height="30" rx="3" fill="${C.navy}"/>`
+  + [52,60,68].map(y=>`<circle cx="38" cy="${y}" r="2.5" fill="${C.green}"/>`).join("")
+  + `<circle cx="92" cy="34" r="14" fill="none" stroke="${C.blue}" stroke-width="2"/>`
+  + `<path d="M78 34 h28 M92 20 v28 M80 27 q12 6 24 0 M80 41 q12 -6 24 0" fill="none" stroke="${C.blue}" stroke-width="1.5"/>`
+  + `<path d="M70 44 H84" stroke="${C.orange}" stroke-width="3" marker-end="url(#hh)"/>`
+  + `<defs><marker id="hh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6z" fill="${C.orange}"/></marker></defs>`
+  + t(66,90,"phone asks, Pico answers");
+ICONS["ip-address"] = () =>
+  `<rect x="24" y="38" width="84" height="24" rx="5" fill="#EAF1F7" stroke="${C.blue}" stroke-width="2"/>`
+  + t(66,55,"192.168.4.1",{c:C.navy,b:1,s:13}) + t(66,88,"a number on the network");
+ICONS["vbus-vsys"] = () =>
+  `<rect x="30" y="40" width="26" height="16" rx="2" fill="#9AA5AD"/>`
+  + `<rect x="20" y="44" width="12" height="8" fill="#9AA5AD"/>`
+  + `<line x1="56" y1="48" x2="96" y2="48" stroke="${C.orange}" stroke-width="4"/>`
+  + t(78,38,"5V",{c:C.orange,b:1,s:13}) + t(66,90,"raw USB power");
+ICONS["i2c-address"] = () =>
+  `<line x1="14" y1="34" x2="118" y2="34" stroke="${C.green}" stroke-width="3"/>`
+  + `<line x1="14" y1="42" x2="118" y2="42" stroke="#BFC9D2" stroke-width="3"/>`
+  + `<rect x="48" y="50" width="36" height="22" rx="3" fill="${C.blue}"/>` + t(66,65,"0x76",{c:"#fff",b:1,s:12})
+  + t(66,90,"each chip's house number");
+ICONS["library-driver"] = () =>
+  `<rect x="40" y="22" width="16" height="52" rx="2" fill="${C.blue}"/>`
+  + `<rect x="58" y="22" width="16" height="52" rx="2" fill="${C.green}"/>`
+  + `<rect x="76" y="22" width="16" height="52" rx="2" fill="${C.orange}"/>`
+  + t(66,90,"ready-made code to import");
+ICONS["exception-try-except"] = () =>
+  `<path d="M66 18 l30 10 v18 q0 22 -30 30 q-30 -8 -30 -30 v-18z" fill="${C.green}" opacity=".9"/>`
+  + t(66,54,"!",{c:"#fff",b:1,s:26}) + t(66,90,"catch the error, survive");
+ICONS.tinning = () =>
+  `<rect x="24" y="24" width="44" height="10" rx="3" fill="${C.ink}" transform="rotate(24 46 29)"/>`
+  + `<path d="M60 46 l10 -14 6 4 -10 14z" fill="${C.gold}"/>`
+  + t(66,86,"pre-coat with solder");
+ICONS.flux = () =>
+  `<path d="M66 26 q16 22 0 34 q-16 -12 0 -34z" fill="${C.yellow}" stroke="${C.orange}"/>`
+  + `<path d="M54 44 l-4 -4 M80 40 l4 -4" stroke="${C.orange}" stroke-width="2"/>` + t(66,86,"cleans as you solder");
+ICONS.wetting = () =>
+  `<line x1="66" y1="18" x2="66" y2="40" stroke="${C.gray}" stroke-width="4"/>`
+  + `<path d="M44 64 q22 -30 44 0 q-8 6 -22 6 q-14 0 -22 -6z" fill="#B9C2CC"/>`
+  + `<ellipse cx="58" cy="52" rx="6" ry="3" fill="#fff" opacity=".6"/>` + t(66,90,"smooth + shiny = good");
+
 const OUT = path.join(__dirname, "..", "docs", "img", "glossary", "icons");
 fs.mkdirSync(OUT, { recursive: true });
 let n = 0;
