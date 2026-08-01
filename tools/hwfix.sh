@@ -147,7 +147,9 @@ mkdirs_on_board() {
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
-BKROOT="$REPO/backups"
+# Backups live OUTSIDE the code tree so nothing in the repo (a checkout, a
+# clean, a stray rm) can ever clobber them. Override with HWFIX_BACKUPS=...
+BKROOT="${HWFIX_BACKUPS:-$HOME/wormhole-backups}"
 
 echo "== hwfix =="
 if ! conn eval 'True' >/dev/null 2>&1; then
@@ -273,7 +275,7 @@ else
   cp -a "$TMP/." "$BK/"
   printf '%s\n' "$HASH" > "$BK/HASH"
   BACKUP_DIR="$BK"
-  say "backup saved: ${BK#$REPO/}"
+  say "backup saved: $BK"
 fi
 fi   # end: only back up when the board was not blank
 
@@ -312,7 +314,7 @@ fi
 if [ -n "$BACKUP_DIR" ]; then
   echo
   say "UNDO - restore this board exactly as it was before this run:"
-  say "    tools/hwfix.sh --restore-backup '${BACKUP_DIR#$REPO/}'"
+  say "    tools/hwfix.sh --restore-backup '$BACKUP_DIR'"
 fi
 
 # -------------------------------------------------------------- verify
