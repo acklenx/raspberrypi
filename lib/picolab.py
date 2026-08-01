@@ -20,15 +20,56 @@ import socket
 import time
 from machine import I2C, Pin, unique_id
 
+# Version of the SOFTWARE THAT RUNS ON THE PICO (this framework + the project
+# programs + drivers). Bump it on ANY change to on-Pico code, NOT for changes
+# to the repo's docs/JS/website. The self-test prints it in the healthy
+# message and the worm-bin shows it on a startup screen, so a board can tell
+# you exactly what it is running with no computer attached.
+VERSION = "1.0.0"
+
 _i2c = None
+
+# Candidate I2C pin pairs, (controller, SDA, SCL), tried in this order. The
+# sensor bank works on ANY of these, so a bin can be wired to whichever pair
+# is convenient and it is found automatically. These are exactly the pairs
+# that do NOT collide with the worm-bin actuator/analog/1-wire pins:
+#   EXCLUDED on purpose: GP16/17 (servos), GP14/15 (relay),
+#                        GP26/27 (mic on GP27 + spare ADC GP26).
+#   GP22 (1-wire) and GP28 (light ADC) are not usable I2C pairs anyway.
+# If you move an actuator, update this list to match.
+I2C_CANDIDATES = [
+    (0, 0, 1),     # primary
+    (0, 20, 21),   # first backup: nearest the 3V3/GND pins, no conflicts
+    (0, 4, 5), (0, 8, 9), (0, 12, 13),
+    (1, 2, 3), (1, 6, 7), (1, 10, 11), (1, 18, 19),
+]
+
+
+def _open_i2c(controller, sda, scl):
+  return I2C(controller, sda=Pin(sda), scl=Pin(scl), freq=400000)
 
 
 def i2c():
-  """The shared I2C0 bus: SDA=GP0, SCL=GP1, 400kHz. (Hardware I2C is fine;
-  the "displays down" bug was never here -- see the port-80 handling.)"""
+  """The shared I2C bus, AUTO-LOCATED. Scans the candidate pin pairs
+  (I2C_CANDIDATES) once and uses the FIRST pair that has a device on it, so
+  the sensor bank works whichever clean pair it is plugged into. A bare board
+  (no devices on any pair) falls back to GP0/GP1 so hot-plug still works."""
   global _i2c
-  if _i2c is None:
-    _i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
+  if _i2c is not None:
+    return _i2c
+  for controller, sda, scl in I2C_CANDIDATES:
+    try:
+      bus = _open_i2c(controller, sda, scl)
+      if bus.scan():
+        if (sda, scl) != (0, 1):
+          log("I2C bus located on GP%d/GP%d (not the default GP0/GP1)." % (sda, scl))
+        _i2c = bus
+        return _i2c
+    except Exception:
+      pass
+  # Nothing found anywhere: (re)open the primary so a later hot-plug onto
+  # GP0/GP1 is picked up by the per-sensor retry loops.
+  _i2c = _open_i2c(0, 0, 1)
   return _i2c
 
 

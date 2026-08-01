@@ -34,7 +34,13 @@ MOVE_SERVOS = True  # gently wiggle servos to confirm them; False = never move t
 USE_COLOR = True    # ANSI colour; set False for a plain-text terminal
 
 # ---- the board we expect, as data (matches worm-bin/main.py) ---------
-I2C_SDA, I2C_SCL = 0, 1            # hardware I2C0, the shared bus
+I2C_SDA, I2C_SCL = 0, 1            # default bus; overwritten by whatever pair we find
+# Candidate I2C pairs (controller, SDA, SCL), same clean set picolab scans, so
+# the self-test finds the sensor bank on whichever pair it is plugged into.
+I2C_CANDIDATES = [
+    (0, 0, 1), (0, 20, 21), (0, 4, 5), (0, 8, 9), (0, 12, 13),
+    (1, 2, 3), (1, 6, 7), (1, 10, 11), (1, 18, 19),
+]
 KNOWN = [                          # addr, label (what SHOULD be at each addr)
     (0x3C, "OLED SSD1306"),
     (0x76, "BME280 in"),
@@ -79,12 +85,32 @@ class Report:
     self.rows = []       # (status, label, detail, child)
     self._notes = []     # top-level INFO rows, held back to the very end
     self._sec = None
+    self.oled = None     # if an OLED is found, live progress is shown on it
+    self.version = "?"   # the on-Pico software version (picolab.VERSION)
+
+  def _screen(self, label):
+    # Mirror progress onto the OLED so you can watch the run with no computer.
+    o = self.oled
+    if not o:
+      return
+    try:
+      c = self.counts()
+      sec = (self._sec or "").split("(")[0].strip()
+      o.fill(0)
+      o.text("SELF-TEST", 0, 0)
+      o.text(sec[:16], 0, 13)
+      o.text(str(label)[:16], 0, 26)
+      o.text("ok %d  fail %d" % (c[PASS], c[FAIL]), 0, 44)
+      o.show()
+    except Exception:
+      self.oled = None   # OLED went away, stop mirroring
 
   def section(self, title):
     self._sec = title
     bar = " " + title + " "
     fill = W - 2 - len(bar)
     print("\n" + _c("\x1b[1;36m", "┌─" + bar + "─" * max(0, fill - 1) + "┐"))
+    self._screen("...")
 
   def add(self, status, label, detail="", child=False, last=True):
     self.rows.append((status, label, detail, child))
@@ -155,6 +181,7 @@ class Report:
     self.add(status, label, res[1])
     for i, (st, lab, det) in enumerate(subs):
       self.add(st, lab, det, child=True, last=(i == len(subs) - 1))
+    self._screen(label)
     return status
 
   def counts(self):
@@ -189,6 +216,7 @@ class Report:
       msg = "  READY FOR CLASS: this board is healthy  "
       code = "\x1b[1;42;30m"
     print("\n" + _c(code, msg + " " * max(0, W - len(msg))))
+    print(_c("\x1b[2m", "  Pico software v" + self.version))
     if c[FAIL]:
       # Point at the repair tool. It backs the board up FIRST, then fixes,
       # then prints the exact restore-from-backup command to undo it.
@@ -197,6 +225,16 @@ class Report:
       print("\n" + _c("\x1b[2m", "  to back up and auto-repair, run this in the host shell"))
       print(_c("\x1b[2m", "  (a shell script, NOT `mpremote run`):"))
       print(_c("\x1b[1m", "      bash tools/hwfix.sh"))
+    if self.oled:
+      try:
+        o = self.oled; o.fill(0)
+        o.text("SELF-TEST DONE", 0, 0)
+        o.text("ok %d  fail %d" % (c[PASS], c[FAIL]), 0, 14)
+        o.text("READY!" if not c[FAIL] else "NOT READY", 0, 30)
+        o.text(("fix %d red" % c[FAIL]) if c[FAIL] else ("sw v" + self.version), 0, 46)
+        o.show()
+      except Exception:
+        pass
 
 
 # =====================================================================
@@ -241,6 +279,35 @@ def build_checks(rep, R):
     except Exception as e:
       s.append((FAIL, label, "%s: %s" % (type(e).__name__, e)))
       return False
+
+  # ---- locate the shared I2C bus on ANY clean pair, wake the OLED -------
+  # Scan the same candidate pairs picolab uses, so the self-test finds the
+  # sensor bank wherever it is plugged. If an OLED is on it, mirror progress.
+  hw = {"bus": None, "found": set(), "pair": (0, 1), "ctl": 0}
+  for ctl, sda, scl in I2C_CANDIDATES:
+    try:
+      b = I2C(ctl, sda=Pin(sda), scl=Pin(scl), freq=400000)
+      f = set(b.scan())
+    except Exception:
+      continue
+    if f:
+      hw["bus"], hw["found"], hw["pair"], hw["ctl"] = b, f, (sda, scl), ctl
+      break
+  if hw["bus"] is None:
+    try:
+      hw["bus"] = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
+    except Exception:
+      pass
+  if 0x3C in hw["found"]:
+    try:
+      import ssd1306
+      rep.oled = ssd1306.SSD1306_I2C(128, 64, hw["bus"], addr=0x3C)
+      rep.oled.fill(0)
+      rep.oled.text("SELF-TEST", 0, 0)
+      rep.oled.text("starting...", 0, 16)
+      rep.oled.show()
+    except Exception:
+      rep.oled = None
 
   # ---- 1. FIRMWARE & RUNTIME ----------------------------------------
   rep.section("1. FIRMWARE & RUNTIME  (can this board run at all)")
@@ -458,33 +525,36 @@ def build_checks(rep, R):
   rep.run("Wi-Fi AP radio", c_wifi)
 
   # ---- 5. I2C BUS HEALTH --------------------------------------------
-  rep.section("5. I2C BUS  (GP0/GP1, the shared sensor bus)")
+  rep.section("5. I2C BUS  (auto-located pair)")
 
   def c_idle():
     # With an internal pull-up, a line that still reads LOW is being held
     # down by something: a device stuck in the wrong mode (a 6-pin BME280
     # with a floating CSB drops into SPI and HANGS the bus), or a short.
-    sda = Pin(I2C_SDA, Pin.IN, Pin.PULL_UP)
-    scl = Pin(I2C_SCL, Pin.IN, Pin.PULL_UP)
+    sda_gp, scl_gp = hw["pair"]
+    sp = Pin(sda_gp, Pin.IN, Pin.PULL_UP)
+    cp = Pin(scl_gp, Pin.IN, Pin.PULL_UP)
     R["sleep_ms"](2)
-    lo = [n for n, p in (("SDA/GP0", sda), ("SCL/GP1", scl)) if p.value() == 0]
+    lo = [n for n, p in (("SDA/GP%d" % sda_gp, sp), ("SCL/GP%d" % scl_gp, cp)) if p.value() == 0]
+    # we just muxed the bus pins to inputs; put the I2C peripheral back
+    try:
+      hw["bus"] = I2C(hw["ctl"], sda=Pin(sda_gp), scl=Pin(scl_gp), freq=400000)
+    except Exception:
+      pass
     if lo:
       return FAIL, "%s stuck LOW: a part is hanging the bus (floating-CSB BME280?)" % "+".join(lo)
-    return PASS, "SDA and SCL idle high (bus not hung)"
+    return PASS, "SDA/SCL on GP%d/GP%d idle high (bus not hung)" % (sda_gp, scl_gp)
   rep.run("Bus lines are not stuck low", c_idle)
 
-  hw = {"bus": None, "found": set()}
-
   def c_hwscan():
-    bus = I2C(0, sda=Pin(I2C_SDA), scl=Pin(I2C_SCL), freq=400000)
-    hw["bus"] = bus
-    found = set(bus.scan())
-    hw["found"] = found
+    found = hw["found"]
+    sda_gp, scl_gp = hw["pair"]
+    where = "" if (sda_gp, scl_gp) == (0, 1) else " on GP%d/GP%d (not the default)" % (sda_gp, scl_gp)
     if not found:
-      return WARN, "no I2C devices found (fine for a bare Pico)"
+      return WARN, "no I2C devices on any candidate pair (fine for a bare Pico)"
     known = ["0x%02x %s" % (a, n) for a, n in KNOWN if a in found]
     extra = ["0x%02x" % a for a in sorted(found) if a not in dict(KNOWN)]
-    detail = "found: " + ", ".join(known or ["(none known)"])
+    detail = "found%s: %s" % (where, ", ".join(known or ["(none known)"]))
     if extra:
       detail += "  + unknown " + ",".join(extra)
     return PASS, detail
@@ -602,7 +672,8 @@ def build_checks(rep, R):
     # peripheral. If SOFT sees devices the HARDWARE scan missed, the wiring
     # (pull-ups/timing) is marginal and hardware I2C, which the firmware
     # uses, will be flaky. This is the fallback diagnosis.
-    soft = SoftI2C(sda=Pin(I2C_SDA), scl=Pin(I2C_SCL), freq=100000)
+    sda_gp, scl_gp = hw["pair"]
+    soft = SoftI2C(sda=Pin(sda_gp), scl=Pin(scl_gp), freq=100000)
     R["sleep_ms"](2)
     sfound = set(soft.scan())
     hfound = hw["found"]
@@ -623,7 +694,8 @@ def build_checks(rep, R):
   rep.run("Hardware/soft I2C agree", c_soft)
   # hand the shared bus back to the hardware peripheral for anything after
   try:
-    I2C(0, sda=Pin(I2C_SDA), scl=Pin(I2C_SCL), freq=400000)
+    sda_gp, scl_gp = hw["pair"]
+    hw["bus"] = I2C(hw["ctl"], sda=Pin(sda_gp), scl=Pin(scl_gp), freq=400000)
   except Exception:
     pass
 
@@ -722,11 +794,12 @@ def _header(rep, live):
   try:
     import picolab
     who = "%s   uid %s" % (picolab.station_name(), picolab.board_uid())
+    rep.version = getattr(picolab, "VERSION", "?")
   except Exception:
     who = "board id unavailable"
   print(_c("\x1b[1;36m", "╔" + "═" * (W - 2) + "╗"))
   for ln in ("  MAKER LAB KIDS - PICO 2 W HARDWARE SELF-TEST",
-             "  " + who, "  " + tag):
+             "  " + who, "  Pico software v" + rep.version + "   (" + tag + ")"):
     print(_c("\x1b[1;36m", "║") + ln + " " * max(0, W - 2 - len(ln)) + _c("\x1b[1;36m", "║"))
   print(_c("\x1b[1;36m", "╚" + "═" * (W - 2) + "╝"))
   print("  legend:  %s ok   %s fail   %s skip(absent)   %s warn   %s info"

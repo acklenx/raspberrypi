@@ -367,7 +367,7 @@ def page_lines(page, d):
   ]
 
 
-picolab.banner("WORM BIN COMMAND CENTER", [
+picolab.banner("WORM BIN COMMAND CENTER  v" + picolab.VERSION, [
     "Parts: " + ", ".join(s.name for s in PARTS),
     "Plus: " + DS.name + " (slots at the end)",
     "LED POST: short=OK long=trouble",
@@ -376,11 +376,11 @@ picolab.banner("WORM BIN COMMAND CENTER", [
 display = picolab.Display()
 # The capstone gets a proper opening card (the little demos stay fast).
 display.show([
-    "",
     "   WOODSTOCK",
     "  HIGH SCHOOL",
-    "",
     " Maker Lab Kids",
+    "",
+    " Wormhole v" + picolab.VERSION,
 ])
 time.sleep_ms(3000)
 
