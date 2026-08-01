@@ -148,6 +148,143 @@ ICONS["onboard-led-the-truth-light"] = () =>
   + [[86,26,C.yellow],[96,42,C.yellow]].map(([x,y,c])=>`<line x1="56" y1="46" x2="${x}" y2="${y}" stroke="${c}" stroke-width="3" stroke-linecap="round"/>`).join("")
   + t(66,88,"blinking = it's alive");
 
+// ---- basics / code words -------------------------------------------
+ICONS.microcontroller = () =>
+  `<rect x="40" y="26" width="52" height="44" rx="4" fill="${C.navy}"/>`
+  + [0,1,2,3].map(i=>`<line x1="${48+i*12}" y1="26" x2="${48+i*12}" y2="16" stroke="${C.gray}" stroke-width="3"/><line x1="${48+i*12}" y1="70" x2="${48+i*12}" y2="80" stroke="${C.gray}" stroke-width="3"/>`).join("")
+  + t(66,52,"chip",{c:"#fff",s:11,b:1}) + t(66,92,"a whole computer");
+ICONS.micropython = () =>
+  `<path d="M40 34 q26 -16 40 6 q-14 -6 -22 4 q10 8 22 4 q-2 22 -22 22 q-20 0 -18 -18 q10 6 20 2 q-12 -6 -20 -2 q0 -14 0 -20z" fill="${C.blue}"/>`
+  + `<circle cx="72" cy="40" r="2.5" fill="#fff"/>` + t(66,90,"the language");
+ICONS.ide = () =>
+  `<rect x="20" y="22" width="92" height="56" rx="5" fill="#20303f"/>`
+  + `<rect x="20" y="22" width="92" height="12" rx="5" fill="#33475a"/>`
+  + [26,34,42].map((x,i)=>`<circle cx="${x}" cy="28" r="2.5" fill="${[C.red,C.yellow,C.green][i]}"/>`).join("")
+  + [42,52,62].map((y,i)=>`<line x1="30" y1="${y}" x2="${70-i*10}" y2="${y}" stroke="${[C.green,C.blue,C.orange][i]}" stroke-width="3"/>`).join("")
+  + t(66,92,"where you write code");
+ICONS.run = () =>
+  `<circle cx="66" cy="46" r="26" fill="${C.green}"/>`
+  + `<path d="M58 34 l20 12 -20 12z" fill="#fff"/>` + t(66,90,"press to go");
+ICONS.file = () =>
+  `<path d="M44 20 h32 l14 14 v42 h-46z" fill="#fff" stroke="${C.gray}" stroke-width="2"/>`
+  + `<path d="M76 20 v14 h14" fill="#EDF1F5" stroke="${C.gray}" stroke-width="2"/>`
+  + [46,54,62].map(y=>`<line x1="52" y1="${y}" x2="82" y2="${y}" stroke="${C.line}" stroke-width="3"/>`).join("")
+  + t(66,92,"named, saved code");
+ICONS["upload-install"] = () =>
+  `<rect x="34" y="52" width="64" height="24" rx="3" fill="#186c34"/>`
+  + `<line x1="66" y1="16" x2="66" y2="44" stroke="${C.blue}" stroke-width="5"/>`
+  + `<path d="M56 36 l10 12 10 -12" fill="none" stroke="${C.blue}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`
+  + t(66,92,"copy onto the Pico");
+ICONS.dashboard = () =>
+  `<rect x="46" y="14" width="40" height="68" rx="6" fill="${C.navy}"/>`
+  + `<rect x="50" y="22" width="32" height="52" rx="2" fill="#EAF1F7"/>`
+  + `<path d="M56 52 a10 10 0 0 1 20 0" fill="none" stroke="${C.blue}" stroke-width="3"/>`
+  + `<line x1="66" y1="52" x2="72" y2="46" stroke="${C.red}" stroke-width="2"/>`
+  + [58,64,70].map((x,i)=>`<rect x="${x}" y="${64-i*3}" width="4" height="${6+i*3}" fill="${C.green}"/>`).join("")
+  + t(66,92,"readings on your phone");
+ICONS["sensor-vs-actuator"] = () =>
+  `<circle cx="40" cy="44" r="14" fill="none" stroke="${C.blue}" stroke-width="3"/><circle cx="40" cy="44" r="5" fill="${C.blue}"/>`
+  + `<g transform="translate(86,44)"><circle r="12" fill="none" stroke="${C.orange}" stroke-width="3"/>`
+  + [0,60,120,180,240,300].map(a=>`<rect x="-2" y="-16" width="4" height="6" fill="${C.orange}" transform="rotate(${a})"/>`).join("")+`</g>`
+  + t(40,74,"sense",{c:C.blue}) + t(86,74,"act",{c:C.orange});
+ICONS.calibration = () =>
+  `<rect x="58" y="16" width="12" height="52" rx="6" fill="#fff" stroke="${C.gray}" stroke-width="2"/>`
+  + `<circle cx="64" cy="70" r="10" fill="${C.red}"/><rect x="61" y="36" width="6" height="34" fill="${C.red}"/>`
+  + `<line x1="74" y1="24" x2="86" y2="24" stroke="${C.blue}" stroke-width="2"/>` + t(96,27,"100",{c:C.gray,s:9,a:"start"})
+  + `<line x1="74" y1="60" x2="86" y2="60" stroke="${C.blue}" stroke-width="2"/>` + t(96,63,"0",{c:C.gray,s:9,a:"start"})
+  + t(50,92,"teach it the truth",{a:"start"});
+ICONS.repl = () =>
+  `<rect x="20" y="24" width="92" height="48" rx="5" fill="#14212e"/>`
+  + t(30,54,"&gt;&gt;&gt;",{c:"#7FD07F",b:1,s:16,a:"start"})
+  + `<rect x="72" y="44" width="8" height="14" fill="#7FD07F"/>` + t(66,90,"type a line, it runs");
+ICONS["main-py"] = () =>
+  `<path d="M44 18 h34 l12 12 v46 h-46z" fill="#fff" stroke="${C.blue}" stroke-width="2"/>`
+  + `<path d="M78 18 v12 h12" fill="#EDF1F5" stroke="${C.blue}" stroke-width="2"/>`
+  + t(66,56,"main",{c:C.navy,b:1,s:13}) + t(66,68,".py",{c:C.blue,b:1,s:12}) + t(66,92,"runs on power-up");
+
+// ---- buses / pico ---------------------------------------------------
+ICONS["signal-wire"] = () =>
+  `<path d="M12 60 H36 V32 H60 V60 H84 V32 H108 V60 H120" fill="none" stroke="${C.yellow}" stroke-width="4"/>`
+  + t(30,80,"HIGH / LOW",{c:C.gray,a:"start"}) + t(66,94,"carries a message");
+ICONS.gpio = () =>
+  `<rect x="30" y="18" width="72" height="60" rx="4" fill="#186c34"/>`
+  + [0,1,2,3,4].map(i=>`<circle cx="40" cy="${28+i*11}" r="4" fill="${C.gold}"/><text x="52" y="${31+i*11}" font-size="8" fill="#dfeee3" font-family="Arial">GP${i}</text>`).join("")
+  + t(66,92,"programmable pins");
+ICONS["uart-serial"] = () =>
+  `<path d="M16 38 H104 m-12 -6 l12 6 -12 6" fill="none" stroke="${C.blue}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`
+  + `<path d="M116 56 H28 m12 -6 l-12 6 12 6" fill="none" stroke="${C.orange}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`
+  + t(96,34,"TX",{c:C.blue,s:9}) + t(36,72,"RX",{c:C.orange,s:9}) + t(66,92,"send + receive");
+ICONS.onewire = () =>
+  `<line x1="16" y1="46" x2="116" y2="46" stroke="${C.green}" stroke-width="4"/>`
+  + [34,62,90].map(x=>`<g><line x1="${x}" y1="46" x2="${x}" y2="62" stroke="${C.green}" stroke-width="3"/><rect x="${x-5}" y="62" width="10" height="12" rx="2" fill="${C.copper}"/></g>`).join("")
+  + t(66,92,"1 wire, many probes");
+ICONS["3v3-pin"] = () =>
+  `<circle cx="50" cy="46" r="14" fill="${C.red}"/>` + t(50,50,"+",{c:"#fff",b:1,s:18})
+  + `<line x1="64" y1="46" x2="96" y2="46" stroke="${C.red}" stroke-width="4"/>`
+  + t(80,36,"3V3",{c:C.red,b:1,s:12}) + t(66,92,"powers the sensors");
+ICONS.bootsel = () =>
+  `<rect x="40" y="34" width="52" height="34" rx="6" fill="#E8E8E8" stroke="${C.gray}" stroke-width="2"/>`
+  + `<rect x="56" y="42" width="20" height="18" rx="4" fill="#CFCFCF" stroke="${C.gray}"/>`
+  + t(66,90,"hold while plugging in");
+ICONS.firmware = () =>
+  `<rect x="40" y="26" width="52" height="44" rx="4" fill="${C.navy}"/>`
+  + `<g transform="translate(66,48)" fill="${C.yellow}"><circle r="7" fill="none" stroke="${C.yellow}" stroke-width="4"/>`
+  + [0,60,120,180,240,300].map(a=>`<rect x="-2" y="-13" width="4" height="6" transform="rotate(${a})"/>`).join("")+`</g>`
+  + t(66,90,"software baked in");
+ICONS["flash-memory"] = () =>
+  `<rect x="42" y="24" width="48" height="48" rx="4" fill="#3F6EA5"/>`
+  + `<rect x="50" y="24" width="32" height="12" fill="#5580b5"/><rect x="58" y="24" width="16" height="8" fill="#EAF1F7"/>`
+  + t(66,56,"MEM",{c:"#fff",b:1,s:11}) + t(66,90,"keeps files, power-off");
+ICONS["voltage-divider"] = () =>
+  `<line x1="66" y1="16" x2="66" y2="26" stroke="${C.red}" stroke-width="3"/>`
+  + `<rect x="58" y="26" width="16" height="18" rx="3" fill="#D9B98F"/>`
+  + `<rect x="58" y="52" width="16" height="18" rx="3" fill="#D9B98F"/>`
+  + `<line x1="66" y1="44" x2="66" y2="52" stroke="${C.gray}" stroke-width="3"/>`
+  + `<line x1="66" y1="70" x2="66" y2="80" stroke="${C.ink}" stroke-width="3"/>`
+  + `<line x1="74" y1="48" x2="96" y2="48" stroke="${C.blue}" stroke-width="3"/><circle cx="96" cy="48" r="3" fill="${C.blue}"/>`
+  + t(50,92,"tap in the middle",{a:"start"});
+
+// ---- networking / soldering / debugging -----------------------------
+ICONS["access-point-vs-station"] = () =>
+  `<line x1="40" y1="30" x2="40" y2="70" stroke="${C.navy}" stroke-width="4"/>`
+  + [10,18,26].map(r=>`<path d="M40 40 a${r} ${r} 0 0 1 ${r} ${r}" fill="none" stroke="${C.blue}" stroke-width="2"/><path d="M40 40 a${r} ${r} 0 0 0 -${r} ${r}" fill="none" stroke="${C.blue}" stroke-width="2"/>`).join("")
+  + `<rect x="82" y="44" width="20" height="30" rx="3" fill="${C.navy}"/>` + t(66,92,"hosts vs joins");
+ICONS.json = () =>
+  t(30,56,"{",{c:C.orange,b:1,s:34,a:"start"}) + t(96,56,"}",{c:C.orange,b:1,s:34})
+  + t(66,44,'"t": 24',{c:C.navy,s:12,b:1}) + t(66,90,"data, plain text");
+ICONS.ssid = () =>
+  [12,20,28].map(r=>`<path d="M66 62 a${r} ${r} 0 0 1 ${r*0.8} -${r*0.8}" fill="none" stroke="${C.blue}" stroke-width="3"/><path d="M66 62 a${r} ${r} 0 0 0 -${r*0.8} -${r*0.8}" fill="none" stroke="${C.blue}" stroke-width="3"/>`).join("")
+  + `<circle cx="66" cy="62" r="4" fill="${C.blue}"/>`
+  + `<rect x="40" y="16" width="52" height="16" rx="4" fill="${C.navy}"/>` + t(66,28,"PicoLab7",{c:"#fff",s:10})
+  + t(66,92,"the network's name");
+ICONS.soldering = () =>
+  `<rect x="18" y="22" width="40" height="10" rx="3" fill="${C.ink}" transform="rotate(28 38 27)"/>`
+  + `<path d="M60 44 l10 -14 6 4 -10 14z" fill="#B8BEC4"/>`
+  + `<path d="M64 58 q10 -10 20 0 q-4 6 -10 6 q-6 0 -10 -6z" fill="${C.gold}"/>`
+  + `<path d="M72 44 q3 -6 0 -10" fill="none" stroke="${C.line}" stroke-width="2"/>` + t(66,90,"melt metal to join");
+ICONS["header-pins"] = () =>
+  `<rect x="24" y="52" width="84" height="12" rx="2" fill="${C.ink}"/>`
+  + [0,1,2,3,4,5].map(i=>`<rect x="${30+i*13}" y="26" width="6" height="30" rx="1" fill="${C.gold}"/>`).join("")
+  + t(66,90,"pins that plug in");
+ICONS["post-codes"] = () =>
+  `<rect x="16" y="38" width="100" height="20" rx="6" fill="#14212e"/>`
+  + [[28,"s"],[46,"s"],[64,"l"],[82,"s"]].map(([x,k])=>`<rect x="${x}" y="43" width="${k==='l'?18:8}" height="10" rx="3" fill="${k==='l'?C.orange:C.green}"/>`).join("")
+  + t(66,84,"blinks say what's wrong");
+ICONS["hot-plug"] = () =>
+  `<rect x="20" y="34" width="52" height="34" rx="4" fill="#186c34"/><rect x="30" y="44" width="10" height="7" rx="2" fill="#7CFF6B"/>`
+  + `<rect x="86" y="46" width="20" height="10" rx="2" fill="${C.gray}"/><line x1="72" y1="51" x2="86" y2="51" stroke="${C.gray}" stroke-width="4"/>`
+  + `<path d="M80 40 l4 -6" stroke="${C.yellow}" stroke-width="2"/>` + t(66,90,"plug in while running");
+ICONS.stall = () =>
+  `<rect x="24" y="40" width="34" height="26" rx="3" fill="${C.blue}"/>`
+  + `<rect x="58" y="49" width="26" height="8" rx="2" fill="${C.gray}"/>`
+  + `<rect x="88" y="30" width="10" height="48" fill="#9AA6B0"/>`
+  + `<path d="M84 44 l6 -3 -3 6 6 -2 -8 9 3 -7z" fill="${C.yellow}" stroke="${C.orange}"/>` + t(56,92,"pushing a hard stop");
+ICONS["stale-library"] = () =>
+  `<path d="M44 20 h30 l12 12 v46 h-42z" fill="#EDE6D2" stroke="#B9AE90" stroke-width="2"/>`
+  + `<path d="M74 20 v12 h12" fill="#DED4B8" stroke="#B9AE90" stroke-width="2"/>`
+  + t(65,58,".mpy",{c:"#8a7d5a",b:1,s:13}) + `<circle cx="52" cy="70" r="8" fill="none" stroke="${C.gray}" stroke-width="2"/><line x1="52" y1="70" x2="52" y2="65" stroke="${C.gray}" stroke-width="2"/><line x1="52" y1="70" x2="56" y2="70" stroke="${C.gray}" stroke-width="2"/>`
+  + t(66,92,"old copy, shadows new");
+
 const OUT = path.join(__dirname, "..", "docs", "img", "glossary", "icons");
 fs.mkdirSync(OUT, { recursive: true });
 let n = 0;
