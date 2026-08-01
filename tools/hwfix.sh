@@ -147,9 +147,14 @@ mkdirs_on_board() {
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
-# Backups live OUTSIDE the code tree so nothing in the repo (a checkout, a
-# clean, a stray rm) can ever clobber them. Override with HWFIX_BACKUPS=...
+# Every backup is written TWICE:
+#   BKROOT   the owner's IMMUTABLE copy, outside the code tree, that no repo
+#            operation (checkout, clean, stray rm) can touch.  (HWFIX_BACKUPS)
+#   WORKROOT a working copy inside the repo (gitignored) that tooling with
+#            access to the repo can inspect and restore from.  (HWFIX_WORKDIR)
+# Losing one still leaves the other.
 BKROOT="${HWFIX_BACKUPS:-$HOME/wormhole-backups}"
+WORKROOT="${HWFIX_WORKDIR:-$REPO/backups}"
 
 echo "== hwfix =="
 if ! conn eval 'True' >/dev/null 2>&1; then
@@ -199,6 +204,8 @@ fi
 SERIAL="$(conn exec 'import machine,ubinascii;print(ubinascii.hexlify(machine.unique_id()).decode())' 2>/dev/null | tr -d '\r\n ' || true)"
 DRYTAG=""; [ "$DRY" = 1 ] && DRYTAG="  (dry-run)"
 say "board serial: ${SERIAL:-unknown}${DRYTAG}"
+mkdir -p "$BKROOT" "$WORKROOT" 2>/dev/null || true   # both exist + findable after any run
+say "backups: $BKROOT  (+ working copy: ${WORKROOT#$REPO/})"
 
 # ------------------------------------------------------------- restore
 # UNDO mode: push a saved backup straight back onto the board, then stop.
@@ -258,24 +265,29 @@ done <<< "$LIST"
 HASH="$(cd "$TMP" && find . -type f | LC_ALL=C sort | xargs -r sha256sum | sha256sum | cut -d' ' -f1)"
 say "board content hash: ${HASH:0:16}"
 
-mkdir -p "$BKROOT"
+mkdir -p "$BKROOT" "$WORKROOT"
+# dedup against the IMMUTABLE store (the canonical history)
 DUP=""; BACKUP_DIR=""
 for d in "$BKROOT"/*/; do
   [ -f "${d}HASH" ] || continue
   if [ "$(cat "${d}HASH")" = "$HASH" ]; then DUP="$d"; break; fi
 done
-if [ -n "$DUP" ]; then
-  BACKUP_DIR="${DUP%/}"
-  say "identical to backup $(basename "$DUP") -> no new backup needed"
-elif [ "$DRY" = 1 ]; then
+if [ "$DRY" = 1 ]; then
   say "[dry-run] would save a NEW backup (hash ${HASH:0:12})"
+elif [ -n "$DUP" ]; then
+  BACKUP_DIR="${DUP%/}"
+  say "identical to backup $(basename "$DUP") -> no new snapshot"
+  # keep my in-repo working copy in step with the immutable one
+  WORK="$WORKROOT/$(basename "$BACKUP_DIR")"
+  [ -d "$WORK" ] || { mkdir -p "$WORK"; cp -a "$BACKUP_DIR/." "$WORK/" 2>/dev/null || true; }
 else
-  BK="$BKROOT/$(date -u +%Y-%m-%dT%H-%M-%SZ)_${SERIAL:-board}_${HASH:0:8}"
-  mkdir -p "$BK"
-  cp -a "$TMP/." "$BK/"
-  printf '%s\n' "$HASH" > "$BK/HASH"
+  NAME="$(date -u +%Y-%m-%dT%H-%M-%SZ)_${SERIAL:-board}_${HASH:0:8}"
+  BK="$BKROOT/$NAME";   mkdir -p "$BK";   cp -a "$TMP/." "$BK/";   printf '%s\n' "$HASH" > "$BK/HASH"
+  WORK="$WORKROOT/$NAME"; mkdir -p "$WORK"; cp -a "$TMP/." "$WORK/"; printf '%s\n' "$HASH" > "$WORK/HASH"
   BACKUP_DIR="$BK"
-  say "backup saved: $BK"
+  say "backup saved to BOTH:"
+  say "  immutable (yours):   $BK"
+  say "  working copy (mine): ${WORK#$REPO/}"
 fi
 fi   # end: only back up when the board was not blank
 
