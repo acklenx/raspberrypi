@@ -47,8 +47,8 @@ say()  { printf '  %s\n' "$*"; }
 act()  { if [ "$DRY" = 1 ]; then echo "  [dry-run] $*"; else "$@"; fi; }
 
 # A Pico with NO firmware enumerates as a BOOTSEL mass-storage drive (labelled
-# RPI-RP2 or RP2350) with an INFO_UF2.TXT at its root. Find that mount, if any.
-find_bootsel() {
+# RPI-RP2 or RP2350) with an INFO_UF2.TXT at its root.
+find_bootsel_mount() {   # an ALREADY-mounted bootsel drive
   local d
   for d in ${BOOTSEL_DIR:-} /media/*/RPI-RP2 /media/*/RP2350 \
            /run/media/*/RPI-RP2 /run/media/*/RP2350 \
@@ -56,6 +56,38 @@ find_bootsel() {
     [ -n "$d" ] && [ -f "$d/INFO_UF2.TXT" ] && { echo "$d"; return 0; }
   done
   return 1
+}
+find_bootsel_dev() {     # an UNMOUNTED bootsel partition, e.g. /dev/sdb1
+  lsblk -rno NAME,LABEL,MOUNTPOINT 2>/dev/null \
+    | awk '($2=="RP2350"||$2=="RPI-RP2")&&$3==""{print "/dev/"$1; exit}'
+}
+
+# Offer to flash MicroPython onto a mounted bootsel drive ($1 = its path).
+offer_flash() {
+  local BSEL="$1" UF2 ans
+  say "found a Pico in BOOTSEL mode (no firmware) at: $BSEL"
+  UF2="$(ls "$REPO"/firmware/*.uf2 2>/dev/null | head -1 || true)"
+  if [ -z "$UF2" ]; then
+    say "no .uf2 in firmware/ to install. Download the Pico 2 W build from micropython.org."
+    return 1
+  fi
+  if [ -f "$BSEL/INFO_UF2.TXT" ] && grep -qi 'RP2040' "$BSEL/INFO_UF2.TXT" \
+     && echo "$UF2" | grep -qi 'PICO2'; then
+    say "WARNING: that drive looks like an RP2040 board, but the firmware is a"
+    say "Pico 2 (RP2350) build. Do NOT flash it unless this really is a Pico 2."
+  fi
+  say "MicroPython to install: ${UF2#$REPO/}"
+  say "manual install (always works): cp '${UF2#$REPO/}' '$BSEL'/"
+  if [ "$DRY" = 1 ]; then say "[dry-run] not flashing."; return 0; fi
+  printf '  Flash MicroPython onto it now? [y/N] '
+  read -r ans || ans=""
+  if [ "$ans" = y ] || [ "$ans" = Y ]; then
+    cp "$UF2" "$BSEL"/ && sync
+    say "flashed. The board reboots into MicroPython in a few seconds."
+    say "re-run  tools/hwfix.sh  once it re-appears, to load your code."
+  else
+    say "skipped. Run the cp above when ready."
+  fi
 }
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -65,35 +97,33 @@ BKROOT="$REPO/backups"
 echo "== hwfix =="
 if ! conn eval 'True' >/dev/null 2>&1; then
   say "no MicroPython board on the wire."
-  BSEL="$(find_bootsel || true)"
-  if [ -n "$BSEL" ]; then
-    # Firmware missing/absent, but a Pico IS here in BOOTSEL. Offer to flash it.
-    say "found a Pico in BOOTSEL mode (no firmware) at: $BSEL"
-    UF2="$(ls "$REPO"/firmware/*.uf2 2>/dev/null | head -1 || true)"
-    if [ -z "$UF2" ]; then
-      say "no .uf2 in firmware/ to install. Download the Pico 2 W build from"
-      say "micropython.org and drop it on that drive."
-      exit 1
+  BSEL="$(find_bootsel_mount || true)"
+  if [ -z "$BSEL" ]; then
+    # No mounted bootsel drive, but is one sitting UNMOUNTED (pop-os does not
+    # always auto-mount it)? If so, mount it so we can drop the .uf2 on.
+    DEV="$(find_bootsel_dev || true)"
+    if [ -n "$DEV" ]; then
+      say "a Pico is in BOOTSEL on $DEV but not mounted yet."
+      if [ "$DRY" = 1 ]; then
+        say "[dry-run] would mount it: udisksctl mount -b $DEV"
+      elif command -v udisksctl >/dev/null 2>&1; then
+        MOUT="$(udisksctl mount -b "$DEV" 2>&1 || true)"
+        BSEL="$(printf '%s' "$MOUT" | sed -n 's/.* at \(.*\)/\1/p' | sed 's/[.[:space:]]*$//')"
+        { [ -n "$BSEL" ] && [ -d "$BSEL" ]; } || BSEL="$(find_bootsel_mount || true)"
+        if [ -n "$BSEL" ]; then
+          say "mounted at $BSEL"
+        else
+          say "could not auto-mount it: $MOUT"
+          say "mount it yourself, then re-run:  udisksctl mount -b $DEV"
+          exit 1
+        fi
+      else
+        say "mount it, then re-run:  udisksctl mount -b $DEV   (or click the drive in Files)"
+        exit 1
+      fi
     fi
-    if [ -f "$BSEL/INFO_UF2.TXT" ] && grep -qi 'RP2040' "$BSEL/INFO_UF2.TXT" \
-       && echo "$UF2" | grep -qi 'PICO2'; then
-      say "WARNING: that drive looks like an RP2040 board, but the firmware is a"
-      say "Pico 2 (RP2350) build. Do NOT flash it unless this really is a Pico 2."
-    fi
-    say "MicroPython to install: ${UF2#$REPO/}"
-    say "manual install (always works): cp '${UF2#$REPO/}' '$BSEL'/"
-    if [ "$DRY" = 1 ]; then say "[dry-run] not flashing."; exit 0; fi
-    printf '  Flash MicroPython onto it now? [y/N] '
-    read -r ans || ans=""
-    if [ "$ans" = y ] || [ "$ans" = Y ]; then
-      cp "$UF2" "$BSEL"/ && sync
-      say "flashed. The board reboots into MicroPython in a few seconds."
-      say "re-run  tools/hwfix.sh  once it re-appears, to load your code."
-    else
-      say "skipped. Run the cp above, or re-run and answer y, when ready."
-    fi
-    exit 0
   fi
+  if [ -n "$BSEL" ]; then offer_flash "$BSEL"; exit 0; fi
   say "if the board has NO firmware yet: hold the BOOTSEL button while plugging"
   say "in USB (a drive named RPI-RP2 / RP2350 appears), then re-run this to flash."
   say "otherwise: is it plugged in? Is Thonny closed? (try: $MP devs)"
