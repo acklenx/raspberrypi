@@ -189,6 +189,11 @@ class Report:
       msg = "  READY FOR CLASS: this board is healthy  "
       code = "\x1b[1;42;30m"
     print("\n" + _c(code, msg + " " * max(0, W - len(msg))))
+    if c[FAIL]:
+      # Point at the repair tool. It backs the board up FIRST, then fixes,
+      # then prints the exact restore-from-backup command to undo it.
+      print("\n" + _c("\x1b[2m", "  to back up and auto-repair, on the host run:"))
+      print(_c("\x1b[1m", "      tools/hwfix.sh"))
 
 
 # =====================================================================

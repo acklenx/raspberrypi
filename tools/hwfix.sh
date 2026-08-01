@@ -6,6 +6,8 @@
 # Run ON the machine the Pico is plugged into, from the repo root:
 #     tools/hwfix.sh                 # backup, fix, verify
 #     tools/hwfix.sh --dry-run       # show what it WOULD do, change nothing
+#     tools/hwfix.sh --restore-backup backups/<DIR>   # UNDO: push a backup
+#                                    # back onto the board, exactly as it was
 #     PORT=id:c6c7...  tools/hwfix.sh    # pick a board by serial
 #     MP=~/.local/bin/mpremote tools/hwfix.sh   # if mpremote is not on PATH
 #
@@ -28,13 +30,16 @@ MP="${MP:-mpremote}"
 PORT="${PORT:-}"
 DRY=0
 RESTORE=1
-for a in "$@"; do
-  case "$a" in
-    --dry-run)    DRY=1 ;;
-    --no-restore) RESTORE=0 ;;
-    -h|--help)    sed -n '2,30p' "$0"; exit 0 ;;
-    *) echo "unknown arg: $a (try --help)"; exit 2 ;;
+RESTORE_DIR=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry-run)        DRY=1 ;;
+    --no-restore)     RESTORE=0 ;;
+    --restore-backup) shift; RESTORE_DIR="${1:-}" ;;
+    -h|--help)        sed -n '2,34p' "$0"; exit 0 ;;
+    *) echo "unknown arg: $1 (try --help)"; exit 2 ;;
   esac
+  shift
 done
 
 conn() { if [ -n "$PORT" ]; then "$MP" connect "$PORT" "$@"; else "$MP" "$@"; fi; }
@@ -54,6 +59,26 @@ fi
 SERIAL="$(conn exec 'import machine,ubinascii;print(ubinascii.hexlify(machine.unique_id()).decode())' 2>/dev/null | tr -d '\r\n ' || true)"
 DRYTAG=""; [ "$DRY" = 1 ] && DRYTAG="  (dry-run)"
 say "board serial: ${SERIAL:-unknown}${DRYTAG}"
+
+# ------------------------------------------------------------- restore
+# UNDO mode: push a saved backup straight back onto the board, then stop.
+if [ -n "$RESTORE_DIR" ]; then
+  [ -d "$RESTORE_DIR" ] || RESTORE_DIR="$REPO/$RESTORE_DIR"   # accept repo-relative
+  if [ ! -d "$RESTORE_DIR" ]; then echo "  no such backup dir: $RESTORE_DIR"; exit 1; fi
+  say "RESTORING board from: ${RESTORE_DIR#$REPO/}"
+  ( cd "$RESTORE_DIR" && find . -type d ) | sed 's#^\./##' | while IFS= read -r d; do
+    if [ -z "$d" ] || [ "$d" = "." ]; then continue; fi
+    conn fs mkdir ":$d" >/dev/null 2>&1 || true
+  done
+  ( cd "$RESTORE_DIR" && find . -type f ! -name HASH ) | sed 's#^\./##' | while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    say "restore $f"
+    act conn fs cp "$RESTORE_DIR/$f" ":$f"
+  done
+  say "restore complete."
+  if [ "$DRY" = 0 ]; then echo; say "re-running self-test:"; conn run "$SCRIPT_DIR/hwtest.py" || true; fi
+  exit 0
+fi
 
 # ---------------------------------------------------------------- list
 # Walk the board and print every file path (reliable, no cp -r layout guesses).
@@ -87,12 +112,13 @@ HASH="$(cd "$TMP" && find . -type f | LC_ALL=C sort | xargs -r sha256sum | sha25
 say "board content hash: ${HASH:0:16}"
 
 mkdir -p "$BKROOT"
-DUP=""
+DUP=""; BACKUP_DIR=""
 for d in "$BKROOT"/*/; do
   [ -f "${d}HASH" ] || continue
   if [ "$(cat "${d}HASH")" = "$HASH" ]; then DUP="$d"; break; fi
 done
 if [ -n "$DUP" ]; then
+  BACKUP_DIR="${DUP%/}"
   say "identical to backup $(basename "$DUP") -> no new backup needed"
 elif [ "$DRY" = 1 ]; then
   say "[dry-run] would save a NEW backup (hash ${HASH:0:12})"
@@ -101,6 +127,7 @@ else
   mkdir -p "$BK"
   cp -a "$TMP/." "$BK/"
   printf '%s\n' "$HASH" > "$BK/HASH"
+  BACKUP_DIR="$BK"
   say "backup saved: ${BK#$REPO/}"
 fi
 
@@ -137,6 +164,14 @@ MAP
 fi
 
 [ "$changed" = 0 ] && say "nothing needed fixing."
+
+# Always show the undo, whether or not anything was changed this run, so the
+# restore-from-backup command is right there if a fix ever makes things worse.
+if [ -n "$BACKUP_DIR" ]; then
+  echo
+  say "UNDO - restore this board exactly as it was before this run:"
+  say "    tools/hwfix.sh --restore-backup '${BACKUP_DIR#$REPO/}'"
+fi
 
 # -------------------------------------------------------------- verify
 if [ "$DRY" = 1 ]; then
