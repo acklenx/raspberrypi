@@ -168,11 +168,18 @@ def walk(d):
         if mode & 0x4000: walk(p)      # directory
         else: print(p)
 walk("")' 2>/dev/null | tr -d '\r')"
-if [ -z "$LIST" ]; then echo "  could not list board files"; exit 1; fi
+BLANK=0
+if [ -z "$LIST" ]; then
+  # The board answered (we have its serial) but has no files: a freshly
+  # flashed, blank board. That is not an error, it just needs code installed.
+  say "board filesystem is EMPTY (freshly flashed). Nothing to back up; installing code..."
+  BLANK=1
+fi
 
 # --------------------------------------------------------------- backup
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
+if [ "$BLANK" = 0 ]; then
 NFILES="$(printf '%s\n' "$LIST" | sed '/^$/d' | wc -l | tr -d ' ')"
 say "reading $NFILES files off the board..."
 while IFS= read -r f; do
@@ -204,6 +211,7 @@ else
   BACKUP_DIR="$BK"
   say "backup saved: ${BK#$REPO/}"
 fi
+fi   # end: only back up when the board was not blank
 
 # ----------------------------------------------------------------- fix
 changed=0
@@ -222,6 +230,8 @@ if [ "$RESTORE" = 1 ]; then
     full="$REPO/$src"
     if [ ! -f "$full" ]; then say "repo missing $src (skip restore)"; continue; fi
     if [ ! -f "$TMP/$onboard" ] || ! cmp -s "$full" "$TMP/$onboard"; then
+      d="$(dirname "$onboard")"     # make the dir first (blank board has no lib/)
+      if [ "$d" != "." ] && [ "$DRY" = 0 ]; then conn fs mkdir ":$d" >/dev/null 2>&1 || true; fi
       say "restore $onboard from repo"; act conn fs cp "$full" ":$onboard"; changed=1
     fi
   done <<'MAP'
