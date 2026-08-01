@@ -31,10 +31,15 @@ PORT="${PORT:-}"
 DRY=0
 RESTORE=1
 RESTORE_DIR=""
+INSTALL_SET=everything        # default: the FULL image (all projects + drivers + toc)
+ASSUME_YES=0                  # -y: flash without prompting (batch loading)
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run)        DRY=1 ;;
+    -y|--yes)         ASSUME_YES=1 ;;
     --no-restore)     RESTORE=0 ;;
+    --everything)     INSTALL_SET=everything ;;   # the default, spelled out
+    --core)           INSTALL_SET=core ;;         # minimal: just the worm-bin capstone
     --restore-backup) shift; RESTORE_DIR="${1:-}" ;;
     -h|--help)        sed -n '2,34p' "$0"; exit 0 ;;
     *) echo "unknown arg: $1 (try --help)"; exit 2 ;;
@@ -79,15 +84,65 @@ offer_flash() {
   say "MicroPython to install: ${UF2#$REPO/}"
   say "manual install (always works): cp '${UF2#$REPO/}' '$BSEL'/"
   if [ "$DRY" = 1 ]; then say "[dry-run] not flashing."; return 0; fi
-  printf '  Flash MicroPython onto it now? [y/N] '
-  read -r ans || ans=""
+  if [ "$ASSUME_YES" = 1 ]; then
+    ans=y; say "flashing (auto-confirmed with -y)..."
+  else
+    printf '  Flash MicroPython onto it now? [y/N] '
+    read -r ans || ans=""
+  fi
   if [ "$ans" = y ] || [ "$ans" = Y ]; then
     cp "$UF2" "$BSEL"/ && sync
-    say "flashed. The board reboots into MicroPython in a few seconds."
-    say "re-run  tools/hwfix.sh  once it re-appears, to load your code."
+    say "flashed. waiting for the board to reboot into MicroPython..."
+    for _ in $(seq 30); do
+      sleep 1
+      conn eval 'True' >/dev/null 2>&1 && break
+    done
   else
-    say "skipped. Run the cp above when ready."
+    say "skipped. Run the cp above when ready, then re-run to install."
   fi
+}
+
+# What to install, as "<board-path>|<repo-path>" lines.
+core_manifest() {   # minimal: just enough for a working worm-bin capstone
+  cat <<'MAP'
+lib/picolab.py|lib/picolab.py
+lib/ssd1306.py|lib/ssd1306.py
+lib/bme280.py|lib/bme280.py
+lib/ads1115.py|lib/ads1115.py
+lib/vl53l0x.py|lib/vl53l0x.py
+lib/bh1750.py|lib/bh1750.py
+main.py|projects/worm-bin/main.py
+index.html|projects/worm-bin/index.html
+cal.js|web/cal.js
+MAP
+}
+everything_manifest() {   # the FULL image, straight from the everything package
+  local pkg="$REPO/projects/everything/package.json"
+  if [ ! -f "$pkg" ]; then
+    echo "  (no everything package.json, using core set)" >&2
+    core_manifest; return
+  fi
+  # Pair each "fs:<board-path>" line with the "github:.../raspberrypi/<repo-path>"
+  # line that follows it. Portable awk, no python/jq needed.
+  awk '
+    match($0, /"fs:[^"]*"/) { fs=substr($0, RSTART+4, RLENGTH-5); haveps=1; next }
+    haveps && match($0, /"github:[^"]*raspberrypi\/[^"]*"/) {
+      s=substr($0, RSTART+1, RLENGTH-2); sub(/.*raspberrypi\//, "", s)
+      print fs "|" s; haveps=0
+    }
+  ' "$pkg"
+}
+install_manifest() {
+  if [ "$INSTALL_SET" = core ]; then core_manifest; else everything_manifest; fi
+}
+# mkdir -p on the board (mpremote fs mkdir does not create parents).
+mkdirs_on_board() {
+  local acc="" p
+  local IFS='/'
+  for p in $1; do
+    acc="${acc:+$acc/}$p"
+    conn fs mkdir ":$acc" >/dev/null 2>&1 || true
+  done
 }
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -123,11 +178,20 @@ if ! conn eval 'True' >/dev/null 2>&1; then
       fi
     fi
   fi
-  if [ -n "$BSEL" ]; then offer_flash "$BSEL"; exit 0; fi
-  say "if the board has NO firmware yet: hold the BOOTSEL button while plugging"
-  say "in USB (a drive named RPI-RP2 / RP2350 appears), then re-run this to flash."
-  say "otherwise: is it plugged in? Is Thonny closed? (try: $MP devs)"
-  exit 1
+  if [ -n "$BSEL" ]; then
+    offer_flash "$BSEL"
+    if conn eval 'True' >/dev/null 2>&1; then
+      say "board is up on fresh firmware, continuing to install its code..."
+      # (do not exit: fall through to the install flow below, all one command)
+    else
+      exit 0    # declined, or not back yet: re-run to install when it appears
+    fi
+  else
+    say "if the board has NO firmware yet: hold the BOOTSEL button while plugging"
+    say "in USB (a drive named RPI-RP2 / RP2350 appears), then re-run this to flash."
+    say "otherwise: is it plugged in? Is Thonny closed? (try: $MP devs)"
+    exit 1
+  fi
 fi
 # NB: mpremote `eval` takes an EXPRESSION; multi-statement code needs `exec`.
 SERIAL="$(conn exec 'import machine,ubinascii;print(ubinascii.hexlify(machine.unique_id()).decode())' 2>/dev/null | tr -d '\r\n ' || true)"
@@ -223,28 +287,22 @@ while IFS= read -r f; do
   esac
 done <<< "$LIST"
 
-# 2) restore code files from the repo, but only the ones missing or changed
+# 2) install/restore code files from the repo, only the missing or changed ones
 if [ "$RESTORE" = 1 ]; then
+  say "install set: $INSTALL_SET"
+  n_installed=0
   while IFS='|' read -r onboard src; do
     [ -n "$onboard" ] || continue
     full="$REPO/$src"
-    if [ ! -f "$full" ]; then say "repo missing $src (skip restore)"; continue; fi
+    if [ ! -f "$full" ]; then say "repo missing $src (skip)"; continue; fi
     if [ ! -f "$TMP/$onboard" ] || ! cmp -s "$full" "$TMP/$onboard"; then
-      d="$(dirname "$onboard")"     # make the dir first (blank board has no lib/)
-      if [ "$d" != "." ] && [ "$DRY" = 0 ]; then conn fs mkdir ":$d" >/dev/null 2>&1 || true; fi
-      say "restore $onboard from repo"; act conn fs cp "$full" ":$onboard"; changed=1
+      d="$(dirname "$onboard")"     # make parent dirs first (blank board has none)
+      if [ "$d" != "." ] && [ "$DRY" = 0 ]; then mkdirs_on_board "$d"; fi
+      say "install $onboard"; act conn fs cp "$full" ":$onboard"
+      changed=1; n_installed=$((n_installed + 1))
     fi
-  done <<'MAP'
-lib/picolab.py|lib/picolab.py
-lib/ssd1306.py|lib/ssd1306.py
-lib/bme280.py|lib/bme280.py
-lib/ads1115.py|lib/ads1115.py
-lib/vl53l0x.py|lib/vl53l0x.py
-lib/bh1750.py|lib/bh1750.py
-main.py|projects/worm-bin/main.py
-index.html|projects/worm-bin/index.html
-cal.js|web/cal.js
-MAP
+  done <<< "$(install_manifest)"
+  [ "$n_installed" -gt 0 ] && say "installed/updated $n_installed file(s)."
 fi
 
 [ "$changed" = 0 ] && say "nothing needed fixing."
