@@ -51,8 +51,8 @@
      one <b>loads and fixes</b> it. This is the bench workflow; it does not change the kid-facing
      <a href="start.html">Viper flow</a> at all.</p>
 
-  <div class="note"><b>The short version.</b> Plug a board in, run
-     <span class="pill">tools/hwfix.sh</span>: it flashes MicroPython if the board is blank, backs
+  <div class="note"><b>The short version.</b> Plug a board in, <a class="term" href="glossary.html#run">run</a>
+     <span class="pill">tools/hwfix.sh</span>: it flashes <a class="term" href="glossary.html#micropython">MicroPython</a> if the board is blank, backs
      the board up, installs the full set of programs, and runs the self-test. Then
      <span class="pill">mpremote run tools/hwtest.py</span> anytime to check a board and watch the
      result on its own OLED screen.</p>
@@ -76,7 +76,7 @@
   <p>A brand-new Pico is empty and needs MicroPython once. Two ways:</p>
   <div class="step"><div class="n">A</div><div class="body">
     <h3>By hand (the classic)</h3>
-    <p>Hold <b>BOOTSEL</b> while plugging in USB; the Pico appears as a drive named
+    <p>Hold <b><a class="term" href="glossary.html#bootsel">BOOTSEL</a></b> while plugging in USB; the Pico appears as a drive named
        <span class="pill">RP2350</span>. Drag
        <a href="https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2" class="ext">the firmware file</a>
        onto it. The drive vanishes, that means it worked.</p>
@@ -84,8 +84,8 @@
   <div class="step"><div class="n">B</div><div class="body">
     <h3>Let hwfix do it (best for loading many)</h3>
     <p>With the board in BOOTSEL, run <span class="pill">tools/hwfix.sh</span>. It notices the board
-       has no firmware, mounts the drive, offers to flash it, then waits for it to reboot and
-       installs the code, all in one command. Add <span class="o">-y</span> to skip the prompt when
+       has no <a class="term" href="glossary.html#firmware">firmware</a>, mounts the drive, offers to flash it, then waits for it to reboot and
+       installs the <a class="term" href="glossary.html#program-code">code</a>, all in one command. Add <span class="o">-y</span> to skip the prompt when
        you are loading a stack of them.</p>
     <div class="cmd"><span class="p">$</span> bash tools/hwfix.sh <span class="o">-y</span>
   no MicroPython board on the wire.
@@ -118,7 +118,7 @@
      whatever sensors are plugged in, no computer needed after. Flags:</p>
   <div class="tablewrap"><table>
     <tr><th>Flag</th><th>What it does</th></tr>
-    <tr><td><span class="pill">(none)</span></td><td>backup, install the full everything image, verify</td></tr>
+    <tr><td><span class="pill">(none)</span></td><td>backup, <a class="term" href="glossary.html#upload-install">install</a> the full everything image, verify</td></tr>
     <tr><td><span class="pill">--core</span></td><td>install just the worm-bin capstone, not every demo</td></tr>
     <tr><td><span class="pill">--dry-run</span></td><td>show what it <i>would</i> do, change nothing</td></tr>
     <tr><td><span class="pill">-y</span></td><td>auto-confirm a firmware flash (batch loading)</td></tr>
@@ -144,14 +144,14 @@
     <span class="b inf">i info</span> a reading, no pass/fail
   </p>
   <p>A missing part is a <b>skip</b>, never a failure, so the same test is honest whether a board has
-     every sensor or none. The checks are grouped: can it run at all, did the code land cleanly,
-     the truth-light LED, the network port, the I2C bus, each sensor that is present, the display,
+     every <a class="term" href="glossary.html#sensor-vs-actuator">sensor</a> or none. The checks are grouped: can it run at all, did the code land cleanly,
+     the truth-light <a class="term" href="glossary.html#led">LED</a>, the network port, the <a class="term" href="glossary.html#i2c">I2C</a> bus, each sensor that is present, the display,
      and the direct-wired parts. It ends with a verdict and, if anything failed, the command to
      repair it.</p>
   <div class="note"><b>The point of the checks:</b> it is heavy on the ways a code push goes wrong,
      the real classroom headaches, not just "does it work today." It catches a stale
      <span class="pill">.mpy</span> shadowing your edit, port 80 still held from the last run, a
-     missing file, a syntax error that would stop the board booting, and it prints a
+     missing <a class="term" href="glossary.html#file">file</a>, a syntax error that would stop the board booting, and it prints a
      <b>fingerprint</b> of the deployed code so you can confirm a push actually landed.</div>
   <div class="note g"><b>Watch it on the board's own screen.</b> If an OLED is attached, the self-test
      mirrors its progress and final verdict onto the display, so you can run it with no monitor: run
@@ -160,7 +160,7 @@
 
   <h2>Plug the sensors into any I2C pair</h2>
   <hr class="rule">
-  <p>The sensor bank does not have to be on one fixed pair of pins. On start-up the software scans a
+  <p>The sensor bank does not have to be on one fixed pair of pins. On start-up the <a class="term" href="glossary.html#fourwords">software</a> scans a
      set of clean pin pairs and uses whichever one has devices, so a bin can be wired to whatever is
      convenient. Nine pairs are fair game; three are avoided because they clash with other parts.</p>
   <div class="tablewrap"><table>
@@ -168,10 +168,10 @@
     <tr>
       <td><b>GP0/1</b> (default) · <b>GP20/21</b> (backup, next to power) · GP4/5 · GP8/9 · GP12/13 ·
           GP2/3 · GP6/7 · GP10/11 · GP18/19</td>
-      <td>GP16/17 (servos)<br>GP14/15 (relay)<br>GP26/27 (mic + spare ADC)</td>
+      <td>GP16/17 (servos)<br>GP14/15 (<a class="term" href="glossary.html#relay">relay</a>)<br>GP26/27 (mic + spare <a class="term" href="glossary.html#adc">ADC</a>)</td>
     </tr>
   </table></div>
-  <p class="lead" style="font-size:15px">GP22 (1-wire) and GP28 (light) can't form an I2C pair on the
+  <p class="lead" style="font-size:15px">GP22 (<a class="term" href="glossary.html#onewire">1-wire</a>) and GP28 (light) can't form an I2C pair on the
      header, so they never conflict. <b>SPI is available too</b> (it is a code change, since there is
      no SPI yet): SPI0 on GP2/GP3/GP4 or SPI1 on GP10/GP11/GP12 are free. It is not fully overlapped.</p>
   <div class="note o"><b>One catch:</b> the bus is located at start-up. Wire the pair before you power

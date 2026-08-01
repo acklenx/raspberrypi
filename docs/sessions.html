@@ -45,7 +45,7 @@
 
   <div class="session s1"><div class="n">1</div><div>
     <h3>Microcontrollers</h3>
-    <p>Meet the Pico. Get code onto it, run it, and watch it keep running on nothing but wall power,
+    <p>Meet the Pico. Get <a class="term" href="glossary.html#program-code">code</a> onto it, <a class="term" href="glossary.html#run">run</a> it, and watch it keep running on nothing but wall power,
        with no computer attached.</p>
     <p class="prove"><b>You prove:</b> the editor connects, the code runs, the board stands on its own.
        &nbsp;·&nbsp; <a href="https://docs.google.com/presentation/d/1RxtswPo1zEJnJrIV_41OHcRE-VmT5EBSG0QASNvSTmc/edit" class="ext">Slides</a>
@@ -54,7 +54,7 @@
 
   <div class="session s2"><div class="n">2</div><div>
     <h3>Electronics &amp; Breadboarding</h3>
-    <p>Now wires between parts. Push a little screen onto a breadboard, connect four wires, and light
+    <p>Now wires between parts. Push a little screen onto a <a class="term" href="glossary.html#breadboard">breadboard</a>, connect four wires, and light
        it up with code you already know how to run.</p>
     <p class="prove"><b>You prove:</b> you can wire two parts together and make them talk.
        &nbsp;·&nbsp; <a href="https://docs.google.com/presentation/d/1kIFo55Gud8giLK1EXfJmg93TvXiee9olfJTwIP6mam0/edit" class="ext">Slides</a></p>
@@ -62,7 +62,7 @@
 
   <div class="session s3"><div class="n">3</div><div>
     <h3>Soldering</h3>
-    <p>Make joints that actually last. Solder header pins onto a part, then run the same screen through
+    <p>Make joints that actually last. <a class="term" href="glossary.html#soldering">Solder</a> <a class="term" href="glossary.html#header-pins">header pins</a> onto a part, then run the same screen through
        your own soldered connections.</p>
     <p class="prove"><b>You prove:</b> your solder joints carry a real signal.
        &nbsp;·&nbsp; <a href="https://docs.google.com/presentation/d/11ljAAl6ed294Y0mCDvBkVQ-DEHRQteocGM60CHtX8OA/edit" class="ext">Slides</a></p>
@@ -82,7 +82,7 @@
   <p class="lead">Once you get to sensors, they all behave the same friendly way. Learn it once.</p>
   <div class="cards">
     <div class="card"><h3>Nothing breaks the lesson</h3>
-      <p>A station runs fine even if a part is missing or a wire falls out. Plug the part back in and it
+      <p>A <a class="term" href="glossary.html#access-point-vs-station">station</a> runs fine even if a part is missing or a wire falls out. Plug the part back in and it
          picks up again in a couple of seconds. No restart, no panic.</p></div>
     <div class="card"><h3>The little light tells the truth</h3>
       <p>The green light on the Pico is honest. Blinking = your code is running. It even blinks a code
@@ -92,7 +92,7 @@
       <p>Each station creates a little WiFi network named after itself (like <code>PicoLab530</code>).
          Join it on your phone and browse to the address on the screen, no internet required.</p></div>
     <div class="card"><h3>One click loads everything</h3>
-      <p>Every sensor has an "Install" link. With your Pico connected, one click puts all the code it
+      <p>Every <a class="term" href="glossary.html#sensor-vs-actuator">sensor</a> has an "<a class="term" href="glossary.html#upload-install">Install</a>" link. With your Pico connected, one click puts all the code it
          needs onto the board. No copying files by hand.</p></div>
   </div>
 
@@ -103,10 +103,10 @@
   <div class="tablewrap"><table>
     <tr><th>Wire color</th><th>What it carries</th></tr>
     <tr><td><b style="color:#C62828">Red</b></td><td>Power (3.3 volts). The part's "VCC" or "VIN".</td></tr>
-    <tr><td><b>Black</b></td><td>Ground. The shared zero. Every part connects back to it.</td></tr>
-    <tr><td><b style="color:#7CB342">Green (SDA)</b></td><td>The I2C <b>data</b> line (and any data line, like the 1-Wire probe bus). Green = data.</td></tr>
+    <tr><td><b>Black</b></td><td><a class="term" href="glossary.html#ground">Ground</a>. The shared zero. Every part connects back to it.</td></tr>
+    <tr><td><b style="color:#7CB342">Green (SDA)</b></td><td>The <a class="term" href="glossary.html#i2c">I2C</a> <b>data</b> line (and any data line, like the <a class="term" href="glossary.html#onewire">1-Wire</a> probe bus). Green = data.</td></tr>
     <tr><td><span style="display:inline-block;width:11px;height:11px;background:#fff;border:1px solid #94A3B8;border-radius:2px;vertical-align:-1px;margin-right:5px"></span><b>White (SCL)</b></td><td>The I2C <b>clock</b> line. Many parts share this SDA + SCL pair.</td></tr>
-    <tr><td><b style="color:#E8B62C">Yellow</b></td><td>A part's own signal wire, anything that isn't power, ground, data, or clock.</td></tr>
+    <tr><td><b style="color:#E8B62C">Yellow</b></td><td>A part's own <a class="term" href="glossary.html#signal-wire">signal wire</a>, anything that isn't power, ground, data, or clock.</td></tr>
   </table></div>
   <p style="margin-top:12px">Ready to wire one up? <a href="stations.html"><b>See the sensors &rarr;</b></a></p>
 </div>

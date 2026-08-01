@@ -53,16 +53,16 @@
 <div class="wrap">
   <header>
     <h1>Code Snippets</h1>
-    <p>Little copy-and-paste recipes for the code you write on a Pico, how to print, wait,
-       read a sensor, blink the light, and so on. Grab a snippet, drop it into your program, change
-       the parts you need. This is a reference for the <b>MicroPython code</b> itself, not for the
+    <p>Little copy-and-paste recipes for the <a class="term" href="glossary.html#program-code">code</a> you write on a Pico, how to print, wait,
+       read a <a class="term" href="glossary.html#sensor-vs-actuator">sensor</a>, blink the light, and so on. Grab a snippet, drop it into your program, change
+       the parts you need. This is a reference for the <b><a class="term" href="glossary.html#micropython">MicroPython</a> code</b> itself, not for the
        website. New to a word here? The <a href="glossary.html">Glossary</a> explains it.</p>
   </header>
 
   <div class="cols">
     <div class="card">
       <h2>Running code (Viper IDE)</h2>
-      <p><b>Run</b> the open file &middot; <b>Stop</b> = Ctrl+C in the terminal &middot;
+      <p><b><a class="term" href="glossary.html#run">Run</a></b> the open <a class="term" href="glossary.html#file">file</a> &middot; <b>Stop</b> = Ctrl+C in the terminal &middot;
          save as <code>main.py</code> and it runs at every power-up (that's "shipping").</p>
       <pre>&gt;&gt;&gt; 2 + 2          <b># the REPL runs lines instantly</b>
 &gt;&gt;&gt; import machine
@@ -139,7 +139,7 @@ soil = ADC(26)              <b># GP26/27/28 only</b>
 raw = soil.read_u16()       <b># 0..65535</b>
 volts = raw * 3.3 / 65535
 pct = raw / 65535 * 100</pre>
-      <p>More channels or better precision: the ADS1115 over I2C
+      <p>More channels or better precision: the ADS1115 over <a class="term" href="glossary.html#i2c">I2C</a>
          (<code>from ads1115 import ADS1115</code>).</p>
     </div>
 
@@ -182,7 +182,7 @@ for rom in roms:
 except Exception as e:
     t = None                <b># survive, report, retry</b>
     print("probe unhappy:", e)</pre>
-      <p>House rule: a missing part never crashes a station. It shows up in the POST
+      <p>House rule: a missing part never crashes a <a class="term" href="glossary.html#access-point-vs-station">station</a>. It shows up in the <a class="term" href="glossary.html#post-codes">POST</a>
          blinks and the program keeps going.</p>
     </div>
 
@@ -206,9 +206,9 @@ asyncio.run(main())</pre>
       <h2>House rules</h2>
       <p>1. <b>Config at the top.</b> Tunable numbers live at the top of the file in CAPS
          with a comment. Nobody digs in loop code to change a timing.</p>
-      <p>2. <b>Use the truth light.</b> Simplest programs: LED on = working. Bigger ones:
+      <p>2. <b>Use the <a class="term" href="glossary.html#onboard-led-the-truth-light">truth light</a>.</b> Simplest programs: <a class="term" href="glossary.html#led">LED</a> on = working. Bigger ones:
          POST blinks, one per part, short = OK, long = trouble, dark = not running.</p>
-      <p>3. <b>Never crash on a missing part.</b> try/except, report, retry.</p>
+      <p>3. <b>Never crash on a missing part.</b> <a class="term" href="glossary.html#exception-try-except">try/except</a>, report, retry.</p>
       <p>4. <b>Metric units.</b> This is science.</p>
     </div>
 
@@ -217,7 +217,7 @@ asyncio.run(main())</pre>
       <table>
         <tr><th>You see</th><th>It usually means</th></tr>
         <tr><td><code>ImportError: no module named X</code></td>
-            <td>Driver missing from <code>lib/</code> on the board (or a folder is shadowing it)</td></tr>
+            <td><a class="term" href="glossary.html#fourwords">Driver</a> missing from <code>lib/</code> on the board (or a folder is shadowing it)</td></tr>
         <tr><td><code>OSError: [Errno 110] ETIMEDOUT</code> / <code>ENODEV</code></td>
             <td>Wiring: the device didn't answer. Check with <code>i2c.scan()</code></td></tr>
         <tr><td><code>IndentationError</code></td>
