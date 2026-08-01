@@ -101,10 +101,11 @@
   <hr class="rule">
   <p><span class="pill">tools/hwfix.sh</span> is the do-everything loader. Every run, in order:</p>
   <ol>
-    <li><b>Backs up first.</b> Copies the whole board to
-       <span class="pill">~/wormhole-backups/</span> in a dated folder, and <i>de-duplicates</i>: if
-       the board is identical to a backup you already have, it makes no new copy. (A freshly flashed,
-       empty board has nothing to back up, so that step is skipped.)</li>
+    <li><b>Backs up first, twice.</b> Copies the whole board to a dated folder in <b>two</b> places:
+       an <b>immutable</b> copy in <span class="pill">~/wormhole-backups/</span> that no repo
+       operation can touch, and a <b>working copy</b> in the repo's <span class="pill">backups/</span>
+       (gitignored). It <i>de-duplicates</i>: an identical board makes no new copy. (A freshly
+       flashed, empty board has nothing to back up, so this step is skipped.)</li>
     <li><b>Repairs.</b> Deletes stale compiled <span class="pill">.mpy</span> files and editor scraps,
        then installs any missing or changed program files from the repo.</li>
     <li><b>Leaves your data alone.</b> <span class="pill">name.txt</span>, <span class="pill">wifi.json</span>,
