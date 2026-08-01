@@ -39,6 +39,11 @@
   dt .anchor:hover { color: var(--blue); }
   dt:target { background: #FDF3E7; border-radius: 6px;
               box-shadow: -6px 0 0 #FDF3E7, 6px 0 0 #FDF3E7; }
+  /* a small cartoon floats beside each term wherever the icon file exists */
+  dd { overflow: hidden; }
+  dd img.ico { float: right; width: 112px; height: auto; margin: 2px 0 6px 14px;
+               border: 1px solid #E1E8EF; border-radius: 8px; background: #FFF; }
+  @media (max-width: 560px) { dd img.ico { width: 88px; } }
   figure { margin: 14px 0; }
   figure img { width: 100%; height: auto; display: block; border: 1px solid #E1E8EF;
                border-radius: 10px; background: #FFF; }
@@ -389,6 +394,17 @@ document.querySelectorAll('dt[id]').forEach(function (dt) {
   a.title = 'Copy link to this term';
   a.setAttribute('aria-label', 'Link to this term');
   dt.appendChild(a);
+});
+// Float a small cartoon beside each term IF an icon file exists for it. New
+// icons (tools/gen-glossary-icons.js) appear automatically, no HTML change.
+document.querySelectorAll('dt[id]').forEach(function (dt) {
+  var dd = dt.nextElementSibling;
+  if (!dd || dd.tagName !== 'DD') return;
+  var img = document.createElement('img');
+  img.className = 'ico'; img.alt = ''; img.loading = 'lazy';
+  img.onerror = function () { img.remove(); };
+  img.src = 'img/glossary/icons/' + dt.id + '.svg';
+  dd.insertBefore(img, dd.firstChild);
 });
 </script>
 </body>
