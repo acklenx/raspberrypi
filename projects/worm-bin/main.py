@@ -62,7 +62,11 @@ SERVO_DPS = 400
 
 # Timing.
 READ_EVERY_MS = 500   # sensor sweep cadence (default 500 ms)
-PAGE_SECONDS = 3      # OLED page rotation speed (default 3 s per page)
+# OLED page dwell adapts to what is ON the page, so you have time to shine a
+# light on a sensor and watch it react, but do not wait on an empty page.
+PAGE_SEC_LIGHT = 10   # a page with a light sensor (shine a light, watch it move)
+PAGE_SEC_SENSOR = 5   # a page with other live sensors (temp, moisture, distance)
+PAGE_SEC_NONE = 2     # a page with nothing plugged in to look at
 # ===== end of config ==================================================
 
 
@@ -367,6 +371,22 @@ def page_lines(page, d):
   ]
 
 
+def page_dwell(page, d):
+  """How long to hold a page: long enough to interact with what is on it.
+  A light page gets 10s (shine a light and watch), other live-sensor pages
+  get a few seconds, and a page with nothing plugged in flicks by in 2s."""
+  if page == 2 and (d.get("light_pct") is not None or d.get("lux") is not None):
+    return PAGE_SEC_LIGHT
+  live = {
+      0: (d.get("in_temp_c"), d.get("out_temp_c"),
+          d.get("in_hum_pct"), d.get("out_hum_pct")),
+      1: (d.get("probe_temps_c") or None,),
+      2: (d.get("moist1_pct"), d.get("moist2_pct"), d.get("sound_pct")),
+      3: (d.get("surface_mm"),),
+  }.get(page, ())
+  return PAGE_SEC_SENSOR if any(v is not None for v in live) else PAGE_SEC_NONE
+
+
 picolab.banner("WORM BIN COMMAND CENTER  v" + picolab.VERSION, [
     "Parts: " + ", ".join(s.name for s in PARTS),
     "Plus: " + DS.name + " (slots at the end)",
@@ -388,6 +408,8 @@ light = picolab.StatusLight()
 app = picolab.WebApp()
 tick = picolab.Throttle(READ_EVERY_MS)
 heartbeat = picolab.Throttle(5000)
+page = -1                        # OLED page, advanced by its own dwell timer
+page_deadline = time.ticks_ms()  # due now, so page 0 shows on the first sweep
 
 app.announce("Worm Bin Command Center Active!")
 
@@ -418,7 +440,12 @@ try:
     picolab.status(light, slots, display, app)
 
     d = data_fn()
-    page = (time.ticks_ms() // (PAGE_SECONDS * 1000)) % 4
+    # Advance the page only when the current one's dwell has elapsed, so a
+    # light page lingers while you shine a torch and an empty one flicks past.
+    now = time.ticks_ms()
+    if time.ticks_diff(now, page_deadline) >= 0:
+      page = (page + 1) % 4
+      page_deadline = time.ticks_add(now, page_dwell(page, d) * 1000)
     lines = [app.ssid + " p%d/4" % (page + 1)] + page_lines(page, d)
     display.show(lines[:5])
 

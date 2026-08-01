@@ -21,11 +21,14 @@ import time
 from machine import I2C, Pin, unique_id
 
 # Version of the SOFTWARE THAT RUNS ON THE PICO (this framework + the project
-# programs + drivers). Bump it on ANY change to on-Pico code, NOT for changes
-# to the repo's docs/JS/website. The self-test prints it in the healthy
-# message and the worm-bin shows it on a startup screen, so a board can tell
-# you exactly what it is running with no computer attached.
-VERSION = "1.0.0"
+# programs + drivers). Bump on ANY change to on-Pico code, NOT for changes to
+# the repo's docs/JS/website. Scheme:
+#   0.1.x  patch: routine change (bumped freely).
+#   0.2.0  minor: a SIGNIFICANT change -- ASK THE OWNER before this bump.
+#   1.0.0  go-live: after this, no breaking changes.
+# Shown by the self-test (header + healthy message + OLED) and the worm-bin
+# startup screen, so a board tells you what it runs with no computer attached.
+VERSION = "0.1.1"
 
 _i2c = None
 
