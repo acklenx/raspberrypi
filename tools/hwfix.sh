@@ -46,13 +46,57 @@ conn() { if [ -n "$PORT" ]; then "$MP" connect "$PORT" "$@"; else "$MP" "$@"; fi
 say()  { printf '  %s\n' "$*"; }
 act()  { if [ "$DRY" = 1 ]; then echo "  [dry-run] $*"; else "$@"; fi; }
 
+# A Pico with NO firmware enumerates as a BOOTSEL mass-storage drive (labelled
+# RPI-RP2 or RP2350) with an INFO_UF2.TXT at its root. Find that mount, if any.
+find_bootsel() {
+  local d
+  for d in ${BOOTSEL_DIR:-} /media/*/RPI-RP2 /media/*/RP2350 \
+           /run/media/*/RPI-RP2 /run/media/*/RP2350 \
+           /media/*/* /run/media/*/* /mnt/* ; do
+    [ -n "$d" ] && [ -f "$d/INFO_UF2.TXT" ] && { echo "$d"; return 0; }
+  done
+  return 1
+}
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
 BKROOT="$REPO/backups"
 
 echo "== hwfix =="
 if ! conn eval 'True' >/dev/null 2>&1; then
-  echo "  no board found. Plugged in? Thonny closed? (try: $MP devs)"
+  say "no MicroPython board on the wire."
+  BSEL="$(find_bootsel || true)"
+  if [ -n "$BSEL" ]; then
+    # Firmware missing/absent, but a Pico IS here in BOOTSEL. Offer to flash it.
+    say "found a Pico in BOOTSEL mode (no firmware) at: $BSEL"
+    UF2="$(ls "$REPO"/firmware/*.uf2 2>/dev/null | head -1 || true)"
+    if [ -z "$UF2" ]; then
+      say "no .uf2 in firmware/ to install. Download the Pico 2 W build from"
+      say "micropython.org and drop it on that drive."
+      exit 1
+    fi
+    if [ -f "$BSEL/INFO_UF2.TXT" ] && grep -qi 'RP2040' "$BSEL/INFO_UF2.TXT" \
+       && echo "$UF2" | grep -qi 'PICO2'; then
+      say "WARNING: that drive looks like an RP2040 board, but the firmware is a"
+      say "Pico 2 (RP2350) build. Do NOT flash it unless this really is a Pico 2."
+    fi
+    say "MicroPython to install: ${UF2#$REPO/}"
+    say "manual install (always works): cp '${UF2#$REPO/}' '$BSEL'/"
+    if [ "$DRY" = 1 ]; then say "[dry-run] not flashing."; exit 0; fi
+    printf '  Flash MicroPython onto it now? [y/N] '
+    read -r ans || ans=""
+    if [ "$ans" = y ] || [ "$ans" = Y ]; then
+      cp "$UF2" "$BSEL"/ && sync
+      say "flashed. The board reboots into MicroPython in a few seconds."
+      say "re-run  tools/hwfix.sh  once it re-appears, to load your code."
+    else
+      say "skipped. Run the cp above, or re-run and answer y, when ready."
+    fi
+    exit 0
+  fi
+  say "if the board has NO firmware yet: hold the BOOTSEL button while plugging"
+  say "in USB (a drive named RPI-RP2 / RP2350 appears), then re-run this to flash."
+  say "otherwise: is it plugged in? Is Thonny closed? (try: $MP devs)"
   exit 1
 fi
 # NB: mpremote `eval` takes an EXPRESSION; multi-statement code needs `exec`.
