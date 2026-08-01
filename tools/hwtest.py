@@ -192,8 +192,11 @@ class Report:
     if c[FAIL]:
       # Point at the repair tool. It backs the board up FIRST, then fixes,
       # then prints the exact restore-from-backup command to undo it.
-      print("\n" + _c("\x1b[2m", "  to back up and auto-repair, on the host run:"))
-      print(_c("\x1b[1m", "      tools/hwfix.sh"))
+      # NB: hwfix is a HOST shell script, run it in the terminal, NOT via
+      # `mpremote run` (that would ship it to the board and it would not parse).
+      print("\n" + _c("\x1b[2m", "  to back up and auto-repair, run this in the host shell"))
+      print(_c("\x1b[2m", "  (a shell script, NOT `mpremote run`):"))
+      print(_c("\x1b[1m", "      bash tools/hwfix.sh"))
 
 
 # =====================================================================
