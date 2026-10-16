@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Moved - Maker Lab Kids Pico Lab</title>
+<link rel="canonical" href="https://makerlabkids.github.io/wormhole/">
+<meta name="robots" content="noindex">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center;
+         font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+         background:#f7f7f8; color:#1a1a1a; padding:2rem; }
+  @media (prefers-color-scheme:dark){ body{ background:#15161a; color:#ececf1; } }
+  main { max-width:34rem; text-align:center; }
+  h1 { font-size:1.4rem; margin:0 0 .75rem; }
+  a { color:#2563eb; font-weight:600; }
+  @media (prefers-color-scheme:dark){ a{ color:#7aa7ff; } }
+  .q { opacity:.7; font-size:.9rem; margin-top:1.25rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>This lab has moved</h1>
+  <p>The Maker Lab Kids Pico lab now lives at<br>
+     <a id="go" href="https://makerlabkids.github.io/wormhole/">makerlabkids.github.io/wormhole</a></p>
+  <p class="q">Taking you there now&hellip; update your bookmark when you land.</p>
+</main>
+<script>
+  // Carry the old deep path over to the new site: /raspberrypi/foo.html -> /wormhole/foo.html
+  var p = location.pathname.replace(/^\/raspberrypi\/?/, "");
+  var url = "https://makerlabkids.github.io/wormhole/" + p + location.search + location.hash;
+  document.getElementById("go").href = url;
+  location.replace(url);
+</script>
+</body>
+</html>

@@ -1,159 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Fix a Board · Wormhole</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="guide.css">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Moved - Maker Lab Kids Pico Lab</title>
+<link rel="canonical" href="https://makerlabkids.github.io/wormhole/reset.html">
+<meta http-equiv="refresh" content="0; url=https://makerlabkids.github.io/wormhole/reset.html">
+<meta name="robots" content="noindex">
 <style>
-  .reassure { background: #EAF6E4; border: 1px solid var(--green); border-radius: 12px;
-              padding: 16px 20px; font-size: 16px; }
-  .ritual { counter-reset: r; margin: 6px 0; }
-  .rstep { display: flex; gap: 14px; align-items: flex-start; background: var(--light);
-           border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; }
-  .rstep .n { counter-increment: r; flex: none; width: 32px; height: 32px; border-radius: 50%;
-              background: var(--navy); color: #FFF; font-weight: bold; display: flex;
-              align-items: center; justify-content: center; }
-  .rstep .n::before { content: counter(r); }
-  .rstep b { color: var(--navy); }
-  .rstep p { margin: 2px 0 0 0; font-size: 14px; color: var(--ink); }
-  .rung { display: flex; gap: 14px; align-items: flex-start; margin: 14px 0; }
-  .rung .lbl { flex: none; width: 96px; font-size: 11px; font-weight: 800; letter-spacing: 1px;
-               text-transform: uppercase; color: var(--gray); padding-top: 4px; }
-  .rung .body { flex: 1; background: var(--light); border-radius: 10px; padding: 12px 16px;
-                border-left: 5px solid var(--blue); }
-  .test { border-left: 5px solid var(--green); }
-  .rung .body h3 { margin: 0 0 4px 0; }
-  .verdict { font-size: 13.5px; margin-top: 6px; }
-  .verdict .ok { color: #3f6e1f; font-weight: bold; } .verdict .no { color: var(--red); font-weight: bold; }
-  .paths { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 13px; }
-  @media (max-width: 620px) { .paths { grid-template-columns: 1fr; } }
-  .paths .p { background: #FFF; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
-  pre { background: #1B2733; color: #E6EDF3; border-radius: 8px; padding: 8px 10px;
-        font-family: Consolas, Menlo, monospace; font-size: 12px; overflow-x: auto; margin: 6px 0; }
-  ol.mini { margin: 4px 0; padding-left: 18px; font-size: 13px; } ol.mini li { margin-bottom: 3px; }
-  .warn { background: #FDECEA; border: 1px solid var(--red); border-radius: 8px; padding: 8px 12px;
-          font-size: 13.5px; margin: 8px 0; }
+  :root { color-scheme: light dark; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center;
+         font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+         background:#f7f7f8; color:#1a1a1a; padding:2rem; }
+  @media (prefers-color-scheme:dark){ body{ background:#15161a; color:#ececf1; } }
+  main { max-width:34rem; text-align:center; }
+  h1 { font-size:1.4rem; margin:0 0 .75rem; }
+  a { color:#2563eb; font-weight:600; }
+  @media (prefers-color-scheme:dark){ a{ color:#7aa7ff; } }
+  .q { opacity:.7; font-size:.9rem; margin-top:1.25rem; }
 </style>
 </head>
 <body>
-<nav class="topnav"><div class="inner">
-  <a class="brand" href="index.html">🪱 Wormhole</a>
-  <div class="links">
-    <a class="nl" href="index.html">Home</a><a class="nl" href="start.html">Start Here</a>
-    <a class="nl" href="sessions.html">Sessions</a><a class="nl" href="stations.html">Sensors</a>
-    <a class="nl" href="research.html">Ideas</a><a class="nl" href="demos/mission-control.html">Demos</a><a class="nl" href="glossary.html">Glossary</a>
-    <a class="nl" href="cheatsheet.html">Code</a><a class="nl on" href="reset.html">Fix a Board</a><a class="nl" href="tools.html">Board Tools</a>
-  </div>
-</div></nav>
-
-<div class="wrap">
-  <h1>Fix a Board</h1>
-  <p class="lead">A board acting up, dark screen, won't connect, ignoring your <a class="term" href="glossary.html#program-code">code</a>, "address in
-     use," anything? Work down this page from the top. Stop as soon as it's working. Nothing here can
-     hurt the board.</p>
-  <div class="reassure">The single most useful fact: <b>a Pico needs nothing but power to <a class="term" href="glossary.html#run">run</a>.</b> If a
-     finished board is misbehaving, it's almost always a stuck connection or a bit of leftover state,
-     not a broken Pico. The steps below clear those, then rebuild your confidence one layer at a time.</div>
-
-  <h2>First: the clean-slate ritual</h2>
-  <hr class="rule">
-  <p class="lead">Nine times out of ten, this alone fixes it. Do it in order, each step clears a
-     different kind of "stuck."</p>
-  <div class="ritual">
-    <div class="rstep"><div class="n"></div><div><b>Stop the program.</b><p>In Viper, click Stop (or click the terminal and press Ctrl+C). A running program can't be changed.</p></div></div>
-    <div class="rstep"><div class="n"></div><div><b>Disconnect Viper.</b><p>Click disconnect (top right). This lets go of the board so nothing is holding it.</p></div></div>
-    <div class="rstep"><div class="n"></div><div><b>Unplug the board.</b><p>Pull the USB. This is a full power-off, it clears leftover network sockets and any wedged state. (A "soft reset" does <em>not</em>; only real power-off does.)</p></div></div>
-    <div class="rstep"><div class="n"></div><div><b>Refresh the Viper page.</b><p>Reload viper-<a class="term" href="glossary.html#ide">ide</a>.org in the browser. Clears any stuck connection on the computer's side.</p></div></div>
-    <div class="rstep"><div class="n"></div><div><b>Plug the board back in.</b><p>Use a cable you know carries data (charge-only cables power the board but won't connect). Reseat both ends firmly.</p></div></div>
-    <div class="rstep"><div class="n"></div><div><b>Connect Viper.</b><p>Connect button &rarr; USB &rarr; pick the Pico. You should land at the <code>&gt;&gt;&gt;</code> prompt.</p></div></div>
-    <div class="rstep"><div class="n"></div><div><b>Reinstall the code.</b><p>Click the project's one-click <a class="term" href="glossary.html#upload-install">Install</a> link again. This pulls the <a class="term" href="glossary.html#current">current</a>, known-good code fresh. (Just editing a <a class="term" href="glossary.html#file">file</a> can leave old code in charge.)</p></div></div>
-    <div class="rstep"><div class="n"></div><div><b>Reset and run.</b><p>Press Viper's reset, or run <code>main.py</code>. Fresh start, fresh code.</p></div></div>
-  </div>
-  <p>Working now? You're done. Still off? Don't guess, test one layer at a time. &darr;</p>
-
-  <h2>Still stuck? Test one layer at a time</h2>
-  <hr class="rule g">
-  <p class="lead">Instead of poking at the whole <a class="term" href="glossary.html#access-point-vs-station">station</a>, load these tiny programs in order. Each one
-     proves a single layer works. The first one that <em>fails</em> tells you exactly where the problem
-     is, no more mystery.</p>
-
-  <div class="rung">
-    <div class="lbl">Test 1</div>
-    <div class="body test">
-      <h3>Does code run at all?, Blink</h3>
-      <p>No wiring needed. Loads a program that blinks the Pico's own green light.
-         <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/03-blink/package.json" class="ext"><b>Install &amp; run Blink</b></a></p>
-      <p class="verdict"><span class="ok">Light blinks?</span> The Pico, its <a class="term" href="glossary.html#firmware">firmware</a>, and code-pushing all work. Go to Test 2.<br>
-         <span class="no">Nothing blinks / can't install?</span> The board isn't running code. Re-flash the firmware (bottom of page).</p>
-    </div>
-  </div>
-
-  <div class="rung">
-    <div class="lbl">Test 2</div>
-    <div class="body test">
-      <h3>Does the screen work?, Display</h3>
-      <p>Needs the OLED wired (4 wires: <a class="term" href="glossary.html#3v3-pin">3V3</a>, <a class="term" href="glossary.html#ground">GND</a>, SDA=GP0, SCL=GP1). Draws text to the screen.
-         <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/05-display/package.json" class="ext"><b>Install &amp; run Display</b></a></p>
-      <p class="verdict"><span class="ok">Text on the screen?</span> Your wiring and the screen are good. Go to Test 3.<br>
-         <span class="no">Blank screen / error?</span> It's the wiring, not the code. Check those four wires, especially <b>3V3</b> and <b>GND</b> to the <a class="term" href="glossary.html#breadboard">breadboard</a> rail (if power's out, the whole bus goes dark). Then reseat SDA (GP0) and SCL (GP1).</p>
-    </div>
-  </div>
-
-  <div class="rung">
-    <div class="lbl">Test 3</div>
-    <div class="body test">
-      <h3>Does WiFi work?, Webserver</h3>
-      <p>No wiring. The Pico makes its own WiFi network and serves a web page.
-         <a href="https://viper-ide.org/?install=github:acklenx/raspberrypi/examples/04-webserver/package.json" class="ext"><b>Install &amp; run Webserver</b></a></p>
-      <p class="verdict"><span class="ok">You can join its WiFi and see the page?</span> Everything works, load your real station, it should be fine.<br>
-         <span class="no">"Address in use" error?</span> A leftover socket from a previous run. Do the clean-slate ritual above (the <b>unplug</b> step clears it). Our current code also recovers from this on its own, reinstall to get the latest.</p>
-    </div>
-  </div>
-
-  <h2>Deeper fixes</h2>
-  <hr class="rule o">
-
-  <div class="rung">
-    <div class="lbl">Wipe</div>
-    <div class="body">
-      <h3>Wipe the board clean (keeps the firmware)</h3>
-      <p>Removes <em>every</em> file (old programs, leftover settings, junk from past projects)
-         back to bare <a class="term" href="glossary.html#micropython">MicroPython</a>. The reliable "make it behave" reset. Then reinstall.</p>
-      <div class="paths">
-        <div class="p"><b>In Viper:</b> open <a href="https://github.com/acklenx/raspberrypi/blob/main/tools/wipe.py" class="ext"><code>tools/wipe.py</code></a>, paste into a new file, Run. Then reinstall.</div>
-        <div class="p"><b>Command line:</b><pre>mpremote connect &lt;port&gt; run tools/wipe.py</pre></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="rung">
-    <div class="lbl">Re-flash</div>
-    <div class="body">
-      <h3>Re-flash the firmware (true factory reset)</h3>
-      <p>The nuclear option: wipes <em>everything</em>, firmware included, and lays down a fresh known-good
-         MicroPython. Use when a board is truly unresponsive, or Blink (Test 1) won't run.</p>
-      <ol class="mini">
-        <li>Hold the <b><a class="term" href="glossary.html#bootsel">BOOTSEL</a></b> button while plugging into USB. It appears as a drive named <code>RP2350</code>.</li>
-        <li>Drag on <a href="https://github.com/acklenx/raspberrypi/raw/main/firmware/RPI_PICO2_W-20260406-v1.28.0.uf2" class="ext">the tested firmware (.uf2)</a>.</li>
-        <li>The drive vanishes and the board reboots into fresh MicroPython. Reinstall your project.</li>
-      </ol>
-      <p style="font-size:13px;color:var(--gray)">Already-working board? From the <code>&gt;&gt;&gt;</code> prompt,
-         <code>import machine; machine.bootloader()</code> jumps to that drive with no button.</p>
-    </div>
-  </div>
-
-  <div class="warn"><b>Note on old boards:</b> a board set up before this guide may carry leftover compiled
-     <code>.mpy</code> files that override newer code. If an update won't take even after reinstalling,
-     Wipe it (above) and reinstall, that clears them for good. New installs are all readable source, so
-     this won't happen going forward.</div>
-
-  <h2>The golden rule</h2>
-  <hr class="rule y">
-  <p>When in doubt, <b>wipe and reinstall</b>. Ten seconds of certainty beats an hour of chasing a ghost.
-     And remember: a finished board needs only power, it runs <code>main.py</code> from flash every
-     time it boots and rejoins the network on its own.</p>
-</div>
-<footer>&copy; 2026 Maker Lab Kids LLC · MakerLabKids.com · Learn. Make. Share.</footer>
+<main>
+  <h1>This lab has moved</h1>
+  <p>The Maker Lab Kids Pico lab now lives at<br>
+     <a href="https://makerlabkids.github.io/wormhole/reset.html">makerlabkids.github.io/wormhole</a></p>
+  <p class="q">Taking you there now&hellip; update your bookmark when you land.</p>
+</main>
+<script>location.replace("https://makerlabkids.github.io/wormhole/reset.html" + location.search + location.hash);</script>
 </body>
 </html>

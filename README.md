@@ -1,3 +1,13 @@
+> ## This project has moved
+>
+> - **Lab guide:** https://makerlabkids.github.io/wormhole/
+> - **Repo:** https://github.com/MakerLabKids/wormhole
+>
+> This repository is the former home of the Maker Lab Kids Pico lab and is no longer
+> updated. The `docs/` pages here now redirect to the new site. The code, drivers and
+> firmware are left in place so older install links keep working, but new work happens
+> in the repo above.
+
 # Raspberry Pi Pico 2 W Samples
 
 MicroPython samples for the Raspberry Pi Pico 2 W, used in
