@@ -1,7 +1,7 @@
 > ## This project has moved
 >
-> - **Lab guide:** https://makerlabkids.github.io/wormhole/
-> - **Repo:** https://github.com/MakerLabKids/wormhole
+> - **Lab guide:** https://makerlabkids.github.io/whs-wormhole/
+> - **Repo:** https://github.com/MakerLabKids/whs-wormhole
 >
 > This repository is the former home of the Maker Lab Kids Pico lab and is no longer
 > updated. The `docs/` pages here now redirect to the new site. The code, drivers and
