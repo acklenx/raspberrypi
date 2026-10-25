@@ -1,0 +1,13 @@
+THIS REPOSITORY HAS MOVED - DO NOT WORK HERE
+
+Everything that used to live in acklenx/raspberrypi is now in:
+
+    https://github.com/MakerLabKids/whs-wormhole
+    https://makerlabkids.github.io/whs-wormhole/   (the lab site)
+
+The full history was mirrored there on 2026-10-15 (last shared commit d9535fe) and all
+development has continued there since. This repo was emptied on 2026-10-25 and archived
+(read-only). The only thing left is docs/: tiny redirect pages so old bookmarks, printed
+QR codes and acklenx.github.io/raspberrypi/... links forward to the new site.
+
+If you are reading this inside a checkout, you are in the wrong place. Go to whs-wormhole.
